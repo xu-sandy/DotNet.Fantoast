@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6DBE3FAB-F06A-4D6E-BB9C-15186A822ADE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FCake.API</RootNamespace>
+    <AssemblyName>FCake.API</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="LitJson, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\LitJson.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TopSdk">
+      <HintPath>..\ExtendFiles\TopSdk.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AliDirectPay\AlipayConfig.cs" />
+    <Compile Include="AliDirectPay\AlipayCore.cs" />
+    <Compile Include="AliDirectPay\AlipayNotify.cs" />
+    <Compile Include="AliDirectPay\AlipaySubmit.cs" />
+    <Compile Include="AliDirectPay\MD5.cs" />
+    <Compile Include="AliWapPay\AlipayConfig.cs" />
+    <Compile Include="AliWapPay\AlipayCore.cs" />
+    <Compile Include="AliWapPay\AlipayNotify.cs" />
+    <Compile Include="AliWapPay\AlipaySubmit.cs" />
+    <Compile Include="AliWapPay\MD5.cs" />
+    <Compile Include="AliWapPay\RSA.cs" />
+    <Compile Include="DaYuSMS\DaYuConfig.cs" />
+    <Compile Include="DaYuSMS\DaYuSMSHelper.cs" />
+    <Compile Include="DingDongSMS\DDSMSHelper.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service References\EChi\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="TenpayApp\ClientResponseHandler.cs" />
+    <Compile Include="TenpayApp\Config.cs" />
+    <Compile Include="TenpayApp\Data.cs" />
+    <Compile Include="TenpayApp\Exception.cs" />
+    <Compile Include="TenpayApp\HttpService.cs" />
+    <Compile Include="TenpayApp\JsApiPay.cs" />
+    <Compile Include="TenpayApp\MD5Util.cs" />
+    <Compile Include="TenpayApp\NativeNotify.cs" />
+    <Compile Include="TenpayApp\Notify.cs" />
+    <Compile Include="TenpayApp\RequestHandler.cs" />
+    <Compile Include="TenpayApp\ResponseHandler.cs" />
+    <Compile Include="TenpayApp\TenpayHttpClient.cs" />
+    <Compile Include="TenpayApp\TenpayUtil.cs" />
+    <Compile Include="TenpayApp\WapPayPageResponseHandler.cs" />
+    <Compile Include="TenpayApp\WeiXinPayRequest.cs" />
+    <Compile Include="TenpayApp\WxPayApi.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\DataSources\System.Data.DataSet.datasource" />
+    <None Include="Service References\EChi\sendSms.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\EChi\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\EChi\sendSms.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\EChi\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\EChi\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\EChi\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FCake.Core\FCake.Core.csproj">
+      <Project>{471bcc54-e5e3-45c7-a9b3-0cb4c9965cc1}</Project>
+      <Name>FCake.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Domain\FCake.Domain.csproj">
+      <Project>{e2694570-5df4-4c03-ab47-ddb899ce90f5}</Project>
+      <Name>FCake.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="LitJson.dll" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

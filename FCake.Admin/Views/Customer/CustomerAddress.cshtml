@@ -1,0 +1,48 @@
+﻿@*/@model List<FCake.Domain.Entities.CustomerAddress>*@
+@model List<Dictionary<string,object>>
+@{
+    ViewBag.Title = "CustomerAddress";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<style type="text/css">
+    table.gridtable {
+        
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 11px;
+        color: #333;
+        border-width: 1px;
+        border-color: #f8f8f8;
+        border-collapse: collapse;
+    }
+
+        table.gridtable th {
+            border-width: 1px;
+            padding: 8px;
+            background-color: #f8f8f8;
+            text-align:left;
+        }
+
+        table.gridtable td {
+            border-width: 1px;
+            padding: 8px;
+            border: 1px solid #f8f8f8;
+            background-color: #fff;
+            text-align: left;
+        }
+</style>
+<table class="gridtable">
+    <tr>
+        <th>会员名称</th>
+        <th>联系电话</th>
+        <th>区域</th>
+        <th>用户地址</th>
+        <th>是否默认地址</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr><td style="width:80px">@item["FullName"]</td><td style="width:80px">@item["Mobile"]</td><td style="width:100px">@item["area"]</td><td style="width:300px">@item["a"]</td><td style="width:80px">@item["isdef"]</td></tr>
+    }
+    
+        
+    
+</table>

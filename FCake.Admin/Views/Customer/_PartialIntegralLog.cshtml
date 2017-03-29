@@ -1,0 +1,25 @@
+﻿<h2>积分交易记录</h2>
+<table id="integralLog"></table>
+<script>
+    $("#integralLog").datagrid({
+        url: '@Url.Action("GetMemberIntegralLogById", "Customer")' + "?memberId=" + '@ViewBag.Id',
+        rownumbers: true,
+        singleSelect: true,
+        fitColumns: true,
+        pagination: true,
+        pageSize: 10,
+        height: 300,
+        autoRowHeight: true,
+        onLoadSuccess: function () {
+            $.parser.parse($('td .easyui-linkbutton').parent());
+        },
+        columns: [[
+            { field: 'OrderSN', title: '交易单号', width: 70, align: 'center' },
+            { field: 'ChangeIntegral', title: '积分变动', width: 40, align: 'center' },
+            { field: 'TotalIntegral', title: '总积分', width: 40, align: 'center' },
+            { field: 'Multiple', title: '积分比例', width: 40, align: 'center' },
+            { field: 'Remark', title: '备注', width: 250, align: 'center' }
+
+        ]]
+    })
+</script>

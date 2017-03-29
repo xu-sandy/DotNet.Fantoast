@@ -1,0 +1,182 @@
+﻿@using FCake.Core.Common;
+@{
+    ViewBag.Title = "CustomerEdit";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['sex'] = [];
+    window.drpdata['activeStatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.Sex>(false))
+    {
+        @:window.drpdata['sex'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.ActiveStatus>(false))
+    {
+        @:window.drpdata['activeStatus'].push({ value: '@item.Value', text: '@item.Text' });
+    }
+</script>
+<form id="customerForm" method="post" style="overflow:auto;">
+    <table class="form-tb">
+        <tr>
+            <td class="lable"><label for="FullName" class="datalable">姓名：</label></td>
+            <td class="control"><input id="FullName" name="FullName" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable"><label for="Sex" class="datalable">性别：</label></td>
+            <td class="control">
+                <input id="Sex" name="Sex" class="easyui-combobox datacontrol"
+                       data-options="valueField:'value',textField:'text',value:'@Model.Sex',height:24,data:window.drpdata['sex'],panelHeight:'auto', editable: false" />
+            </td>
+        </tr>
+        <tr>
+            <td class="lable"><label for="Tel" class="datalable">固话：</label></td>
+            <td class="control"><input id="Tel" name="Tel" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable"><label for="Mobile" class="datalable">帐号：</label></td>
+            <td class="control"><input id="Mobile" name="Mobile" class="datacontrol" readonly="readonly" /></td>
+        </tr>
+        <tr>
+            <td class="lable"><label for="Email" class="datalable">邮箱：</label></td>
+            <td class="control"><input id="Email" name="Email" class="datacontrol" data-options="validType:'email'" /></td>
+        </tr>
+        <tr>
+            <td>状态：</td>
+            <td><input id="IsDisabled" name="IsDisabled" class="easyui-combobox datacontrol"
+       data-options="valueField:'value',textField:'text',value:'@Model.IsDisabled',height:24,data:window.drpdata['activeStatus'],panelHeight:'auto', editable: false" /></td>
+        </tr>
+        <tr>
+            <td class="lable"><label for="" class="datalable">地址：</label></td>
+            <td class="control">
+                <input class="easyui-combobox" name="province" id="province" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:70" />
+                <input class="easyui-combobox" name="city" id="city" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:70" />
+                <input class="easyui-combobox" name="area" id="area" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:70" />
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="text" class="easyui-validatebox datacontrol" name="address" id="address" data-options="required:true" style="padding:5px;" placeholder="街道地址" value="@ViewBag.Address" maxlength="50" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <a href="#" id="saveBtn" name="saveBtn" class="easyui-linkbutton cus4 linkbtn">保存</a>
+                <input id="Id" name="Id" type="hidden" value="@Model.Id" />
+            </td>
+        </tr>
+    </table>
+</form>
+<script type="text/javascript">
+    $(function () {
+        $("#Id").val("@Model.Id");
+        $("#FullName").val("@Model.FullName");
+        $("#Tel").val("@Model.Tel");
+        $("#Mobile").val("@Model.Mobile");
+        $("#Email").val("@Model.Email");
+        $("#Integral").val("@Model.Integral");
+        $("#GrowthValue").val("@Model.GrowthValue");
+
+        var provinceone = true;
+
+        $("#province").combobox({
+            url: '/common/getposition?position=country&value=',
+            onSelect: function (record) {
+                $("#city").combobox({
+                    url: '/common/getposition?position=province&value=' + escape(record.t)
+                });
+                $("#area").combobox({
+                    url: ''
+                });
+            },
+            onLoadSuccess: function () {
+                if (provinceone) {
+                    $("#province").combobox("select", '福建省');
+                    provinceone = false;
+                }
+            }
+        });
+
+        var cityone = true;
+
+        $("#city").combobox({
+            onSelect: function (record) {
+                $("#area").combobox({
+                    url: '/common/getposition?position=city&value=' + escape(record.t)
+                });
+            },
+            onLoadSuccess: function () {
+                if (cityone) {
+                    cityone = false;
+                    $("#city").combobox("select", '厦门市');
+                }
+            }
+        });
+
+        var areaone = true;
+
+        $("#area").combobox({
+            onSelect: function (record) {
+
+            },
+            onLoadSuccess: function () {
+                if (areaone) {
+                    @if (ViewBag.Area != null)
+                    {
+                        @:$("#area").combobox("select", '@ViewBag.Area');
+                                        }
+                    areaone = false;
+                }
+            }
+        });
+
+        $("#customerForm").validate({
+            rules: {
+                FullName: {
+                    required: true,
+                },
+                Tel: {
+                    rule_cn_phone: true,
+                },
+                Mobile: {
+                    rule_cn_mobile: true,
+                },
+                Email: {
+                    email: true
+                }
+            }
+        });
+    })
+    //提交数据
+    $("#customerForm").submit(function (e) {
+        e.preventDefault();
+        if (!$(this).valid()) {
+            $.messager.alert("提示", "填写有误，请修改后重试", "warning", function () {
+                return false;
+            });
+
+        } else {
+            $.messager.confirm("确认", "会员信息为用户注册原始信息，建议不要随意修改，确认修改?", function (r) {
+                $.ajax({
+                    url: '/Customer/SaveCustomerInfo?' + $("#customerForm").serialize(),
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (result) {
+                        //alert();
+                        $.messager.alert("提示", result.message, "warning", function () {
+                            var pwin = window.top.$("body").data("win_customerDetails");
+                            pwin.reloadWindow();
+                            window.top.$("body").data("win_addorder").window("close");
+                        });
+
+                    }
+                })
+            })
+           
+        }
+    });
+    //提交审核事件
+    $("#saveBtn").click(function () {
+        $("#customerForm").submit();
+    });
+</script>

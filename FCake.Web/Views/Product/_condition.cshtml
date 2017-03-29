@@ -1,0 +1,86 @@
+﻿@using FCake.Bll;
+@{
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;
+}
+@*<div class="theme" style="overflow:auto;">
+        <ul class="clearfix">
+            <li class="theme_p">
+                <span class="f4">主题</span>
+            </li>
+            <li><a class="item" href="?themes=birthday&type=@ViewBag.type" id="birthday"></a></li>
+            <li><a class="item" href="?themes=party&type=@ViewBag.type" id="party"></a></li>
+            <li><a class="item" href="?themes=senior&type=@ViewBag.type" id="senior"></a></li>
+            <li><a class="item" href="?themes=couple&type=@ViewBag.type" id="couple"></a></li>
+        </ul>
+    </div>
+    <br />
+    <br />*@
+<div class="menu">
+
+    <ul class="clearfix" style="margin-left: 101px">
+        <li class="bold" style="margin-left: -36px">品种：</li>
+        @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("Category", true))
+        {
+            if (item.Value != otherProductTypeDicValue)
+            {
+                <li>
+                    <a id="@item.Value" class="bg" href="?themes=@ViewBag.themes&type=@item.Value">@item.Text</a>
+                </li>
+            }
+        }
+        <li>
+            <a id="@otherProductTypeDicValue" class="bg" href="?themes=&type=@otherProductTypeDicValue">其他</a>
+        </li>
+    </ul>
+</div>
+<br />
+<br />
+<script type="text/javascript">
+    $(function () {
+        //设置默认选中的主题的样式
+        @*var themes=@ViewBag.themes;*@
+        $(".item").each(function (i, item) {
+            var id = $(item).attr('id');
+            if (id == pharos.g.getUrlParam('themes')) {
+                $(item).addClass('itemselect');
+            }
+        })
+        //geturl param
+        //找到对应的主题item 渲染itemselect 样式
+
+        //主题鼠标事件绑定
+        $(".item").each(function (i, item) {
+            bindEvents(item);
+        });
+
+        $(".menu li a").each(function (i, menu) {
+            //$(menu).click(function(){
+            //    $(menu).addClass("menuclicked");
+            //})
+            var id = $(menu).attr('id');
+            if (id == pharos.g.getUrlParam('type')) {
+                $(menu).addClass('active');
+            }
+        })
+    });
+    function bindEvents(item) {
+        $(item).mouseover(function () {
+            //需要判断是否有itemselect 不做任何改变
+            if (!$(item).hasClass('itemselect')) {
+                $(item).removeClass("itemout").addClass("itemover");
+            }
+        });
+        $(item).mouseout(function () {
+            //需要判断是否有itemselect 不做任何改变
+            if (!$(item).hasClass('itemselect')) {
+                $(item).removeClass("itemover").addClass("itemout");
+            }
+        });
+        //click的时候添加 itemselect 样式
+        $(item).click(function () {
+            if (!$(item).hasClass('itemselect')) {
+                $(item).removeClass("itemout").addClass("itemover").addClass("itemselect");
+            }
+        });
+    }
+</script>

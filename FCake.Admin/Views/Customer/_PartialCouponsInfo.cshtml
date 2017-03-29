@@ -1,0 +1,62 @@
+﻿<h2>优惠券交易记录</h2>
+<table id="couponsInfo"></table>
+<script>
+    $("#couponsInfo").datagrid({
+        url: '@Url.Action("GetCouponsToDatagridByCustomerId","Coupons")' + "?customerId=" + '@ViewBag.Id',
+        toolbar: "#toolbar",
+        rownumbers: true,
+        singleSelect: true,
+        fitColumns: true,
+        pagination: true,
+        pageSize: 10,
+        height: 300,
+        autoRowHeight: true,
+        onLoadSuccess: function () {
+            $.parser.parse($('td .easyui-linkbutton').parent());
+        },
+        columns: [[
+            { field: 'CouponSN', title: '优惠券券号', width: 100, align: 'center' },
+            {
+                field: 'UseState', title: '状态', width: 40, align: 'center', formatter: function (value, row, index) {
+                    if (value == 0) {
+                        var resultHtml = "<div>未使用</div>";
+                        var currentDate = new Date();
+                        var dataDate = new Date(row.BeginValidDate);
+                        var endDate = new Date(row.EndValidDate);
+                        if (currentDate < dataDate) {
+                            resultHtml += "<div>(未到使用时间)</div>";
+                        }
+                        if (currentDate > endDate) {
+                            resultHtml += "<div>(已过期)</div>";
+                        }
+                        return resultHtml;
+                    } else if (value == 1) {
+                        return "已使用";
+                    }
+                }
+            },
+            {
+                field: 'Title', title: '优惠券', width: 100, align: 'center', formatter: function (value, row, index) {
+                    var conditionTitle = "无条件使用";
+                    if (row.ConditionMoney > 0) {
+                        conditionTitle = "满 " + row.ConditionMoney + " 元使用";
+                    }
+                    return "<div>优惠券：" + value + "</div><div>面额：" + row.Denomination + "</div><div>" + conditionTitle + "</div>";
+                }
+            },
+            { field: 'Denomination', title: '面额', width: 40, align: 'center', hidden: true },
+            {
+                field: 'ConditionMoney', title: '使用条件', width: 90, align: 'center', hidden: true
+            },
+            {
+                field: 'BeginValidDate', title: '有效期', width: 120, align: 'center', formatter: function (value, row, index) {
+                    return value.substring(0, 10) + " 到 " + row.EndValidDate.substring(0, 10);
+                }
+            },
+            { field: 'EndValidDate', title: '有效期结束时间', width: 80, align: 'center', hidden: true },
+            { field: 'UseDate', title: '使用时间', width: 100, align: 'center' },
+            { field: 'UseOrderSN', title: '使用订单号', width: 90, align: 'center' }
+
+        ]]
+    })
+</script>

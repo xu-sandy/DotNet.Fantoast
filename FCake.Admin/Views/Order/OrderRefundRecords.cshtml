@@ -1,0 +1,67 @@
+﻿@{
+    ViewBag.Title = "退款管理";
+}
+
+<div id="toolbar">
+    <form id="search">
+        订单号：<input id="no" name="no" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+
+        <a href="#" id="searchBtn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+        <a href="javascript:void(0);" id="addBtn" class="easyui-linkbutton" data--options="iconCls:'icon-add'">添加退款订单</a>
+    </form>
+</div>
+
+<table id="dg"></table>
+<script>
+
+    $("#dg").datagrid({
+        title: '订单管理',
+        url: '@Url.Action("FindPageListForOrderRefundRecords")' + "?orderNo=",
+        rownumbers: true,
+        singleSelect: true,
+        toolbar: "#toolbar",
+        fit: true,
+        pageSize: 30,
+        fitColumns: true, //自适应
+        //pagination: true,//开启分页
+        striped: true, //True 奇偶行使用不同背景色
+        columns: [[
+       { field: 'Id', title: 'Id', hidden: true },
+       { field: 'OperUserId', title: '操作人', width: 100, align: 'center' },
+       { field: 'OrderNo', title: '订单号', width: 120, align: 'center' },
+       { field: 'CustomerAccount', title: '买家帐号', width: 150, align: 'center' },
+       { field: 'RefundAmount', title: '退款金额', width: 150, align: 'center' },
+        { field: 'CreatedOn', title: '退款时间', width: 150, align: 'center' }
+        ]]
+    })
+
+    $("#searchBtn").click(function () {
+        $("#dg").datagrid({
+            url: '@Url.Action("FindPageListForOrderRefundRecords")' + "?orderNo=" + $("#no").val()
+        })
+    })
+    $("#addBtn").click(function () {
+        AddItem();
+    })
+    function reload() {
+        $("#dg").datagrid("reload");
+    }
+    //新增
+    function AddItem() {
+        openDialog("选择退款订单", '@Url.Action("GetRefundOrder")');
+    }
+    //打开添加页
+    function openDialog(title, url) {
+        window.top.$("body").data("window2", window);
+        pharos.g.openDialog({
+            title: title,
+            width: 1000,
+            height: 640,
+            id: "add",
+            url: url,
+            onClose: function () {
+                reload();
+            }
+        });
+    }
+</script>

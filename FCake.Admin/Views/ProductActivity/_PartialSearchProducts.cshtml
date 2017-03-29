@@ -1,0 +1,121 @@
+﻿<div id="sp">
+    <script src="~/Scripts/datagrid-detailview.js"></script>
+    <script>
+        var _type = [];
+        @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", true))
+    {
+        @:_type.push({ text: '@item.Text', value: '@item.Value' });
+            }
+    </script>
+    <table id="searchproducts"></table>
+
+    <a href="javascript:;" class="easyui-linkbutton cus1" data-options="iconCls:'icon-search'" id="opensearch" onclick="setproducttable()">展开查找产品</a>
+
+    <div id="toolbar1">
+        产品名称 <input type="text" name="ProductName" class="datacontrol" />
+
+        类型 <input id="Type" name="Type" class="easyui-combobox datacontrol" style="width:120px;" />
+
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="searchproduct()">查找</a>
+    </div>
+
+    <script type="text/javascript">
+        var productname = "";
+        var type = "";
+        $(function () {
+            $("#Type").combobox({
+                data: _type,
+                valueField: 'value',
+                textField: 'text',
+                panelHeight: 'auto',
+                editable: false
+            });
+            setproducttable();
+        })
+
+
+
+        function searchproduct() {
+            productname = $.trim($("input[name=ProductName]").val());
+            type = $.trim($("input[name=Type]").val());
+
+            $("#searchproducts").datagrid({
+                url: '@Url.Action("SearchProducts","ProductActivity")?name=' + escape(productname) + "&type=" + escape(type)
+            });
+        }
+
+        function setproducttable() {
+            $("#opensearch").hide();
+            $("#searchproducts").css({
+                "width": "95%",
+                "height": "400px"
+            });
+            $("#searchproducts").datagrid({
+                url: '@Url.Action("SearchProducts","ProductActivity")',
+                pagination: true,
+                toolbar: '#toolbar1',
+                rownumbers: true,
+                singleSelect: true,
+                idField: 'Id',
+                columns: [[
+                    {
+                        field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                        formatter: function (value, row, index) {
+                            var value = "";
+                            if (value != null && value != undefined && $.trim(value) != "") {
+                                value = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                            }
+                            return value;
+                        }
+                    },
+                    { field: 'Name', title: '产品名称', width: 325, align: 'left' },
+                    {
+                        field: 'Type', title: '品种', width: 150, align: 'center',
+                        formatter: function (value, row, index) {
+                            return formatColumnMultilpe(value, _type);
+                        }
+                    }
+                ]],
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div class="ddv" style="padding:5px 0"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    var url = '@Url.Action("GetSubProducts", "ProductActivity")?id=' + $("#searchproducts").datagrid("getRows")[index].Id;
+                    var ddv = $("#searchproducts").datagrid('getRowDetail', index).find('div.ddv');
+                    ddv.panel({
+                        height: 150,
+                        border: false,
+                        cache: false,
+                        content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:99%;"></iframe>',
+                        onLoad: function () {
+                            $("#searchproducts").datagrid('fixDetailRowHeight', index);
+                        }
+                    });
+                    $("#searchproducts").datagrid('fixDetailRowHeight', index);
+                }
+            });
+        }
+
+        function formatColumnMultilpe(values, list) {
+            if (!String.isNE(values)) {
+                var texts = "";
+                $(values.split(",")).each(function (i, value) {
+                    $(list).each(function (j, node) {
+                        if (node.value != "") {
+                            if (node.value == value) {
+                                texts += node.text + ",";
+                                return;
+                            }
+                        }
+                    });
+                });
+                if (texts.length > 0) {
+                    texts = texts.substring(0, texts.length - 1);
+                }
+                return texts;
+            }
+            return "";
+        }
+    </script>
+</div>

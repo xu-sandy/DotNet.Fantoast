@@ -1,0 +1,237 @@
+﻿@using FCake.Bll
+@model FCake.Domain.Entities.Cooperation
+@{
+    ViewBag.Title = "企业试吃";
+    var cooperHistory = new FCake.Bll.Services.CooperationService().GetCooperationByUserId(CurrentMember.MemberId);
+
+    var coopStatusList = new FCake.Bll.CommonService().GetDictionaryByCode("CoopStatus", false);
+}
+@helper formatColumn(int? status, List<FCake.Core.Common.DropdownItem> coopStatuss)
+{
+    foreach (var item in coopStatuss)
+    {
+        if (status.HasValue)
+        {
+            if (item.Value == status.Value.ToString())
+            {
+                @item.Text;
+                          break;
+            }
+        }
+    }
+}
+@*@Scripts.Render(
+        "~/Scripts/formValidator/formValidator-4.1.3.js",
+        "~/Scripts/formValidator/formValidatorRegex.js"
+    )*@
+
+<link href="../Content/global.css" rel="stylesheet" type="text/css">
+<link href="../Content/cooperate.css" rel="stylesheet" type="text/css" />
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<link href="~/Content/information.css" rel="stylesheet" />
+<style type="text/css">
+    .message {
+        color: #e81a1a;
+        font-family: 'Microsoft YaHei';
+    }
+
+    div.WdateDiv {
+        width: 262px;
+    }
+
+    iframe.DRAGDIS_iframe {
+        width: 262px;
+    }
+
+    select {
+        width: 31.5%;
+        height: 37px;
+        float: left;
+        border: 1px solid #ccd1d9;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        margin-bottom: 10px;
+        font-size: 0.75em;
+    }
+
+        select[name=FavoriteCake] {
+            width: 71%;
+            margin-left: 1px;
+        }
+
+        select[name=ddlProvince] {
+            width: 27.5%;
+        }
+
+        select[name=ddlCity] {
+            margin-left: 10px;
+        }
+
+        select[name=ddlArea] {
+            margin-left: 10px;
+        }
+
+    .tt {
+        word-break: keep-all; /* for ie */
+        white-space: nowrap; /* for chrome */
+    }
+</style>
+
+<!--页面内容  -->
+<div class="title">
+    企业合作<img src="../Content/Images/form/slash.png" height="15" />
+</div>
+<div class="line_gray"></div>
+<div class="container">
+    <table class="wallbox content">
+        <tr>
+            @*内容信息*@
+            <td style="text-align:left;">
+                <div class="datapanel">
+
+                    <form role="form" id="cooperationForm" style="text-align: center; margin-top:20px; width:100%;">
+                        <div class="form-group">
+                            <label class="item_text">公司全称</label>
+                            <input type="text" class="form-control" style="width:75%;" id="CompanyName" name="CompanyName" value="@Model.CompanyName">
+                            <div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">公司地址</label>
+                            <textarea class="form-control" style="width: 75%; color: #411502; height:50px;" id="CompanyAddress" name="CompanyAddress">@Model.CompanyAddress</textarea>
+                            <div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">公司人数</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="CompanyPopulation" name="CompanyPopulation" value="@Model.CompanyPopulation">
+                            <div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">您的名字</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="Name" name="Name" value="@Model.Name">
+                            <div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">您的电话</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="Phone" name="Phone" value="@Model.Phone" maxlength="11" onkeypress="if (event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;">
+                            <div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">您的电邮</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="Email" name="Email" value="@Model.Email">
+                            <div>
+
+                            </div>
+                        </div>
+
+
+                        <a href="#" id="submitBtn" style="font-size:1.25em;line-height:40px;"><div class="btn-confirm" style="margin-top:30px;">提交申请</div></a>
+
+                    </form>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    @if (cooperHistory.Count > 0)
+    {
+        <a href="#" id="showHistory" style="font-size: 1.25em; line-height: 40px; margin-top: 30px;"><div class="btn-confirm" style="margin-top:30px;">查看历史申请</div></a>
+
+        <div id="history" style="margin-top:30px;display:none;">
+            @foreach (var item in cooperHistory)
+            {
+                <div class="panel-body" style="border: 1px solid #bd9663; margin-top: 20px;">
+                    <table>
+                        <tr>
+                            <td class="item_text tt">公司名称</td>
+                            <td class="item-text">@item.CompanyName</td>
+                        </tr>
+                        <tr>
+                            <td class="item_text tt">公司地址</td>
+                            <td class="item-text">@item.CompanyAddress ddddsarfewrt efhdsihfdisug fgdsuif ds</td>
+                        </tr>
+                        <tr>
+                            <td class="item_text tt">公司人数</td>
+                            <td class="item-text">@item.CompanyPopulation</td>
+                        </tr>
+                        <tr>
+                            <td class="item_text tt">您的名字</td>
+                            <td class="item-text">@item.Name</td>
+                        </tr>
+                        <tr>
+                            <td class="item_text tt">您的电话</td>
+                            <td class="item-text">@item.Phone</td>
+                        </tr>
+                        <tr>
+                            <td class="item_text tt">您的电邮</td>
+                            <td class="item-text">@item.Email</td>
+                        </tr>
+                    </table>
+                </div>
+            }
+        </div>
+    }
+</div>
+<script type="text/javascript">
+    $(function () {
+
+        var inputs = $(".form-group input");
+        $(".form-group div").css("display", "none");
+        $.each(inputs, function (index, item) {
+            $(item).on("focus", function () {
+                $(item).parent().find("div").css("display", "none");
+            })
+        })
+    })
+
+    $("#submitBtn").click(function () {
+        var cname = $("#CompanyName").val();
+        var addr = $("#CompanyAddress").val();
+        var population = $("#CompanyPopulation").val();
+        var name = $("#Name").val();
+        var phone = $("#Phone").val();
+        var email = $("#Email").val();
+        var isPass = true;
+
+        var validaData = { "CompanyName": cname, "CompanyAddress": addr, "CompanyPopulation": population, "Name": name, "Phone": phone, "Email": email };
+        $.each(validaData, function (index, item) {
+            if (item == "") {
+                $("#" + index).next().html("不能为空！").css("display", "block");
+                isPass = false;
+            }
+        });
+        if (!isPass) {
+            return false;
+        }
+
+        if ($("#Email").controlValidate("email") == false) {
+            $("#Email").next().html("请输入正确邮箱！").css("display", "block");
+            return false;
+        }
+        if ($("#Phone").controlValidate("cnmobile") == false && !$("#Phone").controlValidate("cntel")) {
+            $("#Phone").next().html("请输入正确的联系电话！").css("display", "block");
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("SubmitCooperation", "Home")?" + $("#cooperationForm").serialize(),
+            success: function (result) {
+                alert(result.message);
+            },
+            dataType: "json"
+        })
+    })
+    $("#showHistory").click(function () {
+        $("#history").toggle();
+    })
+</script>

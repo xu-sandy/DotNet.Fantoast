@@ -1,0 +1,123 @@
+﻿@model FCake.Domain.WebModels.ProductListModel
+@{
+    ViewBag.Title = "产品列表";
+    Model.ImgFlag = "Recommend";
+}
+<div class="wallbox">
+    @Html.Partial("_condition")
+    <div id="container" class="sell">
+        <ul id="productlist" class="clearfix">
+            @Html.Partial("_productInfo", Model)
+        </ul>
+    </div>
+</div>
+
+
+<div id="bg"></div>
+<div id="tips" class="corner5" style="display:none;margin:0 auto;">
+    <div>
+        <h3 class="tl-c f4">添加成功</h3><a href="Javascript:void()"><img class="closed" src="~/Content/images/x.png" title="关闭" /></a>
+        <div class="btn">
+
+            <a href="javascript:void()" onclick="keepShpping()" class="corner5">继续购物</a>
+            <a href="@Url.Action("Index","Cart")" class="corner5">去购物车结算</a>
+        </div>
+    </div>
+</div>
+
+
+@Html.Partial("_goShopCart", new FCake.Domain.Entities.Product { })
+<script type="text/javascript">
+    $(function () {
+        //页面初始化信息
+        window.PageInfo = {pageSize:@(Model.VProductModels.PageSize),pageIndex:@(Model.VProductModels.PageIndex+1),totalPages:@(Model.VProductModels.TotalPages)};
+        var pInfo = window.PageInfo;
+        var pContainer = $("#productlist");
+
+        var range = 50;
+        //滚动到最底部时，判断是否加载数据
+        $(window).scroll(function () {
+            var srollPos = $(window).scrollTop(); //滚动条距顶部距离
+            totalheight = parseFloat($(window).height()) + parseFloat(srollPos);
+
+            if ($(document).height() - range <= totalheight) {
+                var type = pharos.g.getUrlParam('type');
+                var themes = pharos.g.getUrlParam('themes');
+                var curPageIndex = pInfo.pageIndex;
+                if(pInfo.pageIndex<=pInfo.totalPages){
+                    $.ajax({
+                        url: '@Url.Action("GetProductsPartialView")',
+                        async: false,
+                        type: "POST",
+                        dataType: 'html',
+                        data: { type: type, themes: themes, pageSize: pInfo.pageSize, pageIndex: pInfo.pageIndex },
+                        success: function (data) {
+                            pContainer.append(data);
+                            sellhover();
+                            pInfo.pageIndex = pInfo.pageIndex+1;
+                        }
+                        //,
+                        //error: function (msg) {
+                        //    alert(msg.responseText)
+                        //}
+                    })
+                }
+            }
+        });
+    });
+    //鼠标经过出现透明层
+    $(function () {
+        sellhover();
+    })
+    function sellhover() {
+        $(".sell li").hover(function () {
+            $(this).find(".sell_text").stop().delay(50).animate({ "top": 0, opacity: 0.8 }, 300);
+        },
+       function () {
+           $(this).find(".sell_text").stop().animate({ "top": -320, opacity: 0 }, 300);
+       })
+    }
+    $(function () {
+        $(".addcart").each(function (i, item) {
+            $(item).click(function () {
+                //get data
+                var url = "@Url.Action("GetShopCartHtml")";
+                var data = { productId: $(item).attr("id") };
+                $.post(url, data, function (result) {
+                    $('.dialogbox').remove();
+                    $(document.body).append($(result));
+
+                    //show dialog
+                    $("#bg").css({
+                        display: "block", height: $(document).height()
+                    });
+                    var $box = $('.dialogbox');
+                    $box.css({
+                        //设置弹出层距离左边的位置
+                        left: ($("body").width() - $box.width()) / 2 - 20 + "px",
+                        //设置弹出层距离上面的位置
+                        top: ($(window).height() - $box.height()) / 2 + "px",
+                        // top: ($(window).height() - $box.height()) / 2 + $(window).scrollTop() + "px",
+
+                        display: "block"
+                    });
+
+                    //bind close event
+                    //点击关闭按钮的时候，遮罩层关闭
+                    $(".close").click(function () {
+                        closeDialogbox();
+                    });
+                });
+            });
+        });
+    });
+    function keepShpping() {
+        window.location = "/Product/Index";
+        $("#tips").css("display", "none");
+        closeDialogbox();
+    }
+    function closeDialogbox() {
+        $("#bg,.dialogbox").css("display", "none");
+        location.reload();
+    }
+</script>

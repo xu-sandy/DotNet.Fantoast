@@ -1,0 +1,294 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "优惠券管理";
+    string dicName = ViewBag.dicName;
+}
+<style>
+    .datagrid-header-row, .datagrid-row {
+        height: 40px;
+    }
+</style>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['auditstatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.Status>(true))
+    {
+        @:window.drpdata['auditstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                                        }
+</script>
+
+<div id="toolbar" style="padding:5px">
+    <a href="javascript:void(0)" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add" onclick="addCoupons()">添加优惠券批次</a>
+</div>
+<table id="dg"></table>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="dlg_msg" style="margin-top:-10px;margin-bottom:5px;">导出手机号码成功，请下载并提交至叮咚云手动发送</div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $('#dlg').dialog('close');
+        $("#dg").datagrid({
+            url: '@Url.Action("GetCoupons", "Coupons")' + "?UseState=-1",
+            toolbar: "#toolbar",
+            rownumbers: true,
+            singleSelect: true,
+            fitColumns: true,
+            pagination: true,
+            pageSize: 30,
+            autoRowHeight: true,
+            fit: true,
+            onLoadSuccess: function () {
+                $.parser.parse($('td .easyui-linkbutton').parent());
+            },
+            columns: [[
+                { field: 'Title', title: '优惠券名称', width: 80, align: 'center' },
+                { field: 'CouponBatch', title: '批次号', width: 70, align: 'center' },
+                { field: 'Denomination', title: '面额', width: 35, align: 'center' },
+                {
+                    field: 'ConditionMoney', title: '赠送条件', width: 65, align: 'center', formatter: function (value, row, index) {
+                        if (value == 0) {
+                            return "无条件使用";
+                        } else {
+                            return "满" + value + "元使用"
+                        }
+                    }
+                },
+                { field: 'BeginValidDate', title: '有效期开始', width: 100, align: 'center' },
+                { field: 'EndValidDate', title: '有效期结束', width: 100, align: 'center' },
+                {
+                    field: 'GivenObjectType', title: '赠送对象', width: 65, align: 'center', formatter: function (value, row, index) {
+                        if (row.GiveWay == 2) {
+                            return "";
+                        }
+                        if (value == 1) {
+                            return "全部";
+                        }
+                        else if (value == 2) {
+                            return "指定会员类型";
+                        }
+                        else if (value == 3) {
+                            return "指定用户";
+                        }
+                    }
+                },
+                {
+                    field: 'GiveWay', title: '赠送方式', width: 65, align: 'center', formatter: function (value, row, index) {
+                        if (value == 1) {
+                            return "绑定用户";
+                        } else if (value == 2) {
+                            return "卡券发放";
+                        }
+                    }
+                },
+                {
+                    field: 'Quantity', title: '优惠券总数', width: 45, align: 'center', formatter: function (value, row, index) {
+                        if (row.Status == 1) {
+                            return value;
+                        } else {
+                            return "未发放";
+                        }
+                    }
+                },
+                {
+                    field: 'a', title: '总面额', width: 40, align: 'center', formatter: function (value, row, index) {
+                        if (row.Status == 1) {
+                            return row.Quantity * row.Denomination;
+                        } else {
+                            return "未发放";
+                        }
+                    }
+                },
+                {
+                    field: 'DistributingType', title: '类型', width: 65, align: 'center', formatter: function (value, row, index) {
+                        if (value == 1) {
+                            return "注册营销";
+                        } else {
+                            return "其他";
+                        }
+                    }
+                },
+                {
+                    field: 'Status', title: '操作', width: 145, align: 'center', formatter: function (value, row, index) {
+                        if (value == 0) {
+                            return "<a href='javascript:void()' class=\"easyui-linkbutton cus2\" onclick='createCouponsDetail(\"" + row.Id + "\")'>发放</a>&nbsp"
+                                + "<a href='javascript:void()' class=\"easyui-linkbutton cus2\" onclick='editCouponsInfo(\"" + row.Id + "\")'>编辑</a>&nbsp"
+                                + "<a href='javascript:void()' class=\"easyui-linkbutton cus3\" onclick='dropCoupons(\"" + row.Id + "\")'>删除</a>"
+                        } else {
+                            var html = "<a href='javascript:void()' class=\"easyui-linkbutton cus2\" onclick='seeCouponsInfo(\"" + row.Id + "\")'>查看</a>";
+                            if (row.IsSendSMS == 1 && row.SendSMSStatus == 0) {
+                                html += "&nbsp;<a href='javascript:void()' class=\"easyui-linkbutton cus2\" onclick='alreadySendSMS(\"" + row.Id + "\")'>已发短信</a>";
+                                html += "&nbsp;<a href='javascript:void()' class=\"easyui-linkbutton cus2\" onclick='exportMobileList(\"" + row.Id + "\")'>导出手机号</a>";
+                            }
+                            return html;
+                        }
+                    }
+                }
+            ]]
+        })
+    });
+
+    function addCoupons() {
+        openDialog("新增优惠券", '@Url.Action("Save", "Coupons")');
+    }
+    //编辑
+    function editCouponsInfo(id) {
+        if (id != null) {
+            openDialog("编辑优惠券信息", '@Url.Action("Save", "Coupons")' + "?id=" + id);
+        }
+    }
+    //查看
+    function seeCouponsInfo(id) {
+        if (id != null) {
+            openDialog("优惠券信息", '@Url.Action("Save", "Coupons")' + "?id=" + id);
+        }
+    }
+
+    //发放优惠券
+    function createCouponsDetail(couponid) {
+
+        @*if (couponid != null) {
+
+            if (confirm("确认发放优惠券?")) {
+                $.ajax({
+                    url: '@Url.Action("GenerateCouponsDetails", "Coupons")',
+                    type: 'POST',
+                    data: { couponId: couponid },
+                    dataType: "JSON",
+                    success: function (data) {
+                        if (data.successed) {
+                            //alert("发放成功!");
+                            $.messager.alert("操作提示", "发放成功！", "info", function () {
+                                $("#dg").datagrid("reload");
+                            });
+
+                        } else {
+                            //alert("发放失败：" + data.message);
+                            $.messager.alert("操作提示", "发放失败:" + data.message, "error");
+                        }
+                    }
+                })
+            }
+        }*@
+        if (couponid != null) {
+            $.ajax({
+                url: '@Url.Action("GetCreatCouponsInfo", "Coupons")',
+                type: "POST",
+                data: { Id: couponid },
+                dataType: "JSON",
+                success: function (data) {
+                    var url = '@Url.Action("GenerateCoupons", "Coupons")';
+                    url += '?name=' + data.name + '&denomination=' + data.denomination + '&beginValidDate=' + data.beginValidDate + '&endValidDate=' + data.endValidDate;
+                    url += '&useCondition=' + data.useCondition + '&cardNumber=' + data.cardNumber + '&givenObjectStr=' + data.givenObjectStr;
+                    url += '&isSendSMS=' + data.isSendSMS + '&smsContent=' + data.smsContent + '&ConditionMoney=' + data.ConditionMoney + '&couponBatch=' + data.couponBatch;
+                    url += '&giveWay=' + data.giveWay + "&givenObjectType=" + data.givenObjectType + "&givenObjectIds=" + data.givenObjectIds + "&Id=" + data.Id;
+                    openGenerateCouponsDialog('发放优惠券', url);
+                }
+            })
+        }
+
+    }
+
+    function openGenerateCouponsDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 360,
+            height: 280,
+            id: "generateCoupons",
+            url: url,
+
+        });
+    }
+
+    //删除优惠券信息
+    function dropCoupons(couponid) {
+        if (confirm("确认删除优惠券?")) {
+            $.ajax({
+                url: '@Url.Action("dropCoupons", "Coupons")',
+                type: 'POST',
+                data: { couponId: couponid },
+                dataType: "JSON",
+                success: function (data) {
+                    if (data.successed) {
+                        $.messager.alert("操作提示", "操作成功！", "info", function () {
+                            $("#dg").datagrid("reload");
+                        });
+                    } else {
+                        //alert("删除失败：" + data.message);
+                        $.messager.alert("操作提示", "操作失败:" + data.message, "error");
+                    }
+                }
+            })
+        }
+    }
+
+
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: $(window.parent).width() >= 900 ? 900 : $(window.parent).width() - 80,
+            height: $(window.parent).height() >= 650 ? 650 : $(window.parent).height() - 80,
+            id: "formDiv",
+            url: url,
+
+        });
+    }
+
+
+    function alreadySendSMS(couponId) {
+        $.ajax({
+            url: '@Url.Action("SetCouponSMSAlreadySend", "Coupons")',
+            type: 'POST',
+            async: false,
+            data: { couponId: couponId },
+            success: function (result) {
+                if (result.successed) {
+                    $.messager.alert("操作提示", "操作成功！", "info", function () {
+                        $("#dg").datagrid("reload");
+                    });
+                } else {
+                    $.messager.alert("操作提示", result.message, "info");
+                }
+            }
+        })
+    }
+
+    function exportMobileList(couponId) {
+        $.messager.show({
+            title: "操作提示",
+            msg: "正在导出请勿刷新页面",
+            showType: 'slide',
+            timeout: 2000
+        });
+        $.ajax({
+            url: '@Url.Action("ExportMobileList", "Coupons")',
+            type: 'POST',
+            async:false,
+            data: { couponId: couponId },
+            success: function (result) {
+                if (result.successed) {
+                    DownLoadMobile_Dialog(result.data.replace(/\"/g, ""));
+                } else {
+                    $.messager.alert("操作提示", result.message, "info");
+                }
+            }
+        })
+
+    }
+
+
+    function DownLoadMobile_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

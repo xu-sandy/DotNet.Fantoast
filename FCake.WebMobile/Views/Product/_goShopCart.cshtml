@@ -1,0 +1,171 @@
+﻿@model FCake.Domain.Entities.Product
+<div class="dialogbox" style="display:none;margin:0 auto;">
+    <div style="height:50px; border-bottom:1px solid #f0eed5">
+        <span style="color:#533302; line-height:60px; margin-left:10px;">选择您要订购的磅数：</span>
+        <div style="margin-top:10px;margin-right:10px; float:right;">
+            <a href="Javascript:void()"><img class="close" src="~/Content/images/x.png" /></a>
+        </div>
+    </div>
+    @if (Model.InadvanceHours != null)
+    {
+        <p style="text-align:center; color:#acacac; font-size:12px;margin:20px 0">需提前<span style="color: #734912"> @Model.InadvanceHours </span>小时预定</p>
+    }
+    <div class="line"></div>
+    <div style="margin-left: 45px">
+        <div class="product_inf4">
+            <ul>
+                <li style="font-size:11px; width:40px;">磅数</li>
+                @if (Model.SubProducts != null && Model.SubProducts.Count != 0)
+                {
+                    foreach (var item in Model.SubProducts.OrderBy(sp=>sp.Size))
+                    {
+                        <li class="itemsize size" data-target="@item.Id" name="@item.Size"><a href="javascript:void(0)"> @item.Size 磅</a></li>
+                    }
+                }
+            </ul>
+        </div>
+
+        <div class="quantity">
+            <div style="float: left; line-height: 19px; margin-right: 28px">数量</div>
+            <div class="clearfix num">
+                <a href="javascript:;" class="btn-decrease">-</a>
+                <input type="text" value="1" name="num" data-target="@Model.Id" />
+                <a href="javascript:;" class="btn-increase">+</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="icon">
+        <a href="javascript:addShopCart()">
+            <div class="icon1">
+                <div class="icon1_img"></div>
+                <div class="icon1_text">加入购物车</div>
+            </div>
+        </a>
+        <div class="icon2">
+            <a href="#" onclick="goBuy()">
+                <div class="icon2_img"></div>
+                <div class="icon2_text">立即购买</div>
+            </a>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //加载的时候默认选中第一个
+        $(".itemsize").each(function (i, item) {
+            $(item).eq(i).removeClass("size").addClass("size1");
+        });
+        $(".product_inf2 p").each(function (i, item) {
+            if (i != 0) {
+                $(item).attr("hidden", "true");
+            }
+        })
+
+        //尺寸项的点击事件
+        $(".itemsize").each(function (i, item) {
+            $(item).click(function () {
+                $(".itemsize").each(function (i, li) {
+                    if ($(li).hasClass("size1")) {
+                        $(li).removeClass("size1").addClass("size");
+                    }
+                });
+
+                $(item).removeClass("size").addClass("size1");
+                var name = $(item).attr("name");
+                $(".product_inf2 p").each(function (i, item) {
+                    var id = $(item).attr("id");
+                    if (id == name) {
+                        $("#" + id).attr("hidden", false);
+                    } else {
+                        $(item).attr("hidden", true);
+                    }
+                });
+            })
+        })
+
+        //数量加减
+        $("input[name=num]").keyup(function () {
+            var value = $(this).val();
+            try {
+                value = value.replace(/\D/g, '');
+                $(this).val(Number(value));
+            }
+            catch (e) {
+                $(this).val(1);
+            }
+        });
+        //数量加减
+        $(".btn-decrease").click(function () {
+            var value = $(this).parent().find("input[name=num]").val();
+            try {
+                value = value.replace(/\D/g, '');
+                value = Number(value);
+            }
+            catch (e) {
+                value = 0;
+            }
+            if (value == 0)
+                return;
+            $(this).parent().find("input[name=num]").val(Number(value) - 1).change();
+        });
+        $(".btn-increase").click(function () {
+            var value = $(this).parent().find("input[name=num]").val();
+            try {
+                value = value.replace(/\D/g, '');
+                value = Number(value);
+            }
+            catch (e) {
+                value = 0;
+            }
+            $(this).parent().find("input[name=num]").val(Number(value) + 1).change();
+        });
+        $("input[name=num]").change(function () {
+            $(this).parent().parent().next(".allprice").text(parseFloat($(this).val() * $(this).attr("data-price")).toFixed(2));
+            $("input[name=itemIDs]").eq(0).change();
+            savecartnum(this, $(this).val(), $(this).attr("data-target"));
+        });
+        $(".closed").click(function () {
+            $("#tips").css("display", "none");
+            $("#bg,.dialogbox").css("display", "none");
+        })
+    });
+
+    function addShopCart() {
+        //获取子产品id
+        var id = "";
+        $(".itemsize").each(function (i, item) {
+            if ($(item).hasClass("size1")) {
+                id = $(item).attr("data-target");
+            }
+        })
+        var num = $("input[name=num]").val();
+        addCart(id, num, false, "dosuccess()");
+    }
+
+    function dosuccess() {
+        $("#tips").css({
+            //设置弹出层距离左边的位置
+            left: ($("body").width() - $("#tips").width()) / 2 - 20 + "px",
+            //设置弹出层距离上面的位置
+            top: ($(window).height() - $("#tips").height()) / 2 + "px",
+            display: "block"
+        });
+    }
+
+    function goBuy() {
+        //获取子产品id
+        var id = "";
+        $(".itemsize").each(function (i, item) {
+            if ($(item).hasClass("size1")) {
+                id = $(item).attr("data-target");
+            }
+        })
+        //获取数量
+        var num = $("input[name=num]").val();
+        if (id != "") {
+            //执行添加 子产品ID，数量
+            BuyNow(id, num);
+        }
+    }
+</script>

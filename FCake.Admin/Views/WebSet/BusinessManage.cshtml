@@ -1,0 +1,60 @@
+﻿@model FCake.Admin.Models.BusinessManageModel
+@{
+    ViewBag.Title = "BusinessManage";
+}
+<style type="text/css">
+    .group-item{}
+    .group-item .txt { width:100px; display:inline-block; text-align:right; margin-right:10px;}
+    .message { padding-top: 10px; padding-bottom: 10px; }
+    .message label { color: red; }
+</style>
+<div style="width:800px;position:relative;padding:50px 0;margin:auto;">
+    <div class="group-item">
+        <label class="txt">最早可选配送时间</label><input type="text" id="TempEarlyDistributionTime" name="TempEarlyDistributionTime" class="Wdate datacontrol" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:00:00', minDate: '%y-%M-{%d}' })" value="@Model.TempEarlyDistributionTime" readonly="readonly" />
+        <a href="#" class="easyui-linkbutton cus4 linkbtn publish" data-for="TempEarlyDistributionTime" data-desc="最早可选配送时间">发布</a>
+        <div class="message">
+            <label>*备注：当遇到订单高峰期，生产与配送无法负荷会员订单时，需要临时控制最早可选配送时间，则设置此时间<br />(点击发布之前请慎重选择对应的时间)</label>
+        </div>
+    </div>
+    <div class="group-item">
+        <label class="txt">生产时长</label><input type="text" id="ProductionHours" name="ProductionHours" class="easyui-numberbox datacontrol" data-options="required:true" style="width:180px;" value="@Model.ProductionHours" />
+        <a href="#" class="easyui-linkbutton cus4 linkbtn publish" data-for="ProductionHours" data-desc="生产时长" >发布</a>
+        <label>单位(小时)</label>
+        <div class="message">
+            <label>*备注：当遇到订单高峰期生产与配送无法负荷会员订单时或者生产能力提升时，需要更改生产时长<br />(点击发布之前请慎重填入对应的整数)</label>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            //最早可选配送时间
+            $(".publish").click(function () {
+                var self = this;
+                var type = $(self).attr("data-for");
+                var desc = $(self).attr("data-desc");
+                var val = $("#" + type).val();
+                if (String.isNE(val)) {
+                    alert("必输数据，请务必正确填写");
+                    return;
+                }
+
+                    var info = "确定发布" + desc;
+                    $.messager.confirm('提示信息', info, function (r) {
+                        if (r) {
+                            var win = $.messager.progress({
+                                title: '请稍后',
+                                text: "正在发布请稍后..."
+                            });
+                            $.post("@Url.Action("PublishBusinessManage", "WebSet")", { type: type, val: val }, function (data) {
+                                alert(data.message);
+                                $.messager.progress("close");
+                            });
+                        }
+                    });
+            });
+        });
+
+    </script>
+    }

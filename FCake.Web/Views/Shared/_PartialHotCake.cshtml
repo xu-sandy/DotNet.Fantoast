@@ -1,0 +1,24 @@
+﻿@using FCake.Bll;
+@{
+    var hotProducts = new FCake.Bll.ProductService().GetHotProducts(4, 1);
+}
+<!--近期热卖-->
+<div class="hotcake wallbox clearfix">
+    <div class="f5 title">近期热卖<img src="@Url.Content("~/Content/Images/form/slash.png")"></div>
+    <ul class="clearfix">
+        @if (hotProducts != null)
+        {
+            foreach (var x in hotProducts)
+            {
+                <li>
+                    <a href="@Url.Action("Detail","Product", new { id = @x.ProductId })" class="product">
+                        <img src="@(Html.GetSysManageUrl() + x.ImgUrl)_middle.jpg" height="200" width="200" />
+                        <p class="name f1" style="text-align:center;">@x.Name</p>
+                        <div style="text-align:center;width:200px;"> @x.EnglishName</div>
+                        <p class="price highlight" style="text-align:center;">@string.Format("{0:C}", x.Price) / @(x.Size)磅</p>
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</div>

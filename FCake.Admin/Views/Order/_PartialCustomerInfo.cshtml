@@ -1,0 +1,172 @@
+﻿@using FCake.Bll;
+@{
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;
+}
+<div id="customermsg" class="customermsg">
+</div>
+<table class="hide">
+    <tr>
+        <td style="width:50px;color:gray;">用户名：</td>
+        <td style="width:100px;" class="name"></td>
+        <td style="width: 70px; color: gray;">邮箱：</td>
+        <td style="width:100px;" class="email"></td>
+        <td style="width: 70px; color: gray;">性别：</td>
+        <td style="width:100px;" class="sex"></td>
+    </tr>
+    <tr>
+        <td style="color: gray;">手机：</td>
+        <td class="mobile"></td>
+        <td style="color: gray;">固定电话：</td>
+        <td class="tel"></td>
+        <td style="color: gray;">会员类型：</td>
+        <td class="customertype"></td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    $(function () {
+        checkcustomer();
+        if (customerid != "") {
+            $.ajax({
+                url: '/order/getcustomerbyid?id=' + customerid,
+                type: 'post',
+                dataType: 'json',
+                success: function (data, status) {
+                    loadCustomer(data);
+                }
+            });
+        }
+    })
+
+
+    function loadCustomer(rowData) {
+        customerid = rowData.Id;
+        getCustomerIntegral(customerid);
+        var $customerid = window.top.$('body').data("customerid");
+        var customerid = $customerid('#customerid').val(customerid);
+        //取的已选商品数据
+        var s_rows = $("#selectedproducts").datagrid("getRows");
+
+        //取优惠券信息
+        
+        var allPrice = 0;
+        var arrSubProId = [];
+        var arrProId = [];
+        var arrSubProPrice = [];
+        $.each(s_rows, function (index, item) {
+            //otherProductTypeDicValue=餐具，不算餐具的价格
+            if (item.Type != '@otherProductTypeDicValue') {
+                allPrice += item.Price;
+                arrSubProId.push(item.Id);
+                arrProId.push(item.ParentId);
+                arrSubProPrice.push(item.OrginPrice);
+            }
+        })
+        //判断产品数量
+        var paraSubProId = "";
+        var paraProId = "";
+        var paraSubProPrice = "";
+        if (arrSubProId.length > 1) {
+            paraSubProId = arrSubProId.join(',');
+            paraProId = arrProId.join(',');
+            paraSubProPrice = arrSubProPrice.join(',');
+        } else {
+            paraSubProId = arrSubProId.toString();
+            paraProId = arrProId.toString();
+            paraSubProPrice = arrSubProPrice.toString();
+        }
+
+        //重新计算价格
+        $.ajax({
+            url: '@Url.Action("UpdateProductPrice", "Product")',
+            type: "POST",
+            dataType: 'JSON',
+            data: { customerId: $(customerid).val(), subProductId: paraSubProId, ParentId: paraProId, orginPrice: paraSubProPrice },
+            success: function (data) {
+                var rowsData = $("#selectedproducts").datagrid("getRows");
+                $.each(rowsData, function (index, item) {
+                    $.each(data, function (idx, itm) {
+                        if (idx == item.Id) {
+                            $("#selectedproducts").datagrid("updateRow", {
+                                index: index, row: {
+                                    Price: itm,
+                                }
+                            });
+                        }
+                    })
+                })
+                $("#selectedproducts").datagrid('reload');
+                sumProduct();
+            }
+        })
+        chooseCoupons(allPrice, $(customerid).val());
+
+
+        checkcustomer();
+        $("table.hide .name").text(rowData.FullName);
+        $("table.hide .email").text(rowData.Email);
+        $("table.hide .sex").text(rowData.Sex);
+        $("table.hide .tel").text(rowData.Tel);
+        $("table.hide .mobile").text(rowData.Mobile);
+        $("table.hide .customertype").text(rowData.CustomerType);
+
+        $("#customermsg").html($("table.hide"));
+        $("#customermsg table").show();
+        //$("#customerid").val(rowData.Id);
+        getReceive('');
+    }
+
+    //切换用户的时候取用户积分
+    function getCustomerIntegral(userId) {
+        if (userId != null) {
+            $.ajax({
+                url: '@Url.Action("GetMemberByMemberId", "Customer")',
+                type: "POST",
+                dataType: "JSON",
+                data: { memberId: userId },
+                success: function (data) {
+                    $("#integral").text(data.Integral);
+                }
+            })
+        }
+    }
+
+
+    function checkcustomer() {
+
+        if (customerid == "") {
+            //$("#customermsg").addClass("hover").html("单击选择用户").attr("title", '单击选择用户')
+            //    .bind("click", function () {
+            //        openWinOfCustomer();
+            //    });
+            $("#customermsg").removeClass("hover")
+                .removeClass("customermsg")
+                .removeAttr("title").unbind("click");
+        }
+        else {
+            $("#customermsg").removeClass("hover")
+                .removeClass("customermsg")
+                .removeAttr("title").unbind("click");
+        }
+    }
+
+    function openWinOfCustomer() {
+        pharos.g.openDialog({
+            title: '选择用户 (双击返回用户信息)',
+            width: 700,
+            height: 400,
+            id: 'customermsg',
+            url: '/order/SearchCustomer'
+        });
+    }
+
+    function openWinOfCreateCustomer() {
+        pharos.g.openDialog({
+            title: '添加用户',
+            width: 500,
+            height: 250,
+            id: 'customermsg',
+            url: '/order/CreateCustomer'
+        });
+    }
+</script>

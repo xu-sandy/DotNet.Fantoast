@@ -1,0 +1,229 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Domain.Common;
+@using FCake.Core.Common;
+@using FCake.Admin.Models;
+@model User
+@{
+    ViewBag.Title = "UserEdit";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['sex'] = [];
+    window.drpdata['booltype'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.Sex>(false))
+    {
+        @:window.drpdata['sex'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.BoolType>(false))
+    {
+        @:window.drpdata['booltype'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+</script>
+<form id="form" class="form" method="post" style="overflow:auto;">
+    <table class="form-tb">
+        <tr>
+            <td class="lable">
+                <label for="UserName" class="datalable">用户名</label>
+            </td>
+            <td class="control">
+                <input id="UserName" name="UserName" class="datacontrol" value="@Model.UserName" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="FullName" class="datalable">真实姓名</label>
+            </td>
+            <td class="control">
+                <input id="FullName" name="FullName" class="datacontrol" value="@Model.FullName" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Password1" class="datalable">密码</label>
+            </td>
+            <td class="control">
+                <input type="password" id="Password1" name="Password1" class="datacontrol" value="@(Model.Password == null ? "" : Model.Password.Substring(0, 10))" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Password2" class="datalable">确定密码</label>
+            </td>
+            <td class="control">
+                <input type="password" id="Password2" name="Password2" class="datacontrol" value="@(Model.Password == null ? "" : Model.Password.Substring(0, 10))" />
+                <input type="hidden" id="Password" name="Password" class="datacontrol" value="@Model.Password" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Mobile" class="datalable">手机号码</label>
+            </td>
+            <td class="control">
+                <input id="Mobile" name="Mobile" class="datacontrol" value="@Model.Mobile" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Tel" class="datalable">座机</label>
+            </td>
+            <td class="control">
+                <input id="Tel" name="Tel" class="datacontrol" value="@Model.Tel" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Email" class="datalable">邮箱</label>
+            </td>
+            <td class="control">
+                <input id="Email" name="Email" class="datacontrol" value="@Model.Email" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Sex" class="datalable">性别</label>
+            </td>
+            <td class="control">
+                <input id="Sex" name="Sex" class="easyui-combobox datacontrol"
+                       data-options="valueField:'value',textField:'text',value:'@Model.Sex',height:24,data:window.drpdata['sex'],panelHeight:'auto', editable: false" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="IsDisabled" class="datalable">是否禁用</label>
+            </td>
+            <td class="control">
+                <input id="IsDisabled" name="IsDisabled" class="easyui-combobox datacontrol"
+                       data-options="valueField:'value',textField:'text',value:'@Model.IsDisabled',height:24,data:window.drpdata['booltype'],panelHeight:'auto', editable: false" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <div class="dc-toolbar">
+                    <a id="add" href="#" class="easyui-linkbutton cus4 linkbtn" data-options="" style="padding-left:40px;padding-right:40px;">保存</a>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+        <tr style="display:none;">
+            <td></td>
+            <td>
+                <input id="Id" name="Id" type="hidden" value="@Model.Id" />
+            </td>
+            <td></td>
+        </tr>
+    </table>
+</form>
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            //$("#UserName").val("aa");
+            //$("#FullName").val("aa");
+            //$("#Password").val("123456");
+            //$("#Password2").val("123456");
+            //$("#Mobile").val("13400693554");
+            //$("#Tel").val("0592-3789876");
+            //$("#Email").val("bonnie.yu@xmpharos.com");
+            //$("#Sex").combobox("setValue", "1");
+            //$("#IsDisabled").combobox("setValue", "0");
+            //$("#").val("");
+
+
+            //数据输入验证
+            var dataId = $("#Id").val();
+            if (String.isNE(dataId)) {
+                setTimeout(function () {
+                    $("#Sex").combobox("setValue", "1");
+                    $("#IsDisabled").combobox("setValue", "0");
+                }, 10);
+                //新建验证
+                $("#form").validate({
+                    rules: {
+                        UserName: {
+                            required: true,
+                            rule_username: true,
+                            remote: {
+                                url: "@Url.Action("CheckName")",
+                                type: "post"
+                            }
+                        },
+                        Password1: {
+                            required: true,
+                            rule_password: true,
+                        },
+                        Password2: {
+                            required: true,
+                            rule_password: true,
+                            equalTo: "#Password1"
+                        },
+                        Mobile: {
+                            required: true,
+                            rule_cn_mobile: true
+                        },
+                        Tel: {
+                            rule_cn_phone: true
+                        },
+                        Email: {
+                            required: true,
+                            email: true
+                        },
+                        Sex: { required: true },
+                        IsDisabled: { required: true }
+                    }
+                });
+            } else {
+                setTimeout(function () {
+                    $("#UserName").attr("readonly", "readonly");
+                    $("#Password").attr("readonly", "readonly");
+                    $("#Password2").attr("readonly", "readonly");
+                }, 10);
+                //修改验证
+                $("#form").validate({
+                    rules: {
+                        Mobile: {
+                            required: true,
+                            rule_cn_mobile: true
+                        },
+                        Tel: {
+                            rule_cn_phone: true
+                        },
+                        Email: {
+                            required: true,
+                            email: true
+                        },
+                        Sex: { required: true },
+                        IsDisabled: { required: true }
+                    }
+                });
+            }
+            //提交数据
+            $("#form").submit(function (e) {
+                e.preventDefault();
+                if (!$(this).valid()) {
+                    alert("填写有误，请修改后重试");
+                    return false;
+                }
+                var url = "@Url.Action("SaveUser")" + "?a=" + Math.random();
+                $.post(url, $("#form").serialize(), function (result) {
+                    alert(result.message);
+                    window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                    window.top.$("body").data("win_add").window("close");
+                }, "json");
+            });
+            //保存事件
+            $("#add").click(function () {
+                $("#form").submit();
+            });
+        });
+    </script>
+}

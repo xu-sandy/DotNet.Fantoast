@@ -1,0 +1,97 @@
+﻿@model FCake.Admin.Models.LoginVM
+@{
+    ViewBag.Title = "FANCAKE管理系统";
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+}
+<link href="~/Content/themes/default/login.css" rel="stylesheet" />
+<!--[if lte IE 6]>
+<link href="~/Content/themes/default/login_ie6.css" rel="stylesheet" />
+<![endif]-->
+
+<div id="login-header"></div>
+<div id="login">
+    @using (Html.BeginForm())
+    {
+        <input type="hidden" id="hidden1" name="hidden1" value="false"/>
+        <input type="text" name="UserName" id="UserName" placeholder="帐号" onkeyup="if (window.event.keyCode == 13) $('#Password').focus()" />
+        <input type="password" name="Password" id="Password" placeholder="密码" onkeyup="if (window.event.keyCode == 13) $('form').submit()" />
+        <div id="remember">
+            <input type="checkbox" id="IsRememberMe" name="IsRememberMe" value="true" /> 记住密码
+        </div>
+        <a id="submit" onclick="$('form').submit()"></a>
+    }
+</div>
+<div id="logo"></div>
+<p style="text-align:center;font-size:12px;">建议在Chrome、火狐、IE8或以上版本使用</p>
+<div id="msg">@Html.ValidationSummary(true) </div>
+
+@section scripts{
+    <script type="text/javascript">
+        if (window != window.top.window) {
+            window.top.location = window.location;
+        }
+
+
+        $(function () {
+            //get cookie
+            var cookie = document.cookie;
+            var cookieList = cookie.split("; ");
+            //for (var i = 0; i < cookieList.length; i++) {
+            //    var array = cookieList[i].split("=");
+            //    if (array[0] == "uname") {
+            //        $("#UserName").val(array[1]);
+            //    }
+            //    else if (array[0] == "upwd") {
+            //        if (array[1].length > 20) {
+            //            $("#IsRememberMe").attr("checked", "checked");
+            //            $("#Password").val(array[1].substr(0, 6));
+            //            $("#hidden1").val(array[1]);
+            //        }
+            //    }
+            //}
+            for (var i = 0; i < cookieList.length; i++) {
+                var array = cookieList[i].split("=");
+                if (array[0] == "FCAKEADMINIDENTITYINFO") {
+                    if (array[1] != null) {
+                        var info = array[1].split(",");
+                        if (info != null && info.length == 2) {
+                            $("#UserName").val(info[0]);
+                            if (info[1].length > 20) {
+                                $("#IsRememberMe").attr("checked", "checked");
+                                $("#Password").val(info[1].substr(0, 10));
+                                $("#hidden1").val("true");
+                            }
+                        }
+                    }
+                }
+            }
+
+            //bind textbox event
+            $("#UserName").change(function () {
+                $("#Password").val("");
+                $("#hidden1").val("false");
+            });
+            $("#Password").change(function () {
+                $("#hidden1").val("false");
+            });
+
+            $("form").submit(function () {
+                $("#UserName").val($.trim($("#UserName").val()));
+                $("#Password").val($.trim($("#Password").val()));
+
+                var reg = new RegExp("^[a-zA-Z]{1}[0-9a-zA-Z_]{1,9}$");
+                if (reg.test($("#UserName").val()) == false) {
+                    $("#msg").html("<p>用户名应以字母开头，只能含有字母数字下划线，长度大于2位小于10位</p>");
+                    return false;
+                }
+
+                if ($("#Password").val() == "") {
+                    $("#msg").html("<p>请输入密码</p>");
+                    return false;
+                }
+
+            });
+        })
+    </script>
+
+}

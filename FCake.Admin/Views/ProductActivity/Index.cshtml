@@ -1,0 +1,146 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "产品活动管理";
+    string dicName = ViewBag.dicName;
+}
+<style>
+    .datagrid-header-row, .datagrid-row {
+        height: 40px;
+    }
+</style>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+</script>
+
+<div id="toobar" style="padding:5px">
+    <a href="javascript:void(0)" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add" onclick="addProductActivity()">添加产品活动</a>
+</div>
+<table id="dg"></table>
+
+<script type="text/javascript">
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobar",
+            url: '@Url.Action("GetProductActivityPaging", "ProductActivity")',
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            pageSize: 30,
+            fitColumns: true,
+            fit: true,
+            scrollbarSize: 0,
+            columns: [[
+                { field: 'Title', title: '活动名称', width: 100, align: 'center' },
+                { field: 'BeginValidDate', title: '开始有效期', width: 80, align: 'center', formatter: formatData },
+                { field: 'EndValidDate', title: '截至有效期', width: 80, align: 'center', formatter: formatData },
+                {
+                    field: 'PublishStatus', title: '发布状态', width: 60, align: 'center', formatter: function (value, row, index) {
+                        if (value == 1) {
+                            return "已发布";
+                        } else {
+                            return "未发布";
+                        }
+                    }
+                },
+                { field: 'operate', title: '操作', width: 100, align: 'center', formatter: operateFormatter }
+            ]]
+        })
+    });
+
+    function operateFormatter(vale, row, index) {
+        if (row.PublishStatus == 0) {
+            var html = "";
+            html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2 linkbtn l-btn l-btn-small\" data-options=\"iconCls:'custom-edit'\" onclick=\"pushActivity('" + row.Id + "')\">发布</a>";
+            html += "&nbsp<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2 linkbtn l-btn l-btn-small\" data-options=\"iconCls:'custom-edit'\" onclick=\"editActivity('" + row.Id + "')\">编辑</a>";
+            html += "&nbsp<a href=\"javascript:void(0)\" class=\"easyui-linkbutton  linkbtn l-btn l-btn-small\" data-options=\"iconCls:'custom-edit'\" onclick=\"deleteActivity('" + row.Id + "')\">删除</a>";
+            return html;
+        } else {
+            return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2 linkbtn l-btn l-btn-small\" data-options=\"iconCls:'custom-edit'\" onclick=\"editActivity('" + row.Id + "')\">查看</a>";
+        }
+    }
+    //发布活动
+    function pushActivity(activityId) {
+        if (activityId == null) {
+            alert("发布数据异常!");
+            return false;
+        }
+        $.messager.confirm("提示", "确认发布该活动？", function (r) {
+            if (r) {
+                $.ajax({
+                    url: '@Url.Action("PushActicvity", "ProductActivity")',
+                    type: 'POST',
+                    data: { activityId: activityId },
+                    dataType: "Json",
+                    success: function (data) {
+                        if (data.successed) {
+                            $.messager.alert("提示", "发布成功!", "info");
+                            $("#dg").datagrid("reload");
+                        } else {
+                            $.messager.alert("提示", data.message, "info");
+                        }
+                    }
+                })
+            }
+        })
+
+    }
+
+    //删除活动信息
+    function deleteActivity(activityId) {
+        if (activityId == null) {
+            alert("删除数据异常!");
+            return false;
+        }
+        if (confirm("确认删除该活动？")) {
+            $.ajax({
+                url: '@Url.Action("DeleteActivity","ProductActivity")',
+                type: 'POST',
+                data: { activityId: activityId },
+                dataType: "Json",
+                success: function (data) {
+                    if (data.successed) {
+                        alert("删除成功!");
+                        $("#dg").datagrid("reload");
+                    } else {
+                        alert(data.message)
+                    }
+                }
+            })
+        }
+    }
+
+    //编辑
+    function editActivity(id) {
+        openDialog("编辑产品活动", '@Url.Action("Edit", "ProductActivity")?id=' + id);
+    }
+
+    function addProductActivity() {
+        openDialog("新增产品活动", '@Url.Action("Edit", "ProductActivity")');
+    }
+
+
+
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: $(window.parent).width() >= 900 ? 900 : $(window.parent).width() - 80,
+            height: $(window.parent).height() >= 650 ? 650 : $(window.parent).height() - 80,
+            id: "add",
+            url: url,
+
+        });
+    }
+
+    //时间日期格式化
+    function formatData(value) {
+        if (!String.isNE(value)) {
+            //value = value.replace('-', '/');
+            value = value.toString().replace(/-/g, "/");
+            var newData = new Date(value);
+            return newData.format('yyyy-MM-dd hh:mm');
+        }
+    }
+
+</script>

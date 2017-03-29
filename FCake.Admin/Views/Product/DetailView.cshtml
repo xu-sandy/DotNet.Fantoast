@@ -1,0 +1,93 @@
+﻿@using FCake.Bll
+@model FCake.Admin.Models.ProductDetail
+@{
+    ViewBag.Title = "DetailView";
+    ProductService productService = new ProductService();
+}
+@Styles.Render("~/Content/themes/default/product.css")
+
+<table class="detail">
+    <tr>
+        <td rowspan=4><a href="#" class="smallimage" rel="@Model.minUrl"><img src="@(Model.minUrl + "_min.jpg")" /></a></td>
+        <td style="width:99%;">
+            <table class="productInfo" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td class="header">
+                        <div>
+                            <span style="width:200px;">名称：@Model.Name</span>
+                            <span style="width:200px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;口味：@Model.Taste</span>
+                        </div>
+                        <div style="width:99%;">
+                            <span>简述：@Model.Brief</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="content">
+                        @{
+                            if (Model.SubProduct != null)
+                            {
+                                foreach (var item in Model.SubProduct)
+                                {
+                                    item.SizeTitle = productService.GetSizeTitleBuySubProductId(item.Id);
+                                    <div>
+                                        <span>@(item.SizeTitle)</span>
+                                        @*<span style="margin-left:30px;">定价：¥@(item.OriginalPrice) </span>*@
+                                        <span style="margin-left:30px;">定价：¥@(item.Price) </span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div><span>无子类产品</span></div>
+                            }
+                        }
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<div id="imgDialog" class="easyui-dialog" title="图片展示" style="width:600px;height:400px;"
+     data-options="modal:true,closed:true">
+    <img id="imgObj" src="" style="width: 100%; height: 99%;" />
+</div>
+<script type="text/javascript">
+    $("a.smallimage").click(function () {
+        $("#imgObj")[0].src = this.rel;
+        $("#imgDialog").dialog("open");
+        return false;
+    });
+</script>
+
+@*<script type="text/javascript">
+        //大图显示在该子页面中央
+        $("a.smallimage").hover(function (e) {
+            $("body").append('<p id="bigimage"><img src="' + this.rel + '" alt="" width="800px"/></p>');
+            $(this).find('img').stop().fadeTo('slow', 0.5);
+            //widthJudge(e);
+            $("#bigimage").css({ top: (document.documentElement.clientHeight / 2 - $("#bigimage").height() / 2) + "px", left: (document.documentElement.clientWidth / 2 - $("#bigimage").width() / 2) + "px" });
+            $("#bigimage").fadeIn('fast');
+        }, function (e) {
+            $(this).find('img').stop().fadeTo('slow', 1);
+            $("#bigimage").remove();
+        });
+        //图片位置随鼠标变化
+        //$("a.smallimage").mousemove(function (e) {
+        //    widthJudge(e);
+        //});
+        //宽度判断图片右浮动不足则左浮动
+        var x = 22; //鼠标宽度
+        var y = 20; //鼠标高度
+        function widthJudge(e) {
+            var marginRight = document.documentElement.clientWidth - e.pageX; //页面的总宽度 减去 鼠标当前的X坐标 得到 右侧边界的宽度
+            var imageWidth = $("#bigimage").width() + 22; //获取弹出的框体的宽度
+            if (marginRight < imageWidth) {
+                x = imageWidth;
+                $("#bigimage").css({ top: (e.pageY - y) + "px", left: (e.pageX - x) + "px" });
+            } else {
+                x = 22;
+                $("#bigimage").css({ top: (e.pageY - y) + "px", left: (e.pageX + x) + "px" });
+            };
+        }
+    </script>*@

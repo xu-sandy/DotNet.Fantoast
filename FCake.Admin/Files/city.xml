@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <country>
+    <province value="福建省">
+      <city value="厦门市">
+        <area value="思明区"></area>
+        <area value="湖里区"></area>
+        <area value="集美区"></area>
+        <area value="翔安区"></area>
+        <area value="海沧区"></area>
+        <area value="同安区"></area>
+      </city>
+      <city value="泉州市">
+        <area value="鲤城区"></area>
+        <area value="丰泽区"></area>
+        <area value="洛江区"></area>
+        <area value="泉港区"></area>
+        <area value="惠安县"></area>
+        <area value="安溪县"></area>
+        <area value="永春县"></area>
+        <area value="德化县"></area>
+        <area value="金门县"></area>
+        <area value="石狮市"></area>
+        <area value="晋江市"></area>
+        <area value="南安市"></area>
+      </city>
+    </province>
+  </country>
+</root>

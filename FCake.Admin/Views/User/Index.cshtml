@@ -1,0 +1,195 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@using FCake.Admin.Models;
+@{
+    ViewBag.Title = "用户管理"; 
+}
+
+<div id="toolbar">
+    <div class="dc-searchbar">
+        <form id="search" method="post">
+            用户名：<input id="txt_UserName_LK_" name="txt_UserName_LK_" class="datacontrol" style="width:100px" />
+            真实姓名：<input id="txt_FullName_LK_" name="txt_FullName_LK_" class="datacontrol" style="width:100px" />
+            <a href="#" id="searchBtn" class="easyui-linkbutton cus4 linkbtn" data-options="iconCls:'icon-search'">查询</a>
+        </form>
+    </div>
+    <div class="dc-toolbar">
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" onclick="AddItem()">添加</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-remove'" onclick="DeleteItem()">删除</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-edit'" onclick="EditItem()">修改</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-save'" onclick="SaveItem()">保存</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-reload'" onclick="ReloadGrid()">刷新</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-setting'" onclick="ResetPwd()">重置密码</a>
+    </div>
+</div>
+
+<table id="dg"></table>
+<div id="myDialog" class="easyui-dialog" title="重置密码" style="width:300px;height:100px;"
+     data-options="modal:true,closed:true">
+    <div style="margin-top:15px;text-align:center;">
+        <input id="newPwd" name="newPwd" type="password" class="datacontrol" style="width:120px;" />
+        <a id="resetPwdOk" href="#" class="easyui-linkbutton cus4 linkbtn" style="padding-left:20px;padding-right:20px;">重置</a>
+
+    </div>
+</div>
+<script>
+    $(function () {
+        //获取性别枚举
+        var sexArray = {};
+        @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.Sex>(true))
+        {
+            @:sexArray['@item.Value'] = '@item.Text';
+        }
+        var boolArray = {};
+        @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.BoolType>(true))
+        {
+            @:boolArray['@item.Value'] = '@item.Text';
+        }
+        $("#dg").datagrid({
+            toolbar: '#toolbar',
+            title: '',
+            url: '/common/getdata?type=@(DataHelper.GetTypeName<User>())',
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            pagination: true, //是否开启分页
+            pageSize: 30,
+            //fitColumns: true, //栏框自适应
+            fit: true, //高度自适应
+            striped: true, //True 奇偶行使用不同背景色
+            onAfterEdit: function (rowIndex, rowData, changes) {
+                $.ajax({
+                    url: '/common/savedata?type=@(DataHelper.GetTypeName<User>())',
+                    data: rowData,
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (data, status) {
+                        if (data.validate == false) {
+                            alert(data.msg);
+                            $('#dg').datagrid('reload');
+                        }
+                        else {
+                            $('#dg').datagrid('reload');
+                        }
+                    }
+                })
+            },
+            columns: [[
+                { field: 'Id', title: '主键', hidden: true },
+                { field: 'UserName', title: '用户名', editor: { type: 'text', required: true }, width: 150 },
+                { field: 'FullName', title: '真实姓名', editor: { type: 'text' }, width: 150 },
+                { field: 'Tel', title: '座机', editor: { type: 'text' }, width: 150 },
+                { field: 'Mobile', title: '手机', editor: { type: 'text' }, width: 150 },
+                { field: 'Email', title: '邮箱', editor: { type: 'text' }, width: 150 },
+                {
+                    field: 'Sex', title: '性别', editor: { type: 'combobox', options: { valueField: 'v', textField: 't', data: sexArray, panelHeight: 'auto' } }, width: 100, formatter: function (value, row, index) {
+                        if (sexArray[value] != null)
+                            return sexArray[value];
+                        else
+                            return value;
+                    }
+                },
+                {
+                    field: 'IsDisabled', title: '是否禁用', editor: { type: 'text' }, width: 100,
+                    formatter: function (value, row, index) {
+                        if (boolArray[value] != null)
+                            return boolArray[value];
+                        else
+                            return value;
+                    }
+                }
+            ]]
+
+        });
+        //查询方法
+        $("#searchBtn").click(function () {
+            var url = "/user/querydata?_method=search&a=" + Math.random();
+            pharos.gridHelper.refresh("dg", url);
+        });
+        //重置按钮
+        $("#resetPwdOk").click(function () {
+            var newPwd = $("#newPwd").val();
+            if (!String.isNE(newPwd)) {
+                var row = getSelectedRow();
+                $.post("@Url.Action("ResetPwd")" + "?id=" + row.Id + "&a=" + Math.random(), { password: newPwd },
+                        function (result) {
+                            alert(result.message);
+                        }, "json");
+                $('#myDialog').dialog("close");
+            }
+        });
+    });
+
+    //添加用户
+    function AddItem() {
+        openDialog("添加用户", "user/useredit?id=&a=" + Math.random());
+    }
+    //编辑用户
+    function EditItem() {
+        var row = getSelectedRow();
+        if (row) {
+            openDialog("编辑用户", "user/useredit?id=" + row.Id + "&a=" + Math.random());
+        }
+    }
+    var index = 0;
+    //保存
+    function SaveItem() {
+        $('#dg').datagrid('endEdit', index);
+        index = 0;
+        ReloadGrid();
+    }
+
+    //删除
+    function DeleteItem() {
+        var row = getSelectedRow();
+        if (row != null) {
+            $.messager.confirm('系统提示!', '确定删除吗', function (r) {
+                if (r) {
+                    $.ajax({
+                        url: '/common/deletedata?type=@(DataHelper.GetTypeName<User>())',
+                        dataType: 'json',
+                        type: 'post',
+                        data: row,
+                        success: function (data, status) {
+                            if (data.validate == false) {
+                                alert(data.msg);
+                            }
+                            ReloadGrid();
+                        }
+                    });
+                }
+            });
+        }
+    }
+    //刷新
+    function ReloadGrid() {
+        $('#dg').datagrid('reload');
+    }
+    //重置密码
+    function ResetPwd() {
+        var row = getSelectedRow();
+        if (row) {
+            $('#myDialog').dialog("open");
+        }
+    }
+    function getSelectedRow() {
+        var row = $("#dg").datagrid("getSelected");
+        if (row) {
+            return row;
+        }
+        else {
+            $.messager.alert('提示', '请先选中要操作的行');
+            return null;
+        }
+    }
+    //打开添加或者编辑页
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 600,
+            height: 440,
+            id: "add",
+            url: url
+        });
+    }
+</script>

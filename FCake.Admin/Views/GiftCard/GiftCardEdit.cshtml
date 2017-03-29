@@ -1,0 +1,87 @@
+﻿@{
+    ViewBag.Title = "GiftCardEdit";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+
+<form id="giftCardForm" method="post" style="overflow:auto;">
+    <table class="form-tb">
+        <tr>
+            <td class="lable" align="right"><label for="Title" class="datalable">代金卡名称：</label></td>
+            <td class="control"><input id="Title" name="Title" class="datacontrol  easyui-textbox" data-options="height:32" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="Quantity" class="datalable">生成数量：</label></td>
+            <td class="control"><input id="Quantity" name="Quantity" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="Denomination" class="datalable">面值：</label></td>
+            <td class="control"><input id="Denomination" name="Denomination" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="SalesMoney" class="datalable">销售价：</label></td>
+            <td class="control"><input id="SalesMoney" name="SalesMoney" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="BeginValidDate" class="datalable">有效期始于：</label></td>
+            <td class="control"><input id="BeginValidDate" name="BeginValidDate" class="Wdate datacontrol" type="text" style="border-radius: 5px 5px 5px 5px; border: 1px solid #CCC;" value="@DateTime.Now.ToString("yyyy-MM-dd")" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" onfocus="WdatePicker({ maxDate: '#F{$dp.$D(\'EndValidDate\')}' })" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="EndValidDate" class="datalable">有效期终于：</label></td>
+            <td class="control"><input id="EndValidDate" name="EndValidDate" class="Wdate datacontrol" type="text" style="border-radius: 5px 5px 5px 5px; border: 1px solid #CCC; " value="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" onfocus="WdatePicker({ minDate: '#F{$dp.$D(\'BeginValidDate\')}' })" /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><a href="#" id="submitGiftCard" name="submitGiftCard" class="easyui-linkbutton cus4 linkbtn">提交审核</a></td>
+        </tr>
+    </table>
+</form>
+<script type="text/javascript">
+    $(function () {
+
+        $("#giftCardForm").validate({
+            rules: {
+                Title: {
+                    required: true,
+                    digits: true,
+                    min: 1
+                },
+                Denomination: {
+                    required: true,
+                    rule_cn_decimal: true,
+                    min: 0
+                },
+                Quantity: {
+                    required: true,
+                    min: 1
+                }
+            }
+        });
+        //提交数据
+        $("#giftCardForm").submit(function (e) {
+            e.preventDefault();
+            if (!$(this).valid()) {
+                $.messager.alert("提示", "填写有误，请修改后重试", "error", function () {
+                    return false;
+                });
+            } else {
+
+                $.ajax({
+                    url: '/GiftCard/GiftCardsGenerate?' + $("#giftCardForm").serialize(),
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (result) {
+                        $.messager.alert("提示", result.message, "info", function () {
+                            window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                            window.top.$("body").data("win_add").window("close");
+                        });
+
+                    }
+                })
+            }
+        });
+        //提交审核事件
+        $("#submitGiftCard").click(function () {
+            $("#giftCardForm").submit();
+        });
+    })
+</script>

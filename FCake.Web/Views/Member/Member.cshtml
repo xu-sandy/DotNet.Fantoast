@@ -1,0 +1,292 @@
+﻿
+@using FCake.Bll;
+@model FCake.Domain.Entities.Customers
+@{
+    ViewBag.Title = "个人信息";
+}
+@Scripts.Render(
+    "~/Scripts/formValidator/formValidator-4.1.3.js",
+    "~/Scripts/formValidator/formValidatorRegex.js"
+)
+<script>
+    window.favoriteCakeData = window.favoriteCakeData || {};
+    window.favoriteCakeData['favoritecake'] = [];
+    @foreach (var item in new FCake.Bll.ProductService().GetUserFavoriteCakeByUser(CurrentMember.MemberId.ToString()))
+    {
+        if(item!=null)
+        {
+        @:window.favoriteCakeData["favoritecake"].push({ value: '@item.Id', text: '@item.Name' });
+                }
+            }
+    @*$(function () {
+        var favoritecake="@Model.FavoriteCake";
+        if (favoritecake != "")
+        {
+            var isTrue = false;
+            for (var i = 0; i < window.favoriteCakeData['favoritecake'].length; i++) {
+                if (favoritecake == window.favoriteCakeData['favoritecake'][i].value)
+                {
+                    isTrue = true;
+                }
+            }
+            if(!isTrue)
+                $.post("@Url.Action("GetFavoriteCakeByPid", "Member")", { id: favoritecake }, function (data) {
+                   window.favoriteCakeData["favoritecake"].push({ value: data.Id, text: data.Name });
+                }, "json");
+        }
+    })*@
+
+</script>
+<link href="~/Content/information.css" rel="stylesheet" />
+<script src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<style type="text/css">
+    table {
+        padding-bottom: 50px;
+    }
+
+    div.WdateDiv {
+        width: 262px;
+    }
+
+    iframe.DRAGDIS_iframe {
+        width: 262px;
+    }
+
+    select {
+        height: 37px;
+        padding: 5px;
+        float: left;
+        border: 1px solid #ccd1d9;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        margin-left: 20px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+        select[name=FavoriteCake] {
+            width: 262px;
+        }
+
+        select[name=ddlProvince] {
+            width: 75px;
+        }
+
+        select[name=ddlCity] {
+            margin-left: 17px;
+        }
+
+        select[name=ddlArea] {
+            margin-left: 17px;
+        }
+</style>
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top;">
+            @Html.Partial("_PartialMenu")
+        </td>
+        @*内容信息*@
+        <td style="text-align:left;">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "个人信息")
+
+                <div class="panelcontent">
+                    <form id="memberForm" name="memberForm" method="post">
+                        <div class="item">
+                            <table>
+                                <tr>
+                                    <td><div class="item_text">姓名</div></td>
+                                    <td><input type="text" class="item_tab1" id="FullName" name="FullName"></td>
+                                    <td colspan="2"><div id="FullNameTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">性别</div></td>
+                                    <td>
+                                        <input type="radio" class="item_tab2" value="1" name="Sex" />
+                                        <div style="font-size:12px;float:left;color:#545454;">男</div>
+                                        <input type="radio" class="item_tab2" value="2" name="Sex" />
+                                        <div style="font-size:12px;float:left;color:#545454;">女</div>
+                                    </td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">手机</div></td>
+                                    <td>
+                                        <input type="text" class="item_tab1" id="Mobile" maxlength="11" readonly="readonly" style="background-color:#D3D3D3" onkeyup="this.value=this.value.replace(/\D/g,'')" name="Mobile">
+                                        @*<input type="text" class="item_tab4" id="Code" name="Code" placeholder="验证码">*@
+                                    </td>
+                                    <td><a href="@Url.Action("BindNewPhone", "Member")"><input type="button" class="item_tab5" id="sendBtn" value="绑定新手机"></a></td>
+                                    <td><div id="MobileTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">Email</div></td>
+                                    <td><input type="text" class="item_tab1" id="Email" name="Email"></td>
+                                    <td colspan="2"><div id="EmailTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">默认地址</div></td>
+                                    <td>@Html.Partial("~/Views/Cart/_PartialPosition.cshtml")</td>
+                                    <td colspan="2"><div id="ddlAreaTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text"></div></td>
+                                    <td><input type="text" class="item_tab1" id="ttbAddress" name="ttbAddress" placeholder="街道地址" /></td>
+                                    <td colspan="2"><div id="ttbAddressTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">出生日期</div></td>
+                                    <td><input type="text" class="item_tab1" id="Birthday" name="Birthday" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" /></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">最爱蛋糕</div></td>
+                                    <td>
+                                        <select name="FavoriteCake">
+                                            @*@foreach (var item in )
+                                                {
+                                                    <option value="@item.Id">@item.Name</option>
+                                                }*@
+                                        </select>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td align="center"><div class="btn-confirm"><a href="#" style="display:block" onclick="submitInfo()">确认</a></div></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </td>
+    </tr>
+
+</table>
+
+<script type="text/javascript">
+    $(function () {
+
+        var option = document.createElement("option");
+        for (var i = 0; i < window.favoriteCakeData['favoritecake'].length; i++) {
+            option.text = window.favoriteCakeData['favoritecake'][i].text;
+            option.value = window.favoriteCakeData['favoritecake'][i].value;
+            $("select[name=FavoriteCake]").append("<option value='" + option.value + "'>" + option.text + "</option>");
+        }
+    });
+    $(function () {
+        $("#FullName").val('@Model.FullName')
+        if ('@Model.Sex.HasValue' == 'True') {
+            $("input[name=Sex][value=@Model.Sex]").attr("checked", true);
+        }
+        $("#Mobile").val('@Model.Mobile')
+        $("#Email").val('@Model.Email')
+        $('select[name=ddlProvince]').val('@ViewBag.Province').change();
+        $('select[name=ddlCity]').val('@ViewBag.City').change();
+        $('select[name=ddlArea]').val('@ViewBag.Area').change();
+        $("#ttbAddress").val('@ViewBag.Address')
+        @{
+            string time = null;
+            if (Model.Birthday.HasValue)
+            {
+            time = Convert.ToDateTime(Model.Birthday).ToString("yyyy-MM-dd");
+            }
+         }
+        $("#Birthday").val('@time')
+        $("select[name=FavoriteCake]").val('@Model.FavoriteCake').change();
+
+
+        //验证
+        $.formValidator.initConfig({
+            formID: "memberForm", submitOnce: false,
+            onSuccess: function () {
+                $.post("@Url.Action("SaveMemberInfo", "Member")?", $("#memberForm").serialize(), function (result) {
+                    if (result.successed) {
+
+                        alert(result.message);
+                    } else {
+                        alert(result.message);
+                        if (result.data.code == "captchas") {
+                            change();
+                            $("#captchas").val();
+                        }
+                        return false;
+                    }
+                }, "json");
+            },
+            onError: function (msg, obj, errorlist) {
+                $("#errorlist").empty();
+                $.map(errorlist, function (msg) {
+                    $("#errorlist").append("<li>" + msg + "</li>")
+                });
+                alert(msg);
+            },
+            ajaxPrompt: '有数据正在异步验证，请稍等...'
+        });
+
+        $("#Mobile").formValidator({ empty: false, onShow: "请输入您的手机号", onFocus: "", onCorrect: "" }).regexValidator({ regExp: ["mobile"], dataType: "enum" })
+        .ajaxValidator({
+            dataType: "json",
+            type: "post",
+            async: true,
+            url: "@Url.Action("CheckUserName", "Passport")",
+            data: { mobile: $("#Mobile").val() },
+            success: function (data) {
+                if (data) return true;
+                return "该手机号已被使用";
+            },
+            ///buttons: $("#button"),
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("服务器没有返回数据，可能服务器忙，请重试" + errorThrown);
+            },
+            onError: "该手机号已被使用",
+            onWait: "正在进行合法性校验，请稍候..."
+        }).defaultPassed();
+        $("#FullName").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入您的姓名" }).regexValidator({ regExp: "notempty", dataType: "enum", onError: "姓名不能为空" });
+        $("#Email").formValidator({ empty: true, onShow: "", onFocus: "", onEmpty: "", onCorrect: "" }).regexValidator({ regExp: "email", dataType: "enum", onError: "Email格式不正确" });
+        //$('select[name=ddlProvince]').formValidator({ empty: false, onShow: "", onFocus: "", onEmpty: "请输入省份" });
+        //$('select[name=ddlCity]').formValidator({ empty: false, onShow: "", onFocus: "", onEmpty: "请输入城市" });
+        $('select[name=ddlArea]').formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请填写您的默认地址" }).regexValidator({ regExp: "notempty", dataType: "enum", onError: "默认地址不能为空" });
+        $("#ttbAddress").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入街道地址" }).regexValidator({ regExp: "notempty", dataType: "enum", onError: "街道地址不能为空" });
+
+    })
+
+    function submitInfo() {
+        $("#memberForm").submit();
+        window.location.reload();
+    }
+
+    var y;
+    function sendCode() {
+
+        $.post('@Url.Action("SendValidCodeFJXX", "Passport")', { mobile: $("input[name=Mobile]").val(), type: "Register", isNewRegister: true }, function (data) {
+            if (data.success == true) {
+                $("#sendBtn").attr("onclick", "return false;");
+
+                y = self.setInterval(djs, 1000);
+            }
+            else {
+                alert(data.msg);
+            }
+        });
+    }
+
+    var j = 0;
+    function djs() {
+
+        time = 60 - j;
+        if (time <= 0) {
+            clearInterval(y);
+            j = 0;
+            $("#sendBtn").val('获取验证码').attr("onclick", "sendCode()");
+        }
+        else {
+            $("#sendBtn").val(time + "秒后重置");
+        }
+
+        j++;
+    }
+
+</script>

@@ -1,0 +1,384 @@
+﻿@{
+    ViewBag.Title = "统计分析";
+    Layout = null;
+}
+@Styles.Render("~/Content/easyui/default/css")
+@Styles.Render("~/Content/easyui/css")
+@Styles.Render("~/Content/themes/default/global.css")
+
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/Scripts/jquery.easyui.min.js")
+@Scripts.Render("~/Scripts/controls/My97DatePicker/WdatePicker.js")
+<style type="text/css">
+    .analysis-container .echart-td{
+    border:1px solid rgb(211, 211, 211);
+    padding:10px;
+    border-radius:10px;
+
+    }
+</style>
+<div class="analysis-container">
+    <table>
+        <tr>
+            <td class="echart-td">
+                <div>
+                    <span style="font-size:12px; color:#1795D2;">蛋糕类型销售总额、实际支付占比</span>
+                    <input id="chart1Year" class="Wdate Wdate-position" type="text" value="@DateTime.Now.ToString("yyyy")" style="border-radius: 5px; border: 1px solid rgb(211, 211, 211); width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy', minDate:'2015-01-01', maxDate:'@DateTime.Now.ToString("yyyy-MM-dd")'  })" />
+                    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" onclick="searchDataByYear(1,this)" style="width:90px" value="查询" />
+                </div>
+                <div id="pie1"></div>
+            </td>
+            
+        </tr>
+        <tr>
+            <td><div style="height:20px;"></div></td>
+        </tr>
+        <tr>
+            <td class="echart-td">
+                <div>
+                    <span style="font-size:12px; color:#1795D2;">订单用途销售总额、实际支付占比</span>
+                    <input id="chart2Year" class="Wdate Wdate-position" type="text" value="@DateTime.Now.ToString("yyyy")" style="border-radius: 5px; border: 1px solid rgb(211, 211, 211); width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy', minDate:'2015-01-01', maxDate:'@DateTime.Now.ToString("yyyy-MM-dd")'  })" />
+                    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" onclick="searchDataByYear(3,this)" style="width:90px" value="查询" />
+                </div>
+                <div id="pie2"></div>
+            </td>
+        </tr>
+        <tr>
+            <td><div style="height:20px;"></div></td>
+        </tr>
+        <tr>
+            <td class="echart-td">
+                <div>
+                    <span style="font-size:12px; color:#1795D2;">订单来源销售总额、实际支付占比</span>
+                    <input id="chart3Year" class="Wdate Wdate-position" type="text" value="@DateTime.Now.ToString("yyyy")" style="border-radius: 5px; border: 1px solid rgb(211, 211, 211); width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy', minDate:'2015-01-01', maxDate:'@DateTime.Now.ToString("yyyy-MM-dd")'  })" />
+                    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" onclick="searchDataByYear(5,this)" style="width:90px" value="查询" />
+                </div>
+                <div id="pie3"></div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+</div>
+<script src="~/Scripts/echarts.js"></script>
+<script type="text/javascript">
+    require.config({
+        paths: {
+            echarts: '../Scripts/echarts'
+        }
+    });
+
+    require(
+           [
+               'echarts',
+               'echarts/chart/pie', // 使用柱状图就加载bar模块，按需加载
+               'echarts/chart/macarons',
+               'echarts/chart/funnel'
+           ],
+           DrawCharts
+           );
+
+    function DrawCharts(ec) {
+        FunDraw1(ec);
+        FunDraw2(ec);
+        FunDraw3(ec);
+    }
+    var myChart1, myChart2, myChart3;
+
+    function FunDraw1(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        myChart1 = ec.init(document.getElementById('pie1'), 'macarons');
+        var title = "蛋糕类型销售总额占比"
+        var legendData = @Html.Raw(ViewBag.ProductTypeTitleList);
+        var chartData = @Html.Raw(ViewBag.ProductTypeTotalPriceData);
+
+       var option = initChart1Option(title,legendData, chartData);
+        // 为echarts对象加载数据
+       myChart1.setOption(option);
+    }
+    function FunDraw2(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        myChart2 = ec.init(document.getElementById('pie2'), 'macarons');
+        var title = '订单用途销售总额占比';
+        var legendData = @Html.Raw(ViewBag.OrderTypeTitle);
+        var chartData = @Html.Raw(ViewBag.OrderTypeTotalPriceData);
+
+        var option = inttChart2Option(title, legendData, chartData);
+       
+        // 为echarts对象加载数据
+        myChart2.setOption(option);
+    }
+    function FunDraw3(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        myChart3 = ec.init(document.getElementById('pie3'), 'macarons');
+        var title = '订单来源销售总额占比';
+        var legendData = @Html.Raw(ViewBag.OrderClientTitle);
+        var chartData = @Html.Raw(ViewBag.OrderClientTotalPriceData);
+
+        var option = initChart3Option(title, legendData, chartData);
+        // 为echarts对象加载数据
+        myChart3.setOption(option);
+    }
+</script>
+
+
+<script type="text/javascript">
+    function initChart1Option(title, legendData, chartData) {
+        var option = {
+            title: {
+                text: title,
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                data: legendData
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    magicType: {
+                        show: true,
+                        type: ['pie', 'funnel'],
+                        option: {
+                            funnel: {
+                                x: '25%',
+                                width: '50%',
+                                funnelAlign: 'left',
+                                max: 1548
+                            }
+                        }
+                    },
+                    restore: { show: true },
+                    saveAsImage: { show: true },
+                    pieType1: {
+                        show: true,
+                        title: '订单总额',
+                        icon: '../Content/images/all.png',
+                        onclick: function () {
+                            searchDataByYear(1);
+                        }
+                    },
+                    pieType2: {
+                        show: true,
+                        title: '实际支付',
+                        icon: '../Content/images/money.png',
+                        onclick: function () {
+                            searchDataByYear(2);
+                        }
+                    },
+                }
+            },
+            calculable: true,
+            series: [
+                {
+                    name: '蛋糕类型',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: chartData
+                }
+            ]
+        };
+        return option;
+    }
+    function inttChart2Option(title, legendData, chartData) {
+        var option = {
+            title: {
+                text: title,
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                data: legendData
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    magicType: {
+                        show: true,
+                        type: ['pie', 'funnel'],
+                        option: {
+                            funnel: {
+                                x: '25%',
+                                width: '50%',
+                                funnelAlign: 'left',
+                                max: 1548
+                            }
+                        }
+                    },
+                    restore: { show: true },
+                    saveAsImage: { show: true },
+                    pieType1: {
+                        show: true,
+                        title: '订单总额',
+                        icon: '../Content/images/all.png',
+                        onclick: function () {
+                            searchDataByYear(3);
+                        }
+                    },
+                    pieType2: {
+                        show: true,
+                        title: '实际支付',
+                        icon: '../Content/images/money.png',
+                        onclick: function () {
+                            searchDataByYear(4);
+                        }
+                    },
+
+                }
+            },
+            calculable: true,
+            series: [
+                {
+                    name: '订单用途',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: chartData
+                }
+            ]
+        };
+        return option;
+    }
+    function initChart3Option(title, legendData, chartData) {
+        var option = {
+            title: {
+                text: title,
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'left',
+                data: legendData
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    magicType: {
+                        show: true,
+                        type: ['pie', 'funnel'],
+                        option: {
+                            funnel: {
+                                x: '25%',
+                                width: '50%',
+                                funnelAlign: 'left',
+                                max: 1548
+                            }
+                        }
+                    },
+                    restore: { show: true },
+                    saveAsImage: { show: true },
+                    pieType1: {
+                        show: true,
+                        title: '订单总额',
+                        icon: '../Content/images/all.png',
+                        onclick: function () {
+                            searchDataByYear(5);
+                        }
+                    },
+                    pieType2: {
+                        show: true,
+                        title: '实际支付',
+                        icon: '../Content/images/money.png',
+                        onclick: function () {
+                            searchDataByYear(6);
+                        }
+                    },
+                }
+            },
+            calculable: true,
+            series: [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: chartData
+                }
+            ]
+        };
+        return option;
+    }
+</script>
+
+<script type="text/javascript">
+    function searchDataByYear(type, searchBtn){
+        var year = $("#chart1Year").val();
+        if(type == 3 || type == 4)
+            year = $("#chart2Year").val()
+        if(type == 5 || type == 5)
+            year = $("#chart3Year").val();
+        $.ajax({
+            url:'@Url.Action("GetStatisticalAnalysisData", "Report")?year=' + year + "&type=" + type,
+            type:'POST',
+            beforeSend:function(){
+                if(searchBtn != undefined && searchBtn != null){
+                    $(searchBtn).attr("disabled","disabled");
+                    $(searchBtn).css("background","#d3d3d3");
+                    $(searchBtn).css("border","1px solid #d3d3d3");
+                }
+            },
+            success:function(result){
+                result.chartData = $.parseJSON(result.chartData);
+                switch(type){
+                    case 1:        
+                        var title = '蛋糕类型销售总额占比';
+                        var option = initChart1Option(title,result.legendData, result.chartData);
+                        myChart1.setOption(option);
+                        myChart1.restore();
+                        break;
+                    case 2:        
+                        var title = '蛋糕类型实际支付占比';
+                        var option = initChart1Option(title,result.legendData, result.chartData);
+                        myChart1.setOption(option);
+                        myChart1.restore();
+                        break;
+                    case 3:        
+                        var title = '订单用途销售总额占比';
+                        var option = inttChart2Option(title,result.legendData, result.chartData);
+                        myChart2.setOption(option);
+                        myChart2.restore();
+                        break;
+                    case 4:        
+                        var title = '订单用途实际支付占比';
+                        var option = inttChart2Option(title,result.legendData, result.chartData);
+                        myChart2.setOption(option);
+                        myChart2.restore();
+                        break;
+                    case 5:        
+                        var title = '订单来源销售总额占比';
+                        var option = initChart3Option(title,result.legendData, result.chartData);
+                        myChart3.setOption(option);
+                        myChart3.restore();
+                        break;
+                    case 6:        
+                        var title = '订单来源实际支付占比';
+                        var option = initChart3Option(title,result.legendData, result.chartData);
+                        myChart3.setOption(option);
+                        myChart3.restore();
+                        break;
+                }
+
+                if(searchBtn != undefined && searchBtn != null){
+                    $(searchBtn).removeAttr("disabled");;
+                    $(searchBtn).css("background","");
+                    $(searchBtn).css("border","");
+                }
+            }
+        })
+    }
+</script>

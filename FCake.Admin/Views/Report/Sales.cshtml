@@ -1,0 +1,211 @@
+﻿@{
+    ViewBag.Title = "Sales";
+}
+<script src="~/Scripts/datagrid-groupview.js"></script>
+<div id="toolbar">
+    统计类型：
+    <select id="groupName">
+        @*<option value="1">品种</option>*@
+        <option value="2">蛋糕</option>
+        @*<option value="3">磅数</option>*@
+        @*<option value="4">产品磅数</option>*@
+        <option value="5">蛋糕磅数</option>
+    </select>
+    <label>查询时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm', minDate: '#F{$dp.$D(\'endTime\',{M:-3});}' })" id="beginTime" name="beginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm', maxDate: '#F{$dp.$D(\'beginTime\',{M:3});}' })" id="endTime" name="endTime" readonly="readonly" />
+
+    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>
+    <span style="margin-left:150px;">（报表数据只统计 00：00 之前的数据）</span>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<table id="dg"></table>
+<script type="text/javascript">
+    $grid = $("#dg");
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobal",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            rownumbers: true,
+            remoteSort: false,
+            nowrap: false,
+            // ScrollBars:Both,
+            //view: groupview,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            //url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=&endTime=&type=1",
+            //columns: [[{ field: 'Name', title: '蛋糕名称', width: 100 },
+            //{ field: 'Num', title: '数量', width: 40 },
+            //{ field: 'TotalPrice', title: '金额', width: 40 }]]
+            //columns: [[
+            //    { field: 'ProductName', title: '蛋糕名称', width: 100 },
+            //{
+            //    field: 'Size', title: '磅数', width: 50, formatter: function (value, row, index) {
+            //        if (value != null)
+            //            return value + " 磅";
+            //        else
+            //            return "所有磅数";
+            //    }
+            //},
+            //{ field: 'Num', title: '数量', width: 50 },
+            //{ field: 'allPrice', title: '总金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+            //]],
+            //groupField: 'Gernre',
+            //groupFormatter: function (value, rows) {
+            //if (value != null) {
+            //    return value + ' - ' + rows.length + ' 条数据';
+            //}
+            //else { return "总计" }
+            //}
+        })
+        var typed = 1;
+        //查询点击事件
+        $("#search").click(function () {
+            var begintime = $("#beginTime").val();
+            var endtime = $("#endTime").val();
+            if (begintime == "" || endtime == "") {
+                alert("时间段是必选的！");
+                return false;
+            }
+
+            var type = $("#groupName").val();
+            if (type != "") {
+                if (type == typed) {
+                    $("#dg").datagrid({
+                        url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type
+                    })
+                } else {
+                    typed = type;
+                    @*if (type == 1) {
+
+                        $("#dg").datagrid({
+                            url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type,
+                            //view: groupview,
+                            columns: [[{ field: 'Name', title: '蛋糕名称', width: 100 },
+                                       { field: 'Num', title: '数量', width: 100 },
+                                       { field: 'TotalPrice', title: '金额', width: 100 }]],
+                            view: $.fn.datagrid.defaults.view
+
+                        })
+                    }*@
+                    if (type == 2) {
+                        $("#dg").datagrid({
+                            url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type,
+                            columns: [[{ field: 'Id', title: 'Id', width: 100, hidden: true },
+                                       { field: 'Name', title: '蛋糕名称', width: 100 },
+                                       { field: 'Num', title: '数量', width: 100 },
+                                       { field: 'TotalPrice', title: '金额', width: 100 }
+                            ]],
+                            view: $.fn.datagrid.defaults.view
+                            //view: groupview,
+                            //groupField: 'GroupName',
+                            //groupFormatter: function (value, rows) {
+                            //    if (value != null) {
+                            //        return value + ' - ' + rows.length + ' 条数据';
+                            //    }
+                            //    else { return "总计" }
+                            //}
+                        })
+                    }
+                    @*if (type == 3) {
+                        $("#dg").datagrid({
+                            url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type,
+                            columns: [[{ field: 'Id', title: 'Id', width: 100, hidden: true },
+                                       { field: 'Name', title: '磅数', width: 100 },
+                                       { field: 'Num', title: '数量', width: 100 },
+                                       { field: 'TotalPrice', title: '金额', width: 100 }]],
+                            view: $.fn.datagrid.defaults.view
+                        })
+                    }
+                    if (type == 4) {
+                        $("#dg").datagrid({
+                            url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type,
+                            columns: [[{ field: 'Id', title: 'Id', width: 100, hidden: true },
+                                       { field: 'Name', title: '名称', width: 100 },
+                                       {field:'GroupName',title:'磅数',width:100},
+                                       { field: 'Num', title: '数量', width: 100 },
+                                       { field: 'TotalPrice', title: '金额', width: 100 }
+                            ]],
+                            view: groupview,
+                            groupField: 'GroupName',
+                            groupFormatter: function (value, rows) {
+                                if (value != null) {
+                                    return value + ' - ' + rows.length + ' 条数据';
+                                }
+                                else { return "总计" }
+                            }
+                        })
+                    }*@
+                    if (type == 5) {
+
+                        $("#dg").datagrid({
+                            url: "@Url.Action("GetSalesByPosition", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type,
+                            columns: [[{ field: 'Id', title: 'Id', width: 100, hidden: true },
+                                       { field: 'Name', title: '名称', width: 100 },
+                                       { field: 'Num', title: '数量', width: 50 },
+                                       { field: 'GroupName', title: '规格', width: 50 },
+                                       { field: 'TotalPrice', title: '金额', width: 50 }]],
+                            view: groupview,
+                            groupField: 'GroupName',
+                            groupFormatter: function (value, rows) {
+                                if (value != null) {
+                                    return value + ' - ' + rows.length + ' 条数据';
+                                }
+                                else { return "总计" }
+                            }
+                        })
+                    }
+                }
+            }
+        })
+    })
+
+
+    //导出到excel
+    function Save_Excel() {
+        var begintime = $("#beginTime").val();
+        var endtime = $("#endTime").val();
+        if (begintime == "" || endtime == "") {
+            alert("时间段是必填的");
+            return false;
+        }
+        $grid.datagrid("loading", "正在生成Excel，请稍后");
+        $.ajax({
+            url: '@Url.Action("ExportSalesToExcel")',
+            type: 'post',
+            data: { beginTime: begintime, endTime: endtime, type: $("#groupName").val() },
+            success: function (data) {
+                $grid.datagrid("loaded");
+                if (data.successed) {
+
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                } else {
+                    alert(data.message)
+                }
+            }
+        });
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

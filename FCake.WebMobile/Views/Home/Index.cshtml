@@ -1,0 +1,96 @@
+﻿@using FCake.Bll;
+@{
+    ViewBag.Title = "枫客Fancake官网_厦门地区免费配送_蛋糕24小时在线预定";
+    var slides = new FCake.Bll.Services.SlideService().GetSlides(1).ToList();
+    int count = slides.Count();
+}
+<script src="~/Scripts/jquery.event.drag-1.5.min.js"></script>
+<script src="~/Scripts/jquery.touchSlider.js"></script>
+<link href="~/Content/style.css" rel="stylesheet" />
+
+<div class="main_visual">
+    <div class="flicking_con">
+        @for (int i = 0; i < count; i++)
+        {
+            <a href="@slides[i].LinkUrl">@i</a>
+
+        }
+    </div>
+    <div class="main_image">
+        <ul>
+            @for (int i = 0; i < count; i++)
+            {
+                <li> <a target="_blank" href="@slides[i].LinkUrl"><img src="@(Html.GetSysManageUrl() + slides[i].Url)"></a></li>
+            }
+        </ul>
+        <a href="javascript:;" id="btn_prev"></a>
+        <a href="javascript:;" id="btn_next"></a>
+    </div>
+</div>
+
+
+<style type="text/css">
+    .bottom {
+        margin-bottom: 20px;
+    }
+</style>
+<div style="height:20px;"></div>
+@Html.Partial("_PartialHotCake")
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $(".main_visual").hover(function () {
+            $("#btn_prev,#btn_next").fadeIn()
+        }, function () {
+            $("#btn_prev,#btn_next").fadeOut()
+        });
+
+        $dragBln = false;
+
+        $(".main_image").touchSlider({
+            flexible: true,
+            speed: 200,
+            btn_prev: $("#btn_prev"),
+            btn_next: $("#btn_next"),
+            paging: $(".flicking_con a"),
+            counter: function (e) {
+                $(".flicking_con a").removeClass("on").eq(e.current - 1).addClass("on");
+            }
+        });
+
+        $(".main_image").bind("mousedown", function () {
+            $dragBln = false;
+        });
+
+        $(".main_image").bind("dragstart", function () {
+            $dragBln = true;
+        });
+
+        $(".main_image a").click(function () {
+            if ($dragBln) {
+                return false;
+            }
+        });
+
+        timer = setInterval(function () {
+            $("#btn_next").click();
+        }, 5000);
+
+        $(".main_visual").hover(function () {
+            clearInterval(timer);
+        }, function () {
+            timer = setInterval(function () {
+                $("#btn_next").click();
+            }, 5000);
+        });
+
+        $(".main_image").bind("touchstart", function () {
+            clearInterval(timer);
+        }).bind("touchend", function () {
+            timer = setInterval(function () {
+                $("#btn_next").click();
+            }, 5000);
+        });
+
+    });
+</script>

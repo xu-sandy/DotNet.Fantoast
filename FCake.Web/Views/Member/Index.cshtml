@@ -1,0 +1,187 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Bll.Helper;
+@using FCake.Domain.Enums;
+@model dynamic
+@{
+    ViewBag.Title = "我的账户";
+    var times = new FCake.Bll.CommonService().GetDictionaryByCode("DistributionTime");
+    var member = ViewBag.Member as Customers;
+    var meemberLevel = ViewBag.MemberLevel as MemberLevel;
+}
+
+<style type="text/css">
+    td a {
+        color: #4a2118;
+    }
+</style>
+
+<table class="wallbox clearfix">
+    <tr>
+        <td style="vertical-align:top;">
+            @Html.Partial("_PartialMenu")
+        </td>
+        @*内容信息*@
+        <td style="text-align:left;">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "我的账户")
+
+                <div class="panelcontent">
+                    <div class="account corner5">
+                        <p class="account_text f3 bold">您好，@ViewBag.FullName！欢迎进入枫客会员中心！</p>
+                        <ul>
+                            <li class="account_text bold">会员等级：</li>
+                            <li>@meemberLevel.Title</li>
+                            <li class="account_text bold">积分：</li>
+                            <li>@member.Integral</li>
+                            <li class="account_text bold">成长值：</li>
+                            <li>@member.GrowthValue</li>
+                            @*<li class="account_text bold">现金消费金额:</li>
+                            <li>@member.TotalActualRMBPay.ToString("N2")</li>*@
+                            <li class="account_text bold"><a href="@Url.Action("MemberRule", "Member")">查看会员规则</a>>></li>
+                            @*<li class="account_text bold"><a href="javascript:void(0)" style="text-decoration:underline" onclick="rechargeToggle()">使用代金卡充值</a>>></li>
+                            <li id="recharge" style="display:none; margin-top:16px; height:10px">
+                                &nbsp;&nbsp;卡号：<input type="text" name="couponcode" />&nbsp;&nbsp;<input type="button" value="充值" onclick="depositcoupon()" />
+                            </li>*@
+                        </ul>
+                    </div>
+                    <div class="title f5" style="margin-bottom:20px;">订单列表<img src="../Content/Images/form/slash.png"></div>
+                    <table cellspacing="0" cellpadding="0" border="0" class="orderlist orderlist-coupon">
+                        <colgroup>
+                            <col style="width:120px;" />
+                            <col style="width: 80px;" />
+                            <col style="width: 120px;" />
+                            <col style="width: 120px; " />
+                            <col style="width: 110px;" />
+                            <col style="width: 110px;" />
+                            <col style="width: 110px;" />
+                            <col />
+                        </colgroup>
+                        <tbody>
+                            <tr class="rowhead">
+                                <td>订单编号</td>
+                                <td>订单总额</td>
+                                <td>下单时间</td>
+                                <td>要求送达时间</td>
+                                <td>订单状态</td>
+                                <td>支付方式</td>
+                                <td>操作</td>
+                                <td></td>
+                            </tr>
+                            @{if (Model != null)
+                            {
+
+                                foreach (var x in Model.EntityList)
+                                {
+                                    <tr class="rowdata">
+
+                                        <td>@x.No</td>
+                                        <td>@x.TotalPrice.ToString("N2")</td>
+                                        <td>@(x.CreatedOn.ToString().Split(' ')[0])<br />@(x.CreatedOn.ToString().Split(' ')[1])</td>
+                                        @*<td>@(x.RequiredTime.ToString().Split(' ')[0])<br />@(new FCake.Bll.CommonService().GetDictionaryName("DistributionTime", x.RequiredTime.ToString().Split(' ')[1].Substring(0, 5)))</td>*@
+                                        <td>@x.RequiredTimeBucket</td>
+                                        <td>
+                                            <span class="status_cancel">
+                                                @if (x.Status == OrderStatus.Making || x.Status == OrderStatus.MakeCompleted)
+                                                {
+                                                    x.Status = OrderStatus.Scheduled; 
+                                                }
+                                            @(FCake.Core.Common.EnumHelper.GetDescription((FCake.Domain.Enums.OrderStatus)x.Status))
+                                            </span>
+                                        </td>
+                                        <td>@(FCake.Core.Common.EnumHelper.GetDescription((FCake.Domain.Enums.FeeType)x.FeeType))</td>
+                                        <td>
+                                            <ul>
+                                                @if (x.Status == FCake.Domain.Enums.OrderStatus.NotPay)
+                                                {
+                                                    <li><a class="button" href="javascript:void(0)" onclick="GoPay('@x.FeeType','@x.No')">去付款</a></li>
+                                                }
+                                                @if (x.TradeStatus == TradeStatus.NotPay && x.ReviewStatus != ReviewStatus.ReviewPass && x.Status != OrderStatus.Canceled)
+                                                {
+                                                    <li><a class="button" href="javascript:void(0)" onclick="CancelOrder('@x.No')">取消订单</a></li>
+                                                }
+                                                <li><a class="button" href="/cart/orderdetail/@x.No">查看订单</a></li>
+                                                <li><a class="button" href="/Product/Index">再次购买</a></li>
+                                            </ul>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                }
+                            }
+                            }
+
+                        </tbody>
+                    </table>
+                    <div class="paginator">
+                        <span>
+                            @Html.ShowPageNavigate((int)Model.Pager.CurrentPageIndex, (int)Model.Pager.PageSize, (int)Model.Pager.RecordCount)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+
+</table>
+<script type="text/javascript">
+    function CancelOrder(No) {
+        if (confirm("确定取消订单吗？")) {
+            $.ajax({
+                url: '/Member/CancelOrder',
+                type: 'POST',
+                data: { orderNo: No },
+                dataType: 'Json',
+                error: function () { alert('提交数据时发生错误！') },
+                success: function (data) {
+                    if (data.successed) {
+                        alert("订单取消成功！");
+                        location.reload();
+                    }
+                    else {
+                        alert(data.Message);
+                    }
+                }
+            });
+        }
+    }
+    //去支付
+    function GoPay(freeType, orderNo) {
+        if (freeType == "ALiPay")
+            window.open("/cart/alipay/" + orderNo);
+        if (freeType == "WeiXinPay")
+            window.open("/Tenpay/Index/" + orderNo);
+        if (freeType == "WXPay")
+            window.open("/Tenpay/GetPayUrl/" + orderNo);
+    }
+
+    //显示隐藏代金卡充值输入框
+    function rechargeToggle() {
+        $("li#recharge").toggle();
+    }
+
+    //代金卡充值
+    function depositcoupon() {
+        var code = $.trim($("input[name=couponcode]").val());
+
+        if (code == "") {
+            alert("请填写完整代金卡号码");
+            return;
+        }
+
+        $.ajax({
+            url: '@Url.Action("depositcoupon", "Cart")',
+            data: { code: code },
+            dataType: 'json',
+            type: 'post',
+            success: function (data, status) {
+                if (data.validate) {
+                    $("input[name=couponcode]").val("");
+                    alert("充值成功！");
+                    location.reload();
+                }
+                else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+</script>

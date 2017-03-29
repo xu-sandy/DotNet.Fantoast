@@ -1,0 +1,59 @@
+﻿@model List<FCake.Admin.Areas.AreaPad.Models.DistributionDetail>
+@{
+    Layout = null;
+    var firstData=Model.Any()?Model.First():new FCake.Admin.Areas.AreaPad.Models.DistributionDetail();
+}
+
+<tr class="_@ViewBag.orderNo">
+    <td colspan="6">
+        <table class="orderDetail" style="margin:0 auto">
+            <thead>
+                <tr>
+                    <td class="r">收货人：</td>
+                    <td>@firstData.Receiver</td>
+                </tr>
+                <tr>
+                    <td class="r">收货地址：</td>
+                    <td>@firstData.ReceiverAddr</td>
+                </tr>
+                <tr>
+                    <td class="r">联系电话：</td>
+                    <td>@firstData.ReceiverMobile     @firstData.ReceiverTel</td>
+                </tr>
+                <tr>
+                    <td class="r">订货人：</td>
+                    <td>@firstData.Customer</td>
+                </tr>
+                @*<tr>
+                    <td class="r">是否需要生日蜡烛：</td>
+                    <td>@(FCake.Core.Common.EnumHelper.GetDescription(firstData.Candle))</td>
+                </tr>*@
+                <tr>
+                    <td colspan="2">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th width="200">蛋糕名称</th>
+                                    <th width="50">规格</th>
+                                    <th width="50">数量</th>
+                                    <th width="50">总价</th>
+                                    <th width="100">生日牌</th>
+                                </tr>
+                            </thead>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.ProductName</td>
+                                    <td>@item.SizeTitle</td>
+                                    <td>@item.Num</td>
+                                    <td> @String.Format("{0:F}", item.TotalPrice) </td>
+                                    <td>@(Server.UrlDecode(item.BirthdayCard))</td>
+                                </tr>
+                            }
+                        </table>
+                    </td>
+                </tr>
+            </thead>
+        </table>
+</td>
+</tr>

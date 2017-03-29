@@ -1,0 +1,38 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "RightGroup";
+}
+
+
+
+<table id="dg" data-options="pageSize: 30"></table>
+<script>
+    $(function () {
+        $("#dg").easyui_datagrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<User>())',
+            title: '用户角色设置',
+            idField: 'Id',
+            toolbar: [],
+            columns_title: ['用户名', '全名', '固定电话', '手机', 'Email', '性别','是否禁用'],
+            columns_width: ['150', '150', '150','150','150','100','100'],
+            columns_show:['UserName','FullName','Tel','Mobile','Email','Sex','IsDisabled'],
+            columns_notitle: [],
+            columns_formatter: ['', '', '', '', '', function (value, row, index) {
+                if (value == 1)
+                    return "男";
+                if (value == 2)
+                    return "女";
+                return "保密";
+            }, function (value, row, index) {
+                if (value == 1)
+                    return "禁用";
+
+                return "启用";
+            }],
+            detail_url: '/user/selectrole',
+            detail_height: 300,
+            idField: 'Id'
+        });
+    })
+</script>

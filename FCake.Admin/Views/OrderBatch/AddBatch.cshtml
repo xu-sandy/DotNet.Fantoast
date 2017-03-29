@@ -1,0 +1,95 @@
+﻿@using FCake.Domain.Entities;
+@model OrderBatch
+    @{
+        ViewBag.Title = "AddBatch";
+    }
+    <form id="newBatch">
+        <table style="margin:30px auto;">
+            <tr>
+                <td>
+                    批次号：
+                </td>
+                <td>
+                    <input id="BatchNo" name="BatchNo" readonly="readonly" class="datacontrol" value="@ViewBag.batchNo" />
+                </td>
+            </tr>
+            <tr>
+                <td>要求完成时间：</td>
+                <td><input class="Wdate datacontrol" type="text" style="border-radius: 5px; border: 1px solid #D3D3D3;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm', minDate: '%y-%M-#{%d}' })" id="RequiredTime" name="RequiredTime" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <br />
+                </td>
+            </tr>
+            <tr>
+                <td><input type="submit" id="addBatch" value="保存" class="easyui-linkbutton cus4 linkbtn" style="margin:0 auto; padding-left:40px;padding-right:40px;" /> </td>
+                <td><input type="submit" class="easyui-linkbutton cus4 linkbtn" style="margin:0 auto; padding-left:40px;padding-right:40px;" id="addBatchAndOrder" value="保存并添加订单" /></td>
+            </tr>
+        </table>
+    </form>
+<script>
+    //提交数据
+    $("#newBatch").submit(function (e) {
+        var batch = $("#BatchNo").val();
+        var time = $("#RequiredTime").val();
+        if (batch == "" || time == "")
+        {
+            alert("输入有误！请修改后重试");
+        }
+        return false;
+    });
+    $(function () {
+        $("#addBatch").click(
+            function () {
+                postData(true);
+                var pwin = window.top.$("body").data("window");
+                pwin.reloadWindow();
+                window.top.$("body").data("win_add").window("close");
+            })
+        $("#addBatchAndOrder").click(function () {
+            postData(false);
+            var url = encodeURI(encodeURI("OrderBatch/AddOrderInBatch?batch=" + $("#BatchNo").val()));
+            openDialog("往批次里添加订单", url);
+            //$('#win').window('close');
+            window.top.$("body").data("win_add").window("close");
+            
+        })
+    })
+    function postData(isAlert) {
+        $.ajax({
+            url: '/OrderBatch/CreatOrderBatch?' + $("#newBatch").serialize(),
+            type: 'post',
+            dataType: 'json',
+            data:{},
+            success: function (result) {
+                if (result.successed) {
+                    if(isAlert)
+                    alert(result.message);
+                    
+                } else {
+                    alert(result.message);
+                    return false;
+                }
+            }
+        })
+    }
+    $(function () {
+        $("#newBatch").validate({
+            rule: {
+                BatchNo: { required: true },
+                RequiredTime: {required:true}
+            }
+            });
+    });
+    //打开添加或者编辑页
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 800,
+            height: 600,
+            id: "detail",
+            url: url
+        });
+    }
+</script>

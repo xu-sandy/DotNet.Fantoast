@@ -1,0 +1,5 @@
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.Weixin\bin\Debug\FCake.Weixin.dll
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.Weixin\bin\Debug\FCake.Weixin.pdb
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.Weixin\obj\Debug\FCake.Weixin.csprojResolveAssemblyReference.cache
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.Weixin\obj\Debug\FCake.Weixin.dll
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.Weixin\obj\Debug\FCake.Weixin.pdb

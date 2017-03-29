@@ -1,0 +1,216 @@
+﻿@using FCake.Bll
+@model FCake.Domain.Entities.Cooperation
+@{
+    ViewBag.Title = "企业试吃";
+    var cooperHistory = new FCake.Bll.Services.CooperationService().GetCooperationByUserId(CurrentMember.MemberId.ToString());
+    var coopStatusList = new FCake.Bll.CommonService().GetDictionaryByCode("CoopStatus", false);
+}
+
+@helper formatColumn(int? status, List<FCake.Core.Common.DropdownItem> coopStatuss)
+{
+    foreach (var item in coopStatuss)
+    {
+        if (status.HasValue)
+        {
+            if (item.Value == status.Value.ToString())
+            {
+                @item.Text;
+                          break;
+            }
+        }
+    }
+}
+
+
+
+<link href="~/Content/global.css" rel="stylesheet" type="text/css">
+<link href="~/Content/cooperate.css" rel="stylesheet" type="text/css" />
+@*<script>
+        window.drpdata = window.drpdata || {};
+        window.drpdata['coopStatus'] = [];
+        @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("CoopStatus", false))
+        {
+            @:window.drpdata['coopStatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+    </script>*@
+@*<style type="text/css">
+        select {
+            height: 37px;
+            color: #8E8E8E;
+            border: 1px solid #ccd1d9;
+            margin-left: 20px;
+            padding-left: 10px;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            *height: 25px;
+            *width: 80px;
+            *padding: 0;
+        }
+    </style>*@
+
+<!--页面内容  -->
+<div class="title">
+    企业合作<img src="~/Content/Images/form/slash.png" />
+</div>
+<div class="line_gray"></div>
+<div class="coo">
+    <form method="post" id="cooperationForm">
+        <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+        <div class="item_stab">
+            <div class="item_text">公司全称</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="CompanyName" name="CompanyName" value="@Model.CompanyName" /><span>*</span>
+            </div>
+        </div>
+
+        @*<div class="item_stab">
+                <div class="item_text">公司地址</div>
+                <div class="item_tab">
+                    @Html.Partial("~/Views/Cart/_PartialPosition.cshtml")
+                </div>
+            </div>*@
+        <div class="item_stab">
+            <div class="item_text">公司地址</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="CompanyAddress" name="CompanyAddress" value="@Model.CompanyAddress" /><span>*</span>
+            </div>
+        </div>
+
+        <div class="item_stab">
+            <div class="item_text">公司人数</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="CompanyPopulation" name="CompanyPopulation" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" value="@Model.CompanyPopulation" /><span>*</span>
+            </div>
+        </div>
+
+        <div class="item_stab">
+            <div class="item_text">您的名字</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="Name" name="Name" value="@Model.Name" /><span>*</span>
+            </div>
+        </div>
+
+        <div class="item_stab">
+            <div class="item_text">您的电话</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="Phone" name="Phone" value="@Model.Phone" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')" maxlength="11" /><span>*</span>
+            </div>
+        </div>
+
+        <div class="item_stab">
+            <div class="item_text">您的电邮</div>
+            <div class="item_tab">
+                <input type="text" class="item_tab1" id="Email" name="Email" value="@Model.Email" /><span>*</span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="confirm"><a href="#" id="submitBtn">确认</a></div>
+@if (cooperHistory.Count > 0)
+{
+    <div class="title">
+        申请历史<img src="~/Content/Images/form/slash.png" />
+    </div>
+    <div class="line_gray"></div>
+    <table cellspacing="0" cellpadding="0" border="0" class="orderlist coo" style="width:700px;color:#673100">
+        <colgroup>
+            <col style="width:120px;" />
+            <col style="width: 80px;" />
+            <col style="width: 120px;" />
+            <col style="width: 120px; " />
+            <col style="width: 110px;" />
+            <col style="width: 110px;" />
+        </colgroup>
+        <tbody>
+            <tr class="rowhead">
+                <td>公司名称</td>
+                <td>联系人</td>
+                <td>联系电话</td>
+                <td>申请时间</td>
+                <td>申请结果</td>
+                <td>说明</td>
+            </tr>
+            @foreach (var item in cooperHistory)
+            {
+                <tr class="rowhead">
+                    <td>@item.CompanyName</td>
+                    <td>@item.Name</td>
+                    <td>@item.Phone</td>
+                    <td>@item.ApplyForTime</td>
+                    <td>@formatColumn(item.Status, coopStatusList)</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+<script type="text/javascript">
+
+    $(function () {
+
+        //错误提示初始化
+        var inputs = $(".item_tab1");
+        $.each(inputs, function (index, item) {
+            $(item).on("focus", function () {
+                $(item).parent().find("span").html("*");
+            });
+        });
+    });
+
+    //提交
+    $("#submitBtn").click(function () {
+
+        var cname = $("#CompanyName").val();
+        var addr = $("#CompanyAddress").val();
+        var population = $("#CompanyPopulation").val();
+        var name = $("#Name").val();
+        var phone = $("#Phone").val();
+        var email = $("#Email").val();
+        var isPass = true;
+
+        var validaData = { "CompanyName": cname, "CompanyAddress": addr, "CompanyPopulation": population, "Name": name, "Phone": phone, "Email": email };
+
+        //判断是否为空
+        $.each(validaData, function (index, item) {
+            if (item == "") {
+                $("#" + index).parent().find("span").html("不能为空！");
+                isPass = false;
+            }
+        });
+
+        if (!isPass) {
+            return false;
+        }
+
+        if ($("#Email").controlValidate("email") == false) {
+            $("#Email").parent().find("span").html("邮箱格式不正确!");
+            return false;
+        }
+        if ($("#Phone").controlValidate("cnmobile") == false && !$("#Phone").controlValidate("cntel")) {
+            $("#Phone").parent().find("span").html("联系号码不正确!")
+            return false;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/Home/SubmitCooperation?" + $("#cooperationForm").serialize(),
+            success: function (result) {
+                alert(result.message);
+            },
+            dataType: "json"
+        })
+    })
+    ////取枚举对应值
+    //function formatColumn(value, list) {
+    //    for (var i = 0; i < list.length; i++) {
+    //        if (list[i].value == value) {
+    //            if (list[i].value != "")
+    //                return list[i].text;
+    //        }
+    //    }
+    //    return value;
+    //}
+</script>

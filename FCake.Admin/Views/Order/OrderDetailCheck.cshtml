@@ -1,0 +1,126 @@
+﻿@using FCake.API
+@{
+    ViewBag.Title = "订单审核-详情";
+
+
+    var passSMS = new FCake.Bll.Services.MsgTemplateService().GetMsgTempByCategory("Pass");
+    var nopassSMS = new FCake.Bll.Services.MsgTemplateService().GetMsgTempByCategory("NoPass");
+
+    var passTemplateId = DaYuConfig.OrderApproveTemplate;
+    var noPassTemplateId = DaYuConfig.OrderAuditNotThroughTemplate; 
+    
+    }
+    @Html.Partial("../order/_PartialOrderDetail")
+
+
+
+    <div class="wrap">
+        <h1 style="color:red">审核结果</h1>
+        <table class="om">
+            <tr>
+                <td style="vertical-align:top;">审核通过</td>
+                <td>
+                    <input type="radio" name="isPass" value="1" checked onclick="hidetext()" /> 通过
+                    <input type="radio" name="isPass" value="2" onclick="showtext()" /> 不通过
+                    @*<div>
+                        <textarea id="remark" placeholder="不通过原因" name="remark" style="width:300px;height:70px;"></textarea>
+                    </div>*@
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top">短信通知</td>
+                <td>
+                    <input id="checkSend" type="checkbox" value="" checked style="vertical-align:top" /> 发送短信
+                    <div>
+                    <textarea id="msg" style="width:300px;height:70px;" readonly="readonly">@passSMS</textarea>
+                        <input type="hidden" id="templateId" value="@passTemplateId"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="text-align:center">
+        <a class="easyui-linkbutton cus2 linkbtn" href="#" id="done">确定</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <a class="easyui-linkbutton linkbtn" href="#" onclick=" window.top.$('body').data('win_checkDlg').window('close'); ">取消</a>
+    </div>
+
+
+    <script type="text/javascript">
+
+        $(function () {
+            hidetext();
+            $("#checkSend").change(function () {
+                $("#msg").toggle();
+            });
+
+            $("input[name=isPass]").change(function () {
+                var value = $("input[name=isPass]:checked").val();
+
+                if (value == 1) {
+                    $("#msg").val("@passSMS");
+                    $("#templateId").val("@passTemplateId");
+
+                }
+                else {
+                    $("#msg").val("@nopassSMS");
+                    $("#templateId").val("@noPassTemplateId");
+                }
+            })
+
+            $("#done").click(function () {
+                var ischeck = $("#checkSend").is(":checked");
+
+                if (ischeck) {
+                    var msg = $("#msg").val();
+                    var templateId = $("#templateId").val();
+                    if (msg == "") {
+                        alert("输入要发送的内容");
+                        return false;
+                    }
+                }
+                var status = $("input[name=isPass]:checked").val();
+                var remark = $("#remark").val();
+                //if (status == 2) {
+                //    remark = $("#remark").val();
+                //}
+                var orderNo = "@ViewBag.orderid"
+                //alert(orderNo);
+                //return;
+
+                var orderType = $("#orderType").combobox('getValue');
+                if (orderType == undefined || orderType == '') {
+                    alert("请选择订单类型");
+                    return false;
+                }
+
+                var reviewUID = $("#reviewUID").combobox('getValue');
+                var reviewText = $("#reviewUID").combobox('getText');
+                if (reviewUID == undefined || reviewUID == '' || reviewText == undefined || reviewText == "") {
+                    alert("请选择订单处理人");
+                    return false;
+                }
+
+                var deliverMsg = $("#DeliverMsg").val();
+
+                $.post("@Url.Action("CheckDone")", "viewState=" + status + "&orderNo=" + orderNo + "&msgTemplateId=" + templateId + "&isSend=" + ischeck + "&remark=" + remark + "&orderType=" + orderType + "&reviewUID=" + reviewUID + "&deliverMsg=" + deliverMsg,
+                    function (data) {
+                    if (data.successed == false) {
+                        alert(data.message);
+                    } else {
+                        alert("操作成功！");
+                    }
+                    window.top.$('body').data("grid")("#dg").datagrid('reload');
+                    window.top.$('body').data('win_checkDlg').window('close');
+                }, "json");
+
+            })
+        })
+
+        function showtext() {
+            $("#lblremark").css("display", "inline");
+        }
+        function hidetext() {
+            $("#lblremark").css("display", "none");
+        }
+    </script>

@@ -1,0 +1,33 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "数据字典";
+}
+
+<div id="layout" data-options="fit:true,border:false">
+    <div data-options="region:'west',split:true" style="width: 200px;">
+        <ul id="treeDic" class="easyui-tree" data-options="url:'/Setting/GetDictionaryTypeTree',onClick:function(node){selectmenu(node)}"></ul>
+    </div>
+    <div data-options="region:'center'">
+        <iframe scrolling="auto" id="dictionaryDataGrid" frameborder="0" src="" style="width:100%;height:99%;"></iframe>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("#layout").layout({ collapsible: false });
+        //$('#list').accordion({
+        //    animate: true,
+        //    fit: true,
+        //    border: false,
+        //    selected: 0
+        //});
+    });
+
+    function selectmenu(node) {
+        if (node.url == "true") {
+            $("#dictionaryDataGrid").attr("src", '/Setting/DictionaryDataGrid?dicCode=' + node.id);
+        }
+    }
+</script>
+

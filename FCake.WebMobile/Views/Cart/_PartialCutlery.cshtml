@@ -1,0 +1,15 @@
+﻿@using FCake.Bll;  
+<!--另购餐具-->
+<div class="cutlery">
+    <h1>另购餐具</h1>
+    <ul class="clearfix">
+        @foreach (var x in new FCake.Bll.ProductService().GetTop5cutleryProducts<FCake.WebMobile.Models.CutleryVM>())
+        {
+            <li>
+                <img src="@(Html.GetSysManageUrl()+x.Url)_min.jpg" />
+                <a href="javascript:;" onclick="addCart('@x.Id',1,true)">加入购物车</a>
+            </li>
+        }
+    </ul>
+</div>
+

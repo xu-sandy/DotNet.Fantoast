@@ -1,0 +1,161 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+    ViewBag.Title = "配送范围";
+}
+<link href="~/Content/form.css" rel="stylesheet" />
+<div class="container" style="font-family: 微软雅黑; ">   
+    <div class="row" style="height: 5%;">
+        <div class="col-xs-12 col-sm-12  col-md-12  col-lg-12 " style="background-color: #bd9663;">
+            <img src="~/Content/images/PersonalCenter/l_arrow.png" style="height:21px; width:14px; margin-top:15px; float:left" onclick="back()" />
+            <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">配送范围</span>
+            <img src="~/Content/images/PersonalCenter/index.png" style=" height:19px; width:20px; float:right; margin-top:15px;" onclick="backHome()" />
+        </div>
+    </div>      
+    <div style="margin-bottom:15px;">
+        <table class="wallbox content">
+            <tr>
+                @*<td style="vertical-align:top;">
+                        @Html.Partial("_PartialMenu")
+                    </td>*@
+                @*内容信息*@
+                <td style="text-align: left; vertical-align: top;">
+                    <div class="datapanel">
+                        @*@Html.Partial("_PartialMapTitle", "配送范围")*@
+
+                        <div class="panelcontent" style="width:100%;padding-left:10px;;">
+                            <div class="item">
+                                <div>
+                                    <br />
+                                    <p><strong>1. 配送范围</strong></p>
+                                    <p>目前我们提供思明区，湖里区,免费配送（鼓浪屿暂不提供），岛外区域暂不配送；</p>
+                                    <br />
+                                    <p><strong>2. 配送时间</strong></p>
+                                    <p>思明区、湖里区的配送时间：上午：10 : 30  - 12 : 00 ；下午：14 : 00  - 21 : 00 ，岛外配送服务时间另定；</p>
+                                    <br />
+                                    <p><strong>3. 电话咨询时间</strong>：9 : 00  - 21 : 00（请至少提前8小时预订） </p>
+                                    <br />
+                                </div>
+
+                                <img src="~/Content/images/addressRange.png" class="img-responsive" />
+                                <!--百度地图容器-->
+                                @*<div style="width: 730px; height: 500px; border: #ccc solid 1px;" id="dituContent"></div>*@
+
+                                <div>
+                                    <br />
+                                    <p style="font-size:14px"><strong>厦门枫氏食品有限公司</strong></p>
+                                    <br />
+                                    <p><strong>地址：</strong>厦门市湖里区长岸路寨上公交场站旁 &nbsp;&nbsp; </p>
+                                    <p><strong>邮编：</strong>361000</p>
+                                    <br />
+                                    <p><strong>全国咨询电话：</strong>4000-569-565</p>
+                                    <br />
+                                    <p><strong>公司信箱：</strong>service@fancake.cn</p>
+                                    <p><strong>公司网址：</strong>http://www.fancake.cn</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?key=&v=1.1&services=true"></script>
+    <script type="text/javascript">
+        //创建和初始化地图函数：
+        function initMap() {
+            createMap();//创建地图
+            setMapEvent();//设置地图事件
+            addMapControl();//向地图添加控件
+            addMarker();//向地图中添加marker
+        }
+
+        //创建地图函数：
+        function createMap() {
+            var map = new BMap.Map("dituContent");//在百度地图容器中创建一个地图
+            var point = new BMap.Point(118.201638, 24.495402);//定义一个中心点坐标
+            map.centerAndZoom(point, 17);//设定地图的中心点和坐标并将地图显示在地图容器中
+            window.map = map;//将map变量存储在全局
+        }
+
+        //地图事件设置函数：
+        function setMapEvent() {
+            map.enableDragging();//启用地图拖拽事件，默认启用(可不写)
+            map.enableScrollWheelZoom();//启用地图滚轮放大缩小
+            map.enableDoubleClickZoom();//启用鼠标双击放大，默认启用(可不写)
+            map.enableKeyboard();//启用键盘上下左右键移动地图
+        }
+
+        //地图控件添加函数：
+        function addMapControl() {
+            //向地图中添加缩放控件
+            var ctrl_nav = new BMap.NavigationControl({ anchor: BMAP_ANCHOR_TOP_LEFT, type: BMAP_NAVIGATION_CONTROL_LARGE });
+            map.addControl(ctrl_nav);
+            //向地图中添加缩略图控件
+            var ctrl_ove = new BMap.OverviewMapControl({ anchor: BMAP_ANCHOR_BOTTOM_RIGHT, isOpen: 0 });
+            map.addControl(ctrl_ove);
+            //向地图中添加比例尺控件
+            var ctrl_sca = new BMap.ScaleControl({ anchor: BMAP_ANCHOR_BOTTOM_LEFT });
+            map.addControl(ctrl_sca);
+        }
+
+        //标注点数组
+        var markerArr = [{ title: "道诚（厦门）信息科技有限公司", content: "地址：观音山国际商务营运中心4号楼1003<br/>电话：0592&nbsp;5902&nbsp;177", point: "118.201539|24.49532", isOpen: 0, icon: { w: 23, h: 25, l: 46, t: 21, x: 9, lb: 12 } }
+        ];
+        //创建marker
+        function addMarker() {
+            for (var i = 0; i < markerArr.length; i++) {
+                var json = markerArr[i];
+                var p0 = json.point.split("|")[0];
+                var p1 = json.point.split("|")[1];
+                var point = new BMap.Point(p0, p1);
+                var iconImg = createIcon(json.icon);
+                var marker = new BMap.Marker(point, { icon: iconImg });
+                var iw = createInfoWindow(i);
+                var label = new BMap.Label(json.title, { "offset": new BMap.Size(json.icon.lb - json.icon.x + 10, -20) });
+                marker.setLabel(label);
+                map.addOverlay(marker);
+                label.setStyle({
+                    borderColor: "#808080",
+                    color: "#333",
+                    cursor: "pointer"
+                });
+
+                (function () {
+                    var index = i;
+                    var _iw = createInfoWindow(i);
+                    var _marker = marker;
+                    _marker.addEventListener("click", function () {
+                        this.openInfoWindow(_iw);
+                    });
+                    _iw.addEventListener("open", function () {
+                        _marker.getLabel().hide();
+                    })
+                    _iw.addEventListener("close", function () {
+                        _marker.getLabel().show();
+                    })
+                    label.addEventListener("click", function () {
+                        _marker.openInfoWindow(_iw);
+                    })
+                    if (!!json.isOpen) {
+                        label.hide();
+                        _marker.openInfoWindow(_iw);
+                    }
+                })()
+            }
+        }
+        //创建InfoWindow
+        function createInfoWindow(i) {
+            var json = markerArr[i];
+            var iw = new BMap.InfoWindow("<b class='iw_poi_title' title='" + json.title + "'>" + json.title + "</b><div class='iw_poi_content'>" + json.content + "</div>");
+            return iw;
+        }
+        //创建一个Icon
+        function createIcon(json) {
+            var icon = new BMap.Icon("http://app.baidu.com/map/images/us_mk_icon.png", new BMap.Size(json.w, json.h), { imageOffset: new BMap.Size(-json.l, -json.t), infoWindowOffset: new BMap.Size(json.lb + 5, 1), offset: new BMap.Size(json.x, json.h) })
+            return icon;
+        }
+
+        initMap();//创建和初始化地图
+    </script>
+

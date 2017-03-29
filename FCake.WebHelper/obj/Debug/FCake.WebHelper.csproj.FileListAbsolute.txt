@@ -1,0 +1,7 @@
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\bin\Debug\FCake.WebHelper.dll
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\bin\Debug\FCake.WebHelper.pdb
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\bin\Debug\Newtonsoft.Json.dll
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\bin\Debug\Newtonsoft.Json.xml
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\obj\Debug\FCake.WebHelper.csprojResolveAssemblyReference.cache
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\obj\Debug\FCake.WebHelper.dll
+E:\daoc\projects\fantoastcake\trunk\project\Fancake\FCake.WebHelper\obj\Debug\FCake.WebHelper.pdb

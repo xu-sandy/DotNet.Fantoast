@@ -1,0 +1,251 @@
+﻿@model FCake.Domain.Entities.Product
+@using FCake.Bll;
+@{
+    ViewBag.Title = "GetSubProducts";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;
+}
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+<table id="subproduct"></table>
+<script type="text/javascript">
+    var otherProductTypeDicValue = '@otherProductTypeDicValue';
+    window.drpdata = window.drpdata || {};
+
+    window.drpdata['productUnit'] = [];
+    window.drpdata['productUnitCake'] = [];
+    window.drpdata['productUnitOther'] = [];
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("ProductUnitCake", false))
+    {
+        @:window.drpdata['productUnitCake'].push({ value: '@item.Value', text: '@item.Text' });
+                                        }
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("ProductUnitOther", false))
+    {
+        @:window.drpdata['productUnitOther'].push({ value: '@item.Value', text: '@item.Text' });
+                                            }
+    @if (Model.Type == otherProductTypeDicValue)
+        {
+            @:window.drpdata['productUnit'] = window.drpdata['productUnitOther'];
+                                        }
+        else
+        {
+            @:window.drpdata['productUnit'] = window.drpdata['productUnitCake'];
+                                        }
+</script>
+<script type="text/javascript">
+    $(function () {
+        $("#subproduct").datagrid({
+            url: '/order/GetProductsInfo/@(Model==null?"":Model.Id)',
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            idField: 'Id',
+            columns: [[
+                { field: 'ParentId', hidden: true },
+                {
+                    field: 'Size', title: '产品单位', width: 100, formatter: function (value, row, index) {
+                        return pharos.json.getArrayValue(window.drpdata['productUnit'], 'value', value, 'text', value);
+                    }
+                },
+                { field: 'OriginalPrice', hidden: true, title: '定价', width: 100 },
+                { field: 'Price', title: '定价', width: 100 },
+                {
+                    field: 'Id', title: '管理', width: 100, formatter: function (value, row, index) {
+                        return "<div class='dgedit'><a href='javascript:;' class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-add'\" onclick=\"selectsubproduct('" + index + "')\">添加</a></div>";
+                    }
+                },
+                { field: 'Type', hidden: true }
+            ]],
+            onLoadSuccess: function () {
+
+                $.parser.parse($('.cus1').parent());
+            }
+        });
+    })
+
+    function selectsubproduct(index) {
+        $top = window.top.$('body').data("order");
+        $selectproduct = $top("#selectedproducts");
+
+        var row = $("#subproduct").datagrid("getRows")[index];
+
+        var rows = $selectproduct.datagrid("getRows");
+        var footer = [];
+
+        var check = false;
+        $.each(rows, function (i, v) {
+            if (v.Id == row.Id) {
+                check = true;
+                $selectproduct.datagrid("updateRow", {
+                    index: i,
+                    row: {
+                        Num: Number(v.Num) + 1
+                    }
+                });
+
+            }
+        });
+        //根据会员取对应产品价格
+        var currentPrice = 0;
+        var $customerid = window.top.$('body').data("customerid");
+        var customerid = $customerid('#customerid').val();
+
+        if (customerid == null) {
+            alert("请先选择会员！");
+        }
+        $.ajax({
+            url: '@Url.Action("GetSubProductPriceByCustomerId", "Product")',
+            type: "POST",
+            dataType: 'JSON',
+            data: { customerId: customerid, subProductId: row.Id, ParentId: row.ParentId, orginPrice: row.Price },
+            success: function (data) {
+                currentPrice = data;
+
+                if (check == false) {
+                    $selectproduct.datagrid("insertRow", {
+                        index: 0,
+                        row: {
+                            Id: row.Id,
+                            MainImgId: '@(new FCake.Bll.BaseFileService().GetImgUrlById(Model.MainImgId))',
+                            Name: '@Model.Name',
+                            Num: 1,
+                            Size: row.Size,
+                            Price: currentPrice,
+                            OrginPrice: row.Price,
+                            SizeTitle: pharos.json.getArrayValue(window.drpdata['productUnit'], 'value', row.Size, 'text', row.Size),
+                            Type: row.Type,
+                            ParentId: row.ParentId
+                        }
+                    });
+                }
+                sumProduct();
+
+                var currentPrice = 0;
+                var s_rows = $selectproduct.datagrid("getRows");
+                $.each(s_rows, function (index, item) {
+                    //去掉餐具的价格
+                    if (item.Type != otherProductTypeDicValue) {
+                        currentPrice += item.Price;
+                    }
+                })
+
+                chooseCoupons(currentPrice, customerid);
+                $top(".dgedit .easyui-linkbutton").linkbutton();
+                $selectproduct.datagrid('fixDetailRowHeight', 0);
+            }
+        })
+
+
+
+    }
+
+    //显示可用优惠券
+    function chooseCoupons(currentMoney, customerid) {
+        $top = window.top.$('body').data("order");
+        if (customerid == "") {
+            customerid = $('#customerid').val();
+            if (customerid == "") {
+                return false;
+            }
+        }
+        if (customerid == undefined) {
+            return;
+        }
+        var baseDom = "<div class='select-box {{class}}' data-id='{{id}}'>";
+        baseDom += "<ul class='box-content'>";
+        baseDom += "<li class='first-line'><div class='{{cash}}'  data-money='{{money}}'>￥{{money}}</div><div class='{{tip}}'>({{condition}})</div></li>";
+        baseDom += "<li class='second-line'>{{date}}</li>";
+        baseDom += "</ul>";
+        baseDom += "</div>";
+        $.ajax({
+            url: '@Url.Action("GetCouponsByCustomerId", "Coupons")',
+            dataType: "JSON",
+            type: 'POST',
+            data: { customerId: customerid },
+            success: function (data) {
+                if (data.successed) {
+                    var coupons = data.data;
+                    var resultHtml = "";
+                    $.each(coupons, function (index, item) {
+                        var css = "";
+                        var cash = "box-cash";//金额样式
+                        var tip = "box-tip";//提示样式
+                        if (currentMoney < item.ConditionMoney && item.ConditionMoney != 0) {
+                            css = "disabled";
+                            cash = "box-cash-disabled";
+                            tip = "box-tip-disabled";
+                        }
+                        var condition = "无条件使用";
+                        if (item.ConditionMoney > 0) {
+                            condition = "满 " + item.ConditionMoney + " 元使用";
+                        }
+                        resultHtml += baseDom.replace("{{class}}", css)
+                            .replace("{{id}}", item.Id)
+                            .replace("{{money}}", item.Denomination)
+                            .replace("{{money}}", item.Denomination)
+                            .replace("{{condition}}", condition)
+                            .replace("{{cash}}", cash)
+                            .replace("{{tip}}", tip)
+                            .replace("{{date}}", item.BeginValidDate.split(' ')[0].replace('-', '.').replace('-', '.') + "-" + item.EndValidDate.split(' ')[0].replace('-', '.').replace('-', '.'));
+                    })
+                    //$("#allCoupons").html(resultHtml);
+
+                    $top("#allCoupons").html(resultHtml);
+                    //给优惠券绑上点击事件
+                    $top(".select-box ").each(function (index, item) {
+                        $(item).on("click", function () {
+
+                            var giftcardInfo = $top("#giftInfo").html();
+                            if (giftcardInfo.replace(/(^\s*)|(\s*$)/g, '') != "") {
+                                if (confirm("选择优惠券将取消代金卡使用，是否确认?")) {
+
+                                    $(item).addClass("checked");
+                                    $(item).siblings().removeClass("checked");
+                                    var c_price = $(item).find(".box-cash").data("money");
+
+                                    if (c_price > currentMoney) {//优惠券金额>订单金额
+                                        c_price = currentMoney;
+                                    }
+                                    $top("#couponCount").text(1);
+                                    $top("#couponPrice").text(c_price);
+                                    $top("#giftInfo").html("");
+                                    $top("#giftCount").text(0);
+                                    $top("#giftCardPrice").text(0);
+                                }
+
+                            } else {
+                                $(item).addClass("checked");
+                                $(item).siblings().removeClass("checked");
+                                var c_price = $(item).find(".box-cash").data("money");
+
+                                if (c_price > currentMoney) {//优惠券金额>订单金额
+                                    c_price = currentMoney;
+                                }
+                                $top("#couponCount").text(1);
+                                $top("#couponPrice").text(c_price);
+                            }
+                        })
+                    })
+                    //不可点击的优惠券去掉点击样式
+                    $top(".disabled").each(function (index, item) {
+                        $(item).off("click");
+                    })
+                }
+            }
+        })
+
+    }
+
+
+    function sumProduct() {
+        $top = window.top.$('body').data("order");
+        $selectproduct = $top("#selectedproducts");
+        var p = 0;
+        var s = 0;
+        var rows = $selectproduct.datagrid("getRows");
+        $top.each(rows, function (i, v) {
+            p += Number(v.Price) * Number(v.Num);
+            s += Number(v.Num);
+        });
+        $top("#productmsg").text("总价：¥" + p.toFixed(2) + " 总数：" + s);
+    }
+</script>

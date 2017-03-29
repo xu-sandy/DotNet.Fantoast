@@ -1,0 +1,40 @@
+﻿@{
+  
+    ViewBag.User = FCake.Bll.CurrentMember.MemberSession;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="keywords" content="枫客,枫客官网,蛋糕,fancake,fancake官网,枫客Fancake,枫多士,枫客蛋糕,fancake蛋糕,cake,枫客cake,生日蛋糕，巧克力蛋糕，芝士，乳酪蛋糕，乳脂奶油,慕斯蛋糕，鲜奶蛋糕，慕斯蛋糕,商务蛋糕，布朗尼,婚庆蛋糕，芝士蛋糕,拿破仑蛋糕,提供健康、高品质蛋糕产品,在线预订，配送到家，蛋糕24小时在线预定，支持货到付款，电话:4000569565," />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, user-scalable=no" />
+    <title>@ViewBag.Title</title>
+    <link rel="fancake icon" type="image/x-icon" href="~/Content/images/fancake.ico" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="~/Content/reset.css" rel="stylesheet" />
+    <link href="~/Content/global.css" rel="stylesheet" />
+    <link href="~/Content/fcake.css" rel="stylesheet" />
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/Scripts/global.js")
+    @Scripts.Render("~/Scripts/pharos.jquery-ex.js")
+    <script src="~/Scripts/fcake/global.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery-ex.js"></script>
+</head>
+<body>
+    @Html.Partial("_PartialHead")
+    <div style="min-height: 568px;">
+        @RenderBody()
+    </div>
+    @RenderSection("scripts", required: false)
+    @Html.Partial("_PartialBottom")
+
+    <div style="display:none;">
+        @*统计网站流量*@
+        <img src="@(new FCake.WebMobile.WebMobileTrackPage(1254947967).TrackPageView())" width="0" height="0" />
+    </div>
+</body>
+</html>

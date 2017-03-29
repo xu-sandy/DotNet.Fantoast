@@ -1,0 +1,242 @@
+﻿@using FCake.Bll;
+@model FCake.Domain.Entities.Customers
+@{
+    ViewBag.Title = "个人信息";
+}
+@Scripts.Render(
+    "~/Scripts/formValidator/formValidator-4.1.3.js",
+    "~/Scripts/formValidator/formValidatorRegex.js"
+)
+<script>
+    window.favoriteCakeData = window.favoriteCakeData || {};
+    window.favoriteCakeData['favoritecake'] = [];
+    @foreach (var item in new FCake.Bll.ProductService().GetUserFavoriteCakeByUser(CurrentMember.MemberId.ToString()))
+    {
+        if(item!=null)
+        {
+        @:window.favoriteCakeData["favoritecake"].push({ value: '@item.Id', text: '@item.Name' });
+                }
+            }
+</script>
+<link href="~/Content/information.css" rel="stylesheet" />
+<script src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<style type="text/css">
+    table {
+        padding-bottom: 50px;
+    }
+
+    div.WdateDiv {
+        width: 262px;
+    }
+
+    iframe.DRAGDIS_iframe {
+        width: 262px;
+    }
+
+    select {
+        height: 37px;
+        padding: 5px;
+        float: left;
+        border: 1px solid #ccd1d9;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        margin-left: 20px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+        select[name=FavoriteCake] {
+            width: 262px;
+        }
+
+        select[name=ddlProvince] {
+            width: 75px;
+        }
+
+        select[name=ddlCity] {
+            margin-left: 17px;
+        }
+
+        select[name=ddlArea] {
+            margin-left: 17px;
+        }
+</style>
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top;">
+            @Html.Partial("_PartialMenu")
+        </td>
+        @*内容信息*@
+        <td style="text-align:left;">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "绑定新手机")
+
+                <div class="panelcontent">
+                    <form id="bindNewPhoneForm" name="bindNewPhoneForm" method="post">
+                        <div class="item">
+                            <table>
+                                <tr>
+                                    <td><div class="item_text">旧手机号</div></td>
+                                    <td><input type="text" class="item_tab1" id="OldMobile" name="OldMobile" readonly="readonly" style="background-color:#D3D3D3"></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">新手机号</div></td>
+                                    <td>
+                                        <input type="text" class="item_tab1" id="Mobile" maxlength="11" onkeyup="this.value=this.value.replace(/\D/g,'')" name="Mobile">
+                                    </td>
+                                    <td colspan="2"><div id="MobileTip" style="width: 250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">图片验证码</div></td>
+                                    <td>
+                                        <input type="text" class="item_tab1" id="captchas" name="Captchas" placeholder="填写图片验证" maxlength="4" />
+                                    </td>
+                                    <td>
+                                        <div style="margin-top:22px">
+                                            <img style="height: 30px" id="captchasImg" src="@Url.Action("GetCaptchas","Passport")"> <a href="javascript:change()" style="color:#629bcb">换一张</a>
+                                        </div>
+                                    </td>
+                                    <td><div id="captchasTip" style="width:250px"></div></td>
+                                </tr>
+                                <tr>
+                                    <td><div class="item_text">验证码</div></td>
+                                    <td><input type="text" class="item_tab1" id="Code" name="Code" placeholder="验证码"></td>
+                                    <td><input type="button" class="item_tab5" id="sendBtn" onclick="sendCode()" value="获取验证码"></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td align="center"><div class="btn-confirm"><a href="#" style="display:block" onclick="submitInfo()">确认</a></div></td>
+                                    <td></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </td>
+    </tr>
+
+</table>
+
+<script type="text/javascript">
+    var isPhoneRegister = true;
+    var isDoValidator = false;
+
+
+    $(function () {
+        $("#OldMobile").val('@Model.Mobile')
+
+        //验证
+        $.formValidator.initConfig({
+            formID: "bindNewPhoneForm",
+            onSuccess: function () {
+                $.post("@Url.Action("SaveNewPhone", "Member")?", $("#bindNewPhoneForm").serialize(), function (result) {
+                    change();
+                    if (result.successed) {
+                        alert(result.message);
+                    } else {
+                        alert(result.message);
+                        if (result.data.code == "captchas") {
+                            change();
+                            $("#captchas").val();
+                        }
+                        return false;
+                    }
+                }, "json");
+            },
+            onError: function (msg, obj, errorlist) {
+                alert(msg);
+            },
+            ajaxPrompt: '有数据正在异步验证，请稍等...'
+        });
+
+        $("#Mobile").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入您的手机号" }).regexValidator({ regExp: ["mobile"], dataType: "enum", onError: "手机格式不正确" })
+        .ajaxValidator({
+            dataType: "json",
+            type: "post",
+            async: true,
+            url: "@Url.Action("CheckUserName", "Passport")",
+            data: $("#Mobile").val(),
+            success: function (data) {
+                if (data) {
+                    isPhoneRegister = false;
+                    isDoValidator = false;
+                    return true;
+                } else {
+                    isPhoneRegister = true;
+                    isDoValidator = false
+                    return "该手机号已注册";
+                }
+            },
+            ///buttons: $("#button"),
+            error: function (jqXHR, textStatus, errorThrown) {
+                isPhoneRegister = true;
+                alert("服务器没有返回数据，可能服务器忙，请重试" + errorThrown);
+            },
+            onError: "该手机号已注册",
+            onWait: "正在进行合法性校验，请稍候...",
+            beforeSend: function () {
+                isDoValidator = true;
+                return true;
+            }
+        }).defaultPassed();
+    })
+
+    function submitInfo() {
+        return jQuery.formValidator.pageIsValid('1');
+    }
+
+    //获取验证码
+    function sendCode() {
+        var mobileNo = $("input[name=Mobile]").val();
+        var re = /^1\d{10}$/;
+        if (!re.test(mobileNo)) {
+            alert("手机号码不正确!");
+            return false;
+        }
+        if (isDoValidator) {
+            alert("正在验证，请重试");
+            return false;
+        }
+        if (isPhoneRegister) {
+            alert("手机号码已注册");
+            return false;
+        }
+        $.post('@Url.Action("SendValidCodeFJXX", "Passport")', { mobile: mobileNo, type: "Register", isNewRegister: true, guess: $("#captchas").val() }, function (data) {
+            change();
+            if (data.success == true) {
+                time();
+            }
+            else {
+                alert(data.msg);
+            }
+        });
+    }
+    var wait = 60;
+    function time() {
+        if (wait == 0) {
+            $("#sendBtn").attr("disabled", false);
+            $("#sendBtn").val("发送验证码");
+            wait = 60;
+        } else {
+            $("#sendBtn").attr("disabled", true);
+            $("#sendBtn").val(wait + "秒后重新发送");
+            wait--;
+            setTimeout(function () {
+                time()
+            },
+             1000)
+        }
+    }
+    function change() {
+        $("#captchasImg").attr('src', "@Url.Action("GetCaptchas", "Passport")" + "?a=" + Math.random());
+    }
+
+
+
+
+
+</script>

@@ -1,0 +1,13 @@
+﻿@model string
+
+<div class="cart-nav">
+    <span @(Model == "我的购物车"?"class=active":"")>我的购物车</span>
+    <span>
+        <img src="~/Content/images/arrow.png" />
+    </span>
+    <span @(Model =="订单明细" ?"class=active":" ")>订单明细</span>
+<span>
+        <img src="~/Content/images/arrow.png" />
+    </span>
+        <span @(Model=="确认订单" ?"class=active":" ")>确认订单</span>
+</div>

@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.Title = "MsgTemplate";
+}
+<table id="dg"></table>
+<script>
+    $(function () {
+        var editindex = undefined;
+        $("#dg").datagrid({
+            url: "@Url.Action("GetMsgTemplate", "WebSet")",
+            singleSelect: true,
+            columns: [[
+            { field: 'Id', title: 'Id', hidden: true },
+            { field: 'CategoryName', title: '类别', width: 100 },
+            { field: 'content', title: '内容', width: 1000, editor: 'text' }
+            ]],
+
+            onDblClickRow: function (rowIndex, rowData) {
+                //editindex = rowIndex;
+                //$(this).datagrid('beginEdit', rowIndex);
+                if (editindex != undefined) {
+                    $("#dg").datagrid('endEdit', editindex);
+                }
+                else {
+                    if (editindex == undefined) {
+                        $("#dg").datagrid("beginEdit", rowIndex);
+                        editindex = rowIndex;
+                    }
+                }
+            },
+            onAfterEdit: function (rowIndex, rowData, changes) {
+                editindex = undefined;
+                if (changes.content == null || changes.content == "")
+                {
+                    $.messager.alert("操作提示", "内容不能为空！", "error");
+                    return false;
+
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("UpdateMsgTemplate", "WebSet")",
+                    data: { id: rowData.Id, content: changes.content },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data) {
+                            $("#dg").datagrid("reload");
+                        }
+                    },
+                    error: function () {
+                        $.messager.alert("操作提示", "操作失败！", "error");
+                    }
+
+                });
+
+            },
+            onClickRow: function (rowIndex, rowData) {
+                if (editindex != undefined) {
+                    $("#dg").datagrid("endEdit", editindex);
+                }
+            }
+        });
+    })
+</script>

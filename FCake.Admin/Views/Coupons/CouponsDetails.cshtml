@@ -1,0 +1,182 @@
+﻿@{
+    ViewBag.Title = "CouponsDetails";
+}
+<div id="toolbar" style="padding:5px">
+    <label>优惠券号：</label><input class="easyui-textbox datacontrol" id="couponSN" placeholder="请输入优惠券号" style="width:140px;height:30px" />
+    <label>批次号：</label><input class="easyui-textbox datacontrol" id="couponBatch" placeholder="优惠券批次号" style="width:140px;height:30px" />
+    <label>会员手机号：</label><input class="easyui-textbox datacontrol" id="cusMobile" placeholder="请输入会员账号" style="width:140px;height:30px" />
+    <label>使用状态：</label>
+    <input id="useState" class="easyui-combobox" data-options="valueField:'value',textField:'label',data:[{label:'全部',value:-1,'selected':true},{label:'未使用',value:0},{label:'已使用',value:1}]" />
+
+    <label>面额：</label><input id="faceVal" placeholder="面额" class="easyui-textbox datacontrol" style="width:140px;height:30px" /><br />
+    有效期：<input class="Wdate" placeholder="有效期包含该时间" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd 00:00:00' })" id="beginTime" name="beginTime" />
+    @*到:<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd 00:00:00' })" id="endTime" name="endTime" />*@
+    <a href="javascript:void(0)" id="searchBtn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+    <a href="javascript:void(0)" id="exportBtn" class="easyui-linkbutton" data-options="iconCls:'icon-redo'">优惠券导出</a>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<table id="dg"></table>
+<script>
+    $(function () {
+        $('#dlg').dialog('close');
+
+        $("#dg").datagrid({
+            url: '@Url.Action("GetCouponsDetails", "Coupons")' + "?UseState=-1",
+            toolbar: "#toolbar",
+            rownumbers: true,
+            singleSelect: true,
+            fitColumns: true,
+            pagination: true,
+            pageSize: 20,
+            autoRowHeight: true,
+            fit: true,
+            onLoadSuccess: function () {
+                $.parser.parse($('td .easyui-linkbutton').parent());
+            },
+            columns: [[
+                { field: 'CouponBatch', title: '批次号', width: 80, align: 'center' },
+                { field: 'CouponSN', title: '优惠券券号', width: 90, align: 'center' },
+                { field: 'Title', title: '优惠券', width: 100, align: 'center' },
+                { field: 'Denomination', title: '面额', width: 30, align: 'center' },
+                {
+                    field: 'ConditionMoney', title: '使用条件', width: 90, align: 'center', formatter: function (value, row, index) {
+                        if (value > 0) {
+                            return "满" + value + "元使用";
+                        } else {
+                            return "无条件使用";
+                        }
+                    }
+                },
+                {
+                    field: 'OwnerFullName', title: '拥有者', width: 100, align: 'center', formatter: function (value, row, index) {
+                        if (value != null && row.OwnerMobile != null) {
+                            return value + "/" + row.OwnerMobile;
+                        } else if (row.OwnerMobile != null) {
+                            return row.OwnerMobile;
+                        } else {
+                            return row.OwnerTel;
+                        }
+                    }
+                },
+                {
+                    field: 'UsedFullName', title: '使用者', width: 60, align: 'center', formatter: function (value, row, index) {
+                        if (value != null && row.UsedMobile != null) {
+                            return value + "/" + row.UsedMobile;
+                        } else if (row.UsedMobile != null) {
+                            return row.UsedMobile;
+                        } else {
+                            return row.UsedTel;
+                        }
+                    }
+                },
+                { field: 'UseOrderSN', title: '使用订单号', width: 60, align: 'center' },
+                { field: 'UseDate', title: '使用时间', width: 100, align: 'center' },
+                { field: 'CreatedOn', title: '创建时间', width: 110, align: 'center' },
+                {
+                    field: 'BeginValidDate', title: '有效期', width: 180, align: 'center', formatter: function (value, row, index) {
+                        return value.substring(0, 16) + "～" + row.EndValidDate.substring(0, 16);
+                    }
+                },
+                { field: 'EndValidDate', title: '有效期结束时间', width: 90, align: 'center', hidden: true },
+                {
+                    field: 'UseState', title: '状态', width: 40, align: 'center', formatter: function (value, row, index) {
+                        if (value == 0) {
+                            return "未使用";
+                        } else if (value == 1) {
+                            return "已使用";
+                        }
+                    }
+                }
+
+            ]]
+        })
+
+        //查询
+        $("#searchBtn").on("click", function () {
+            var couponsNo = $("#couponSN").val();
+            var customerUser = $("#cusMobile").val();
+            var state = $("#useState").combobox("getValue");
+            var faceVal = $("#faceVal").val();
+            var beginTime = $("#beginTime").val();
+            //var endTime = $("#endTime").val();
+            var couponBatch = $("#couponBatch").val();
+            $("#dg").datagrid({
+                pageNumber: 1,
+                url: "@Url.Action("GetCouponsDetails", "Coupons")" + "?CouponSN=" + couponsNo + "&MemberId=" + customerUser + "&UseState=" + state + "&Denomination=" + faceVal + "&BeginValidDate=" + beginTime + "&CouponBatch=" + couponBatch,
+            })
+            $("#dg").datagrid("reload");
+        })
+
+        //优惠券导出
+        $("#exportBtn").on("click", function () {
+            var couponsNo = $("#couponSN").val();
+            var customerUser = $("#cusMobile").val();
+            var state = $("#useState").combobox("getValue");
+            var faceVal = $("#faceVal").val();
+            var beginTime = $("#beginTime").val();
+            var couponBatch = $("#couponBatch").val();
+            //var endTime = $("#endTime").val();
+
+            if (couponsNo == "" && customerUser == "" && state == -1 && faceVal == "" && beginTime == "" && couponBatch == "") {
+                $.messager.alert("提示", "请先输入需要导出的优惠券条件，再导出数据。", "info", function () {
+                    return false;
+                    @*$.messager.progress({
+                        title: '',
+                        msg: '正在生成EXCEL...'
+                    })
+                    $.ajax({
+                        url: '@Url.Action("CouponsExportExcel","Coupons")',
+                        dataType: 'json',
+                        type: 'post',
+                        data: { CouponSN: couponsNo, UseState: state, Denomination: faceVal, BeginValidDate: beginTime, memberMobile: customerUser, CouponBatch: couponBatch },
+                        success: function (data) {
+                            $.messager.progress('close');
+                            if (data.successed) {
+                                DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                            } else {
+                                $.messager.alert("提示", data.message, "info");
+                            }
+                        }
+                    });*@
+                })
+            } else {
+                $.messager.progress({
+                    title: '',
+                    msg: '正在生成EXCEL...'
+                })
+                $.ajax({
+                    url: '@Url.Action("CouponsExportExcel","Coupons")',
+                    dataType: 'json',
+                    type: 'post',
+                    data: { CouponSN: couponsNo, UseState: state, Denomination: faceVal, BeginValidDate: beginTime, memberMobile: customerUser, CouponBatch: couponBatch },
+                    success: function (data) {
+                        $.messager.progress('close');
+                        if (data.successed) {
+                            DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                        } else {
+                            $.messager.alert("提示", data.message, "info");
+                        }
+                    }
+                });
+            }
+
+
+        })
+    });
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

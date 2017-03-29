@@ -1,0 +1,378 @@
+﻿@*@model FCake.Web.Models.MemberVM*@
+@using FCake.Bll
+@model FCake.Domain.Entities.Customers
+@{
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+    ViewBag.Title = "个人信息";
+}
+@Scripts.Render(
+    "~/Scripts/formValidator/formValidator-4.1.3.js",
+    "~/Scripts/formValidator/formValidatorRegex.js"
+)
+<link href="~/Content/information.css" rel="stylesheet" />
+<script src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<script>
+    window.favoriteCakeData = window.favoriteCakeData || {};
+    window.favoriteCakeData['favoritecake'] = [];
+    @foreach (var item in new FCake.Bll.ProductService().GetUserFavoriteCakeByUser(CurrentMember.MemberId))
+    {
+        if(item!=null)
+        {
+        @:window.favoriteCakeData["favoritecake"].push({ value: '@item.Id', text: '@item.Name' });
+                                }
+            }
+
+</script>
+<style type="text/css">
+    table { padding-bottom: 50px; }
+
+    div.WdateDiv { width: 262px; }
+
+    iframe.DRAGDIS_iframe { width: 262px; }
+
+    select { width: 31.5%;  border: 1px solid #ccd1d9; -webkit-border-radius: 5px; border-radius: 5px;  font-size: 0.75em; }
+
+        select[name=FavoriteCake] { width: 71%; margin-left: 1px; }
+
+        select[name=ddlProvince] { width: 27.5%; }
+
+        select[name=ddlCity] { margin-left: 10px; }
+
+        select[name=ddlArea] { margin-left: 10px; }
+</style>
+<div class="container" style="font-family: 微软雅黑; ">
+    <div class="row" style="height: 5%;">
+        <div class="col-xs-12 col-sm-12  col-md-12  col-lg-12 " style="background-color: #bd9663;">
+            <img src="~/Content/images/PersonalCenter/l_arrow.png" style="height:21px; width:14px; margin-top:15px; float:left" onclick="back()" />
+            <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">个人信息</span>
+            <img src="~/Content/images/PersonalCenter/index.png" style=" height:19px; width:20px; float:right; margin-top:15px;" onclick="backHome()" />
+        </div>
+    </div>
+    <table class="wallbox content" style="margin-bottom:60px;">
+        <tr>
+            @*内容信息*@
+            <td style="text-align:left;">
+                <div class="datapanel">
+
+                    <form role="form" id="memberForm" style="text-align: center; margin-top:20px; width:100%;">
+                        <div class="form-group">
+                            <label class="item_text">姓名</label>
+                            <input type="text" class="form-control" style="width:75%;" id="FullName" name="FullName" maxlength="4">
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="FullNameTip"></div></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">性别</label>
+                            <div style="margin-left:70px;padding-top:9px;">
+                                <input type="radio" class="item_tab2" value="1" name="Sex" />
+                                <div style="font-size: 12px; float: left; color: #411502;margin-right:10px;">男</div>
+                                <input type="radio" class="item_tab2" value="2" name="Sex" />
+                                <div style="font-size: 12px; float: left; color: #411502;">女</div>
+                            </div>
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">手机</label>
+                            @*<input type="text" class="item_tab4 form-group " style="width:75%; color: #411502;margin-right:0; margin-bottom:0;margin-top:0; float:left;border: 1px solid #dbc6aa;background:#D3D3D3" id="Mobile" maxlength="11" readonly="readonly" onkeyup="this.value=this.value.replace(/\D/g,'')" name="Mobile">*@
+
+                            <div>
+                                <input type="text" class="item_tab4 form-group " style="width:41%; color: #411502;margin-right:0; margin-bottom:0;margin-top:0; float:left;border: 1px solid #dbc6aa;background:#D3D3D3" id="Mobile" maxlength="11" readonly="readonly" onkeyup="this.value=this.value.replace(/\D/g,'')" name="Mobile">
+                                <a href="@Url.Action("BindNewPhone", "Member")"><input type="button" class="order_submit_button" style="width:33%;height:35px;margin-top:0;border:none;line-height:35px;font-size:1em;float:right;" id="bindBtn" value="绑定新手机"></a>
+                            </div>
+
+                            @*<input type="text" style="color: #411502; border: 1px solid #dbc6aa;" class="item_tab4 form-group" id="Code" name="Code" placeholder="验证码">
+                                <input type="button" class="order_submit_button" style="width:33%;height:35px;margin-top:10px;border:none;line-height:35px;font-size:1em;" id="sendBtn" onclick="sendCode()" value="获取验证码">*@
+                            <div class="" style="height:22px;display:inline-block;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="MobileTip"></div></div>
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">Email</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="Email" name="Email">
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="EmailTip"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">省份</label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlProvince" id="ddlProvince"></select>
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="ddlProvinceTip"></div></div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group" >
+                            <label class="item_text">城市</label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlCity" id="ddlCity"></select>
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="ddlCityTip"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">地区</label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlArea" id="ddlArea"></select>
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="ddlAreaTip"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">街道地址</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="ttbAddress" name="ttbAddress" placeholder="街道地址">
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+                                <div style="width:75%;float:left;"><div id="ttbAddressTip"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">出生日期</label>
+                            <input type="text" class="form-control" style="width:75%;" id="Birthday" name="Birthday" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })">
+                            <div class="" style="height:22px;">
+                                <label class="item_errtxt"></label>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="item_text">最爱蛋糕</label>
+                            <select class="form-control" name="FavoriteCake" style="width:75%;margin-left:0px;">
+
+                            </select>
+                        </div>
+                        <a href="#" onclick="submitInfo()" style="font-size:1.25em;line-height:45px;"><div class="btn-confirm" style="margin-top:30px;">确认</div></a>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+
+
+<script type="text/javascript">
+    var isPhoneRegister = false;
+    $(function () {
+
+        var option = document.createElement("option");
+        for (var i = 0; i < window.favoriteCakeData['favoritecake'].length; i++) {
+            option.text = window.favoriteCakeData['favoritecake'][i].text;
+            option.value = window.favoriteCakeData['favoritecake'][i].value;
+            $("select[name=FavoriteCake]").append("<option value='" + option.value + "'>" + option.text + "</option>");
+        }
+    });
+    $(function () {
+        $province = $("select[name=ddlProvince]");
+        $city = $("select[name=ddlCity]");
+        $area = $("select[name=ddlArea]");
+
+
+        var provicnes = loadPosition("country", "");
+        $province.html(loadPositionSelect(provicnes));
+
+        $province.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $city.html("");
+                $area.html("");
+            }
+            else {
+                if ($city.data(value) != null) {
+                    $city.html($city.data(value));
+                }
+                else {
+                    $city.data(value, loadPositionSelect(loadPosition("province", value)));
+                    $city.html($city.data(value));
+                }
+            }
+        });
+        $city.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $area.html("");
+            }
+            else {
+                if ($area.data(value) != null) {
+                    $area.html($area.data(value));
+                }
+                else {
+                    $area.data(value, loadPositionSelect(loadPosition("city", value)));
+                    $area.html($area.data(value));
+                }
+            }
+        });
+    })
+
+
+    $(function () {
+        $("#FullName").val('@Model.FullName')
+        if ('@Model.Sex.HasValue' == 'True') {
+            $("input[name=Sex][value=@Model.Sex]").attr("checked", true);
+        }
+        $("#Mobile").val('@Model.Mobile')
+        $("#Email").val('@Model.Email')
+        $('select[name=ddlProvince]').val('@ViewBag.Province').change();
+        $('select[name=ddlCity]').val('@ViewBag.City').change();
+        $('select[name=ddlArea]').val('@ViewBag.Area').change();
+        $("#ttbAddress").val('@ViewBag.Address')
+        @{
+            string time = null;
+            if (Model.Birthday.HasValue)
+            {
+            time = Convert.ToDateTime(Model.Birthday).ToString("yyyy-MM-dd");
+            }
+         }
+        $("#Birthday").val('@time')
+        $("select[name=FavoriteCake]").val('@Model.FavoriteCake').change();
+
+
+        //验证
+        $.formValidator.initConfig({
+            formID: "memberForm",
+            onSuccess: function () {
+                $.post("@Url.Action("SaveMemberInfo", "Member")?", $("#memberForm").serialize(), function (result) {
+                    if (result.successed) {
+                        alert(result.message);
+                    } else {
+                        alert(result.message);
+                        if (result.data.code == "captchas") {
+                            change();
+                            $("#captchas").val();
+                        }
+                        return false;
+                    }
+                }, "json");
+            },
+            onError: function (msg, obj, errorlist) {
+                //$("#errorlist").empty();
+                //$.map(errorlist, function (msg) {
+                //    $("#errorlist").append("<li>" + msg + "</li>")
+                //});
+                alert(msg);
+            },
+            ajaxPrompt: '有数据正在异步验证，请稍等...'
+        });
+
+        $("#Mobile").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入您的手机号" }).regexValidator({ regExp: ["mobile"], dataType: "enum" })
+        .ajaxValidator({
+            dataType: "json",
+            type: "post",
+            async: true,
+            url: "@Url.Action("CheckUserName", "Passport")",
+            data: $("#Mobile").val(),
+            success: function (data) {
+                if (data) {
+                    isPhoneRegister = false;
+                    return true;
+                }
+                isPhoneRegister = true;
+                return "该手机号已注册";
+            },
+            ///buttons: $("#button"),
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("服务器没有返回数据，可能服务器忙，请重试" + errorThrown);
+            },
+            onError: "该手机号已注册",
+            onWait: "正在进行合法性校验，请稍候..."
+        }).defaultPassed();
+        $("#FullName").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入您的姓名" }).regexValidator({ regExp: "notempty", dataType: "enum", onError: "姓名不能为空" });
+        $("#Email").formValidator({ empty: true, onShow: "", onFocus: "", onEmpty: "", onCorrect: "" }).regexValidator({ regExp: "email", dataType: "enum", onError: "Email格式不正确" });
+        $('select[name=ddlProvince]').formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请选择省份" }).inputValidator({ min: 1, onError: "请选择省份" });
+        $('select[name=ddlCity]').formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请选择城市" }).inputValidator({ min: 1, onError: "请选择城市" });
+        $('select[name=ddlArea]').formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请选择地区" }).inputValidator({ min: 1, onError: "请选择地区" });
+        $("#ttbAddress").formValidator({ empty: false, onShow: "", onFocus: "", onCorrect: "", onEmpty: "请输入街道地址" }).regexValidator({ regExp: "notempty", dataType: "enum", onError: "街道地址不能为空" });
+
+    })
+
+    function submitInfo() {
+        return jQuery.formValidator.pageIsValid('1');
+        //$("form").submit();
+
+        @*$.post("@Url.Action("SaveMemberInfo", "Member")", $("#memberForm").serialize(), function (result) {
+            alert(result.Message);
+        }, "json");*@
+    }
+
+    //获取验证码
+    function sendCode() {
+        var mobileNo = $("input[name=Mobile]").val();
+        var re = /^1\d{10}$/;
+        if (!re.test(mobileNo)) {
+            alert("手机号码不正确!");
+            return false;
+        }
+        if (isPhoneRegister) {
+            alert("手机号码已注册");
+            return false;
+        }
+        $.post('@Url.Action("SendValidCodeFJXX", "Passport")', { mobile: mobileNo, type: "Register", isNewRegister: true }, function (data) {
+            if (data.success == true) {
+                time();
+            }
+            else {
+                alert(data.msg);
+            }
+        });
+    }
+    var wait = 60;
+    function time() {
+        if (wait == 0) {
+            $("#sendBtn").attr("disabled", false);
+            $("#sendBtn").val("发送验证码");
+            wait = 60;
+        } else {
+            $("#sendBtn").attr("disabled", true);
+            $("#sendBtn").val(wait + "秒后重新发送");
+            wait--;
+            setTimeout(function () {
+                time()
+            },
+             1000)
+        }
+    }
+
+
+
+
+    function loadPosition(position, value) {
+        var _data = [];
+
+        $.ajax({
+            url: '@Url.Action("getposition", "common")?position=' + escape(position) + "&value=" + escape(value),
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            success: function (data, status) {
+                _data = data;
+            }
+        });
+
+        return _data;
+    }
+    function loadPositionSelect(data) {
+        var html = "<option value=''>请选择</option>";
+        $.each(data, function (index, value) {
+            html += ("<option value='" + value.t + "'>" + value.t + "</option>");
+        });
+        return html;
+    }
+
+
+</script>

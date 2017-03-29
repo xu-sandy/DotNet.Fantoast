@@ -1,0 +1,56 @@
+﻿@model FCake.Domain.Entities.Orders
+@{
+    ViewBag.Title = "EditOrder";
+}
+<form id="form1">
+    <input type="hidden" id="orderNo" name="orderNo" value="@Model.No" />
+    <table style="width:80%;">
+        <tr>
+            <td>订单号：</td>
+            <td>@Model.No</td>
+            <td>订单总额:</td>
+            <td>@Model.TotalPrice.ToString("N2")</td>
+        </tr>
+        <tr>
+            <td>实际支付:</td>
+            <td><input id="actualPay" name="actualPay" value="@Model.ActualPay.ToString("N2")" class="easyui-textbox datacontrol" style="width:140px;height:30px" /></td>
+            <td>优惠券抵扣:</td>
+            <td><input id="couponPay" name="couponPay" value="@Model.CouponPay.ToString("N2")" class="easyui-textbox datacontrol" style="width:140px;height:30px" /></td>
+        </tr>
+        <tr>
+            <td>代金卡抵扣：</td>
+            <td><input id="giftCardPay" name="giftCardPay" value="@Model.GiftCardPay.ToString("N2")" class="easyui-textbox datacontrol" style="width:140px;height:30px" /></td>
+            <td></td>
+            <td><input type="checkbox" id="isUpdateCustomer" name="isUpdateCustomer" value="1" checked="checked" />更新会员成长值、会员等级信息</td>
+        </tr>
+    </table>
+</form>
+
+<div style="text-align:center">
+    <a href="javascript:saveChangeOrder()" id="submitBtn" name="submitBtn" class="easyui-linkbutton cus4 linkbtn">保存</a>
+</div>
+<script type="text/javascript">
+    function saveChangeOrder() {
+        $.ajax({
+            url: '@Url.Action("ChangeOrderInfo", "TempOrder")?' + $("#form1").serialize() + "&isUpdateCustomer=" + $("#isUpdateCustomer").val(),
+            type:'POST',
+            success: function (result) {
+                if (result.successed) {
+                    alert(result.message);
+                    window.top.$("body").data("win_edit").window("close");
+                } else {
+                    $.messager.alert("提示", result.message, "error");
+                }
+            }
+        })
+    }
+    $(function () {
+        $("#isUpdateCustomer").click(function () {
+            if ($("#isUpdateCustomer")[0].checked) {
+                $("#isUpdateCustomer").val(1);
+            } else {
+                $("#isUpdateCustomer").val(0);
+            }
+        })
+    })
+</script>

@@ -1,0 +1,282 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Admin.Models;
+@model FCake.Domain.Entities.Orders
+@{
+    ViewBag.Title = "NewOrder";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<style type="text/css">
+    table.gridtable {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 11px;
+        color: #333;
+        border-width: 1px;
+        border-color: #f8f8f8;
+        border-collapse: collapse;
+        margin: 0 auto;
+    }
+
+        table.gridtable td {
+            border-width: 1px;
+            padding: 8px;
+            border: 1px solid #f8f8f8;
+            background-color: #fff;
+            text-align: left;
+        }
+</style>
+<form id="orders" method="post">
+
+    <input type="hidden" name="selectedproductids" value=""/>
+
+
+    <table class="gridtable">
+        <tr style="display:none">
+            <td>
+                <input type="text" name="Id" value="@Model.Id" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                订单号：
+            </td>
+            <td>
+                <input id="No" name="No" class="datacontrol" value="@Model.No" />
+            </td>
+            @*<td>
+                订单来源：
+            </td>
+            <td>
+                <select id="Num" class="easyui-combobox" name="Num" style="width:100%">
+                    <option value="1">电话订单</option>
+                    <option value="2">平台订单</option>
+                </select>
+            </td>*@
+
+            <td>
+                下单会员：
+            </td>
+            <td>
+                <input id="CustomerId" name="CustomerId" class="datacontrol" value="@(FCake.Bll.CustomersService.GetCustomNameByCustomID(Model.CustomerId))" />
+            </td>
+        </tr>
+            <tr>
+            @*<td>
+                支付方式：
+            </td>
+            <td>
+                <select id="Num" name="Num" class="easyui-combobox" style="width: 100%">
+                    <option value="0">货到付款</option>
+                    <option value="1">支付宝支付</option>
+                    <option value="2">微信支付</option>
+                </select>
+            </td>*@
+                <td>
+                    备注信息：
+                </td>
+                <td>
+                    <textarea id="DeliverMsg" class="datacontrol" name="DeliverMsg" style="resize:none" rows=4>@Model.DeliverMsg</textarea>
+                </td>
+            <td>
+                配送时间：
+            </td>
+            <td>
+                <input class="Wdate" type="text" style="border-radius: 5px 5px 5px 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" value="" name="DeliverTime" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                产品选择：
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <table id="select" style="width:300px;height:400px"></table>
+            </td>
+            <td align="center">
+                <input type="button" id="addOne" value=" > " style="width:50px;" /><br /><br />
+                <input type="button" id="removeOne" value="&lt;" style="width:50px;" /><br /><br />
+            </td> 
+            <td colspan="3">
+                <table id="selected" style="width: 300px; height: 400px"></table>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                收货地址：
+            </td>
+            <td colspan="5">
+                <input class="easyui-combobox" name="city" id="city" data-options="editable:false,required:true,valueField:'t',textField:'t',value:''" panelheight="auto" />
+                <input class="easyui-combobox" name="area" id="area" data-options="editable:false,required:true,valueField:'t',textField:'t',value:'@Model.ReceiverArea'" panelheight="auto" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                详细地址：
+            </td>
+            <td colspan="5">
+                <input type="text" class="datacontrol" name="CustomerAddress" id="CustomerAddress" style="width:500px" value="@Model.ReceiverAddr" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                收货人：
+            </td>
+            <td colspan="5">
+                <input type="text" class="datacontrol" name="CustomerAddress" id="CustomerAddress" value="@Model.Receiver" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                收货人电话：
+            </td>
+            <td>
+                <input type="text" class="datacontrol" name="CustomerAddress" id="CustomerAddress" value="@Model.ReceiverMobile" />
+            </td>
+        </tr>
+        <tr>
+            
+            <td>
+                总价格：
+            </td>
+            <td>
+                <input type="text" id="TotalPrice" class="datacontrol" name="TotalPrice" value="@string.Format("{0:F2}", Model.TotalPrice)" />
+            </td>
+        </tr>
+    </table>
+    <input type="submit" id="Save" value="保存" style="width:90px;margin-left:50%;margin-top:20px" />
+</form>
+<script type="text/javascript">
+    var leftdata = [];
+    var rightdata = [];
+
+    Array.prototype.remove = function (val) {
+        var index = this.indexOf(val);
+        if (index > -1) {
+            this.splice(index, 1);
+        }
+    };
+
+    Array.prototype.removeAt = function (index) {
+        this.splice(index, 1);
+    };
+
+    $(function () {
+
+        $("#city").combobox({
+            url: '/common/getposition?position=province&value=' + escape("福建省"),
+            onSelect: function (record) {
+                $("#area").combobox({
+                    url: '/common/getposition?position=city&value=' + record.t,
+                });
+            }
+        });
+
+        $("#Save").click(function () {
+
+            var ids = "";
+
+            $.each(rightdata, function (index,value) {
+                if (ids == "")
+                    ids = value.Id;
+                else
+                    ids += "," + value.Id;
+            })
+
+            $("input[name=selectedproductids]").val(ids);
+
+            $.ajax({
+                url: '/Order/UpdateOrderByOrderNo',
+                type: 'post',
+                data: $("#orders").json(),
+                dataType: 'json',
+                success: function (data) {
+                    if (data.Successed == false) {
+                        alert(data.Message);
+                    }
+                    else {
+                        alert(data.Message);
+                    }
+                }
+            })
+        })
+
+        $("#orders").submit(function () {
+            return false;
+        });
+        $("#select").datagrid({
+            url: '@Url.Action("GetAllProductByOrderid", "Product")?orderid=@Model.No',
+            columns: [[
+                { field: 'ck', checkbox: 'true' },
+                { field: 'Id', title: 'ID主键', width: 0, hidden: true },
+                { field: 'Name', title: '产品', width: 140 },
+                { field: 'Price', title: '价格', width: 50 }
+            ]],
+            onLoadSuccess: function (data) {
+                leftdata = $("#select").datagrid("getData").rows;
+            }
+        });
+        $("#selected").datagrid({
+            url: '@Url.Action("GetOrderProductByOrderId", "Order")?orderid=@Model.No',
+            columns: [[
+                { field: 'ck', checkbox: 'true' },
+                { field: 'Id', title: 'ID主键', width: 0, hidden: true },
+                { field: 'Name', title: '产品', width: 140 },
+                { field: 'Price', title: '价格', width: 50 }
+            ]],
+            onLoadSuccess: function (data) {
+                rightdata = $("#selected").datagrid("getData").rows;
+            }
+        });
+        //选择一项  
+        $("#addOne").click(function () {
+            var checkItem = $('#select').datagrid('getChecked');
+            $.each(checkItem, function (i, v) {
+                rightdata.push(v);
+            });
+
+            var l = [];
+
+            $.each(leftdata, function (i, v) {
+                var check = true;
+                $.each(rightdata, function (i1, v1) {
+                    if (v.Id == v1.Id) {
+                        check = false;
+                    }
+                });
+                if (check)
+                    l.push(v);
+            });
+
+            leftdata = l;
+
+            $("#select").datagrid("loadData", leftdata);
+            $("#selected").datagrid("loadData", rightdata);
+
+        });
+        $("#removeOne").click(function () {
+            var checkItem = $('#selected').datagrid('getChecked');
+
+            $.each(checkItem, function (i, v) {
+                leftdata.push(v);
+            });
+
+            var l = [];
+
+            $.each(rightdata, function (i, v) {
+                var check = true;
+                $.each(leftdata, function (i1, v1) {
+                    if (v.Id == v1.Id) {
+                        check = false;
+                    }
+                });
+                if (check)
+                    l.push(v);
+            });
+
+            rightdata = l;
+
+            $("#select").datagrid("loadData", leftdata);
+            $("#selected").datagrid("loadData", rightdata);
+        });
+    })
+</script>

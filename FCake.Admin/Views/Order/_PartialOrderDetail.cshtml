@@ -1,0 +1,260 @@
+﻿@using FCake.Admin.Helper
+@using FCake.Bll
+@{
+    string orderid = ViewBag.orderid == null ? "" : ViewBag.orderid;
+    var detail = new FCake.Bll.OrderService().GetOrderDetailByOrderNo(orderid);
+    var times = new FCake.Bll.CommonService().GetDictionaryByCode("DistributionTime");
+    var curUserId = UserCache.CurrentUser.Id;
+    var reviewUserList = new UserService().GetReviewUserDropdownItem(curUserId, detail["ReviewUID"] != null ? detail["ReviewUID"].ToString() : "");
+}
+
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+<style type="text/css">
+    .title-r { text-align: right; width: 80px; }
+    .title-l { text-align: left; }
+</style>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['orderType'] = [];
+    window.drpdata['reviewUID'] = [];
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("OrderType", false))
+    {
+        @:window.drpdata['orderType'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+    @foreach (var item in reviewUserList)
+    {
+        @:window.drpdata['reviewUID'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+</script>
+<div class="wrap">
+    <h1>订单信息</h1>
+
+    <table style="width:65%; float:inherit" class="om" align="left">
+        <tr style="text-align:left">
+            <td class="title-r">订单号:</td>
+            <td class="title-l">@ViewBag.orderid</td>
+            <td class="title-r">订单总额:</td>
+            <td class="title-l">¥@detail["Price"]</td>
+        </tr>
+        <tr>
+            <td class="title-r">下单时间:</td>
+            <td class="title-l">@(string.IsNullOrEmpty(detail["CreatedOn"].ToString()) ? "" : DateTime.Parse(detail["CreatedOn"].ToString()).ToString("yyyy-MM-dd HH:mm:ss"))</td>
+            <td class="title-r">优惠券抵扣:</td>
+            <td class="title-l">-¥@detail["CouponPay"]</td>
+        </tr>
+        <tr>
+            <td class="title-r">订单来源:</td>
+            <td class="title-l">@detail["OrderSourceStr"]</td>
+            <td class="title-r">代金卡抵扣:</td>
+            <td class="title-l">-¥@detail["GiftCardPay"]</td>
+        </tr>
+        <tr>
+            <td class="title-r">状态:</td>
+            <td class="title-l">@detail["Status"]</td>
+            <td class="title-r">积分抵扣:</td>
+            <td class="title-l">-¥@detail["IntegralPay"]</td>
+        </tr>
+        <tr>
+            <td class="title-r">实际支付:</td>
+            <td class="title-l" style="color:red">¥@detail["ActualPay"]</td>
+            <td class="title-r">需支付:</td>
+            <td class="title-l">¥@detail["NeedPay"]</td>
+        </tr>
+
+
+
+        @*<tr>
+                <td>订单号:<span style="margin-left:5px">@ViewBag.orderid</span></td>
+
+                <td>优惠券抵扣:<span style="margin-left:5px">-¥@detail["CouponPay"]</span></td>
+
+                <td>订单总额:<span style="margin-left:5px">¥@detail["Price"]</span></td>
+
+            </tr>
+            <tr>
+                <td>订单类型:<span style="margin-left:5px">@detail["OrderType"]</span></td>
+
+                <td>代金卡抵扣:<span style="margin-left:5px">-¥@detail["GiftCardPay"]</span></td>
+
+                <td>需支付:<span style="margin-left:5px">¥@detail["NeedPay"]</span></td>
+
+            </tr>
+            <tr>
+                <td>状态:<span style="margin-left:5px">@detail["Status"]</span></td>
+
+                <td>积分抵扣:<span style="margin-left:5px">-¥@detail["IntegralPay"]</span></td>
+
+                <td>实际支付:<span style="margin-left:5px">¥@detail["ActualPay"]</span></td>
+
+            </tr>*@
+    </table>
+
+    <h1>订单明细</h1>
+    <table id="dg" style="width:800px;"></table>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#dg").datagrid({
+                url: '/order/getordersubproducts/@orderid?getdata=1',
+                rownumbers: true,
+                singleSelect: true,
+                columns: [[
+                    {
+                        field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                        formatter: function (value, row, index) {
+                            var v = "";
+                            if (value != null && value != undefined && $.trim(value) != "") {
+                                v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                            }
+                            return v;
+                        }
+                    },
+                    { field: 'Name', title: '产品名称', width: 300, align: 'center' },
+                    {
+                        field: 'Size', title: '产品单位', width: 80, align: 'center', formatter: function (value, row, index) {
+                            return row.SizeTitle;
+
+                        }
+                    },
+                    { field: 'Price', title: '单价', width: 80, align: 'center' },
+                    { field: 'Num', title: '数量', width: 80, align: 'center', editor: { type: 'numberbox' } },
+                    {
+                        field: 'BirthdayCard', title: '生日牌', width: 100, align: 'center', formatter: function (value, row, index) {
+                            if (String.isNE(value))
+                                return "";
+                            else
+                                return unescape(value);
+                        }
+                    }
+                ]]
+            });
+        })
+    </script>
+    <table>
+        @*<tr>
+            <td>是否需要生日蜡烛</td>
+            <td> @detail["Candle"]</td>
+        </tr>*@
+    </table>
+
+    <h1>收货信息</h1>
+    <table class="om">
+        <tr>
+            <td>收货人</td>
+            <td>@detail["Receiver"]</td>
+        </tr>
+        <tr>
+            <td>联系电话</td>
+            <td>@detail["ReceiverConection"]</td>
+        </tr>
+        <tr>
+            <td>收货时间</td>
+            @*<td>@detail["RequiredTime"].ToString().Split(' ')[0] &nbsp; @(new FCake.Bll.CommonService().GetDictionaryName("DistributionTime", detail["RequiredTime"].ToString().Split(' ')[1].Substring(0, 5)))</td>*@
+            <td>@detail["RequiredTimeBucket"]</td>
+        </tr>
+    </table>
+
+    <h1>配送方式</h1>
+    <table class="om">
+        <tr>
+            <td>配送类型</td>
+            <td>@detail["DeliveryType"]</td>
+        </tr>
+        <tr>
+            <td>配送地址</td>
+            <td>@detail["Address"]</td>
+        </tr>
+    </table>
+
+    <h1>订单类型</h1>
+    <table class="om">
+        <tr>
+            <td>订单类型</td>
+            <td>
+                @if (detail["ReviewStatus"] != null && detail["ReviewStatus"].ToString() == "0")
+                {
+                    <input id="orderType" class="easyui-combobox datacontrol"
+                           data-options="required:true,valueField:'value',textField:'text',height:24,data:window.drpdata['orderType'],panelHeight:'auto', editable: false,onLoadSuccess:orderTypeLoadSuccess" />
+                }
+                else
+                {
+                    <input class="easyui-combobox datacontrol"
+                           data-options="valueField:'value',textField:'text',value:'@(detail["OrderType"] != null ? detail["OrderType"].ToString() : "")', height:24,data:window.drpdata['orderType'],panelHeight:'auto', editable: false" readonly="readonly" />
+                }
+
+            </td>
+        </tr>
+    </table>
+    <h1>处理人</h1>
+    <table class="om">
+        <tr>
+            <td>处理人</td>
+            <td>
+                @if (detail["ReviewStatus"] != null && detail["ReviewStatus"].ToString() == "0")
+                {
+                    <input id="reviewUID" class="easyui-combobox datacontrol"
+                           data-options="required:true,valueField:'value',textField:'text',height:24,data:window.drpdata['reviewUID'],panelHeight:'auto', editable: false,onLoadSuccess:reviewUIDLoadSuccess" />
+                }
+                else
+                {
+                    <input class="easyui-combobox datacontrol"
+                           data-options="valueField:'value',textField:'text',value:'@(detail["ReviewUID"] != null ? detail["ReviewUID"].ToString() : "")', height:24,data:window.drpdata['reviewUID'],panelHeight:'auto', editable: false" readonly="readonly" />
+                }
+
+            </td>
+        </tr>
+    </table>
+
+    <h1>留言备注</h1>
+    <table class="om">
+        <tr>
+            <td>会员留言</td>
+            @if (detail["ReviewStatus"] != null && detail["ReviewStatus"].ToString() == "0")
+            {
+                <td><input id="DeliverMsg" name="DeliverMsg" class="datacontrol easyui-textbox" style="height:32px;" value="@detail["DeliverMsg"]" /></td>
+            }
+            else
+            {
+                <td>@detail["DeliverMsg"]</td>
+            }
+        </tr>
+        <tr>
+            <td>客服备注</td>
+            <td><div><textarea id="remark" style="width:280px;height:80px;">@detail["Remark"]</textarea></div></td>
+        </tr>
+    </table>
+    @*<h1>发票信息</h1>
+        <table class="om">
+            <tr>
+                <td>是否要求发票</td>
+                <td>@detail["Invoice"]</td>
+            </tr>
+            <tr>
+                <td>发票类型</td>
+                <td>@detail["InvoiceType"]</td>
+            </tr>
+            <tr>
+                <td>发票抬头</td>
+                <td>@detail["InvoiceTitle"]</td>
+            </tr>
+        </table>*@
+</div>
+<style>
+    .om td { padding: 3px; }
+</style>
+<script type="text/javascript">
+    function orderTypeLoadSuccess() {
+        var data = $('#orderType').combobox('getData');
+        if (data.length > 0) {
+            $("#orderType").combobox('select', data[0].value);
+        }
+    }
+
+    function reviewUIDLoadSuccess() {
+        var data = $('#reviewUID').combobox('getData');
+        if (data.length > 0) {
+            $("#reviewUID").combobox('select', '@curUserId');
+        }
+    }
+
+</script>

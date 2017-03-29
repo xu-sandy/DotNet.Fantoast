@@ -1,0 +1,46 @@
+﻿<h2>代金卡交易记录</h2>
+<table id="giftCards"></table>
+<script>
+    $("#giftCards").datagrid({
+        url: '@Url.Action("GetGiftCardsToDatagridByMemberId", "GiftCard")' + "?memberId=" + '@ViewBag.Id',
+        rownumbers: true,
+        singleSelect: true,
+        fitColumns: true,
+        pagination: true,
+        pageSize: 10,
+        height: 300,
+        autoRowHeight: true,
+        onLoadSuccess: function () {
+            $.parser.parse($('td .easyui-linkbutton').parent());
+        },
+        columns: [[
+            { field: 'GiftCardSN', title: '代金卡卡号', width: 100, align: 'center' },
+            {
+                field: 'UseState', title: '状态', width: 40, align: 'center', formatter: function (value, row, index) {
+                    if (value == 0) {
+                        return "未使用";
+                    } else if (value == 1) {
+                        return "已使用";
+                    } else if (value == 2) {
+                        return "已回收";
+                    }
+                }
+            },
+            {
+                field: 'Title', title: '优惠券', width: 100, align: 'center', formatter: function (value, row, index) {
+                    return "<div>" + value + "</div><div>面额：" + row.Denomination + "</div>";
+                }
+            },
+            { field: 'Denomination', title: '面额', width: 40, align: 'center', hidden: true },
+            {
+                field: 'BeginValidDate', title: '有效期', width: 120, align: 'center', formatter: function (value, row, index) {
+                    return value.substring(0, 10) + " 到 " + row.EndValidDate.substring(0, 10);
+                }
+            },
+            { field: 'EndValidDate', title: '有效期结束时间', width: 80, align: 'center', hidden: true },
+            { field: 'UseDate', title: '使用时间', width: 100, align: 'center' },
+            { field: 'UseOrderSN', title: '使用订单号', width: 60, align: 'center' }
+
+        ]]
+    })
+</script>

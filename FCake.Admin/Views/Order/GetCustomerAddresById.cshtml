@@ -1,0 +1,179 @@
+﻿@model List<FCake.Domain.Entities.CustomerAddress>
+@{
+    Layout = null;
+    List<FCake.Domain.Entities.LogisticsSite> allLogist = ViewBag.AllLogisticsSites;
+}
+
+<style type="text/css">
+    #zitiRevierInfo span {
+    color:red;
+    }
+    .hidblock {
+    display:none;
+    }
+</style>
+<h1>收货信息</h1>
+<input type="radio" name="reverInfo" value="songhuo" />送货上门<input type="radio" value="ziti" name="reverInfo" />站点自提
+<hr />
+<div id="songhuo" class="hidblock">
+    @foreach (var x in Model)
+    {
+        <p>
+            <input type="radio" name="receive" data-type="0" value="@x.Id" @((x.IsDef == 0 && ViewBag.addressid == "") || ViewBag.addressid == x.Id ? "checked" : "") />
+
+            @if (x.DeliveryType == (int)FCake.Domain.Enums.DeliveryType.D2D)
+            {
+                @:[<span style="color:black;">送货上门</span>]&nbsp;&nbsp;&nbsp; @x.Province@x.City@x.Area@x.Address @x.Receiver @x.ReceiverTel @x.ReceiverMobile
+        }
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a name="re_update" class="easyui-linkbutton cus1" data-options="iconCls:'icon-edit'" style="@((x.IsDef == 0 && ViewBag.addressid == "") || ViewBag.addressid == x.Id ? "" : "display:none")" onclick="getareaofaddress(this,'@x.Id')">修改</a>
+        </p>
+    }
+    <p><input type="radio" name="receive" value="create" /> 添加新地址</p>
+</div>
+<div id="ziti" class="hidblock">
+    @foreach (var x in allLogist)
+    {
+        <p>
+            <input type="radio" name="receive" data-type="1" value="@x.Id" @((x.IsDef == 0 && ViewBag.addressid == "") || ViewBag.addressid == x.Id ? "checked" : "") />
+            [<span style="color:#ff6a00;">站点自提</span>]&nbsp;&nbsp;&nbsp;
+            @x.SiteName   @x.SiteProvince@x.SiteCity@x.SiteArea@x.SiteAddress
+        </p>
+    }
+    <p id="zitiRevierInfo">
+        <span>*</span><label> 提货人姓名：</label><input id="receive_Name" placeholder="必填" value="" maxlength="10" />
+        <span>*</span><label> 提货人电话：</label><input id="receive_Phone" placeholder="必填" value="" maxlength="13" onkeyup="value=value.replace(/[^\d]-/g,'') " onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" />
+    </p>
+</div>
+<script>
+    $(function () {
+        $(".easyui-linkbutton").linkbutton();
+
+        $("input[name=receive]").change(function () {
+            var v = $(this).val();
+            if (v == "create") {
+                $("#receive>p").hide();
+                getareaofaddress(this, "");
+            }
+            else {
+                $("#receive>p>a").hide();
+                $(this).parent().find("a").show();
+            }
+        });
+
+    })
+
+
+
+
+
+
+    function createaddress(id) {
+        var provice = $("input[name=province]").val();
+        var city = $("input[name=city]").val();
+        var area = $("input[name=area]").val();
+        var address = "";
+        var staticid = "";
+        var type = "";
+        var receivename = $.trim($("input[name=receivename]").val());
+        var tel = $.trim($("input[name=tel]").val());
+        var mobile = $.trim($("input[name=mobile]").val());
+        var isdef = ($("input[name=isdefault]:checked").length - 1) * (-1);
+
+
+        //配送区域
+        if (area == null || area == undefined || area == "") {
+            $.messager.alert('警告', '请选择一个配送区域');
+            return;
+        }
+        //配送方式
+        if ($("input[name=deliverytype]:checked").length == 0) {
+            $.messager.alert('警告', '请选择一个配送方式');
+            return;
+        }
+        //配送地址
+        type = $("input[name=deliverytype]:checked").val();
+        if (type == '@((int)FCake.Domain.Enums.DeliveryType.D2D)') {
+            address = $.trim($("input[name=deliveryaddress]").val());
+            if (address == "") {
+                $.messager.alert('警告', '请输入街道地址');
+                return;
+            }
+        }
+            //自提地址
+        else {
+            if ($("input[name=fixedsite]:checked").length == 0) {
+                $.messager.alert('警告', '请选择一个站点自提地址');
+                return;
+            }
+            staticid = $("input[name=fixedsite]:checked").val();
+        }
+
+        //收货人
+        if (receivename == "") {
+            $.messager.alert('警告', '请输入收货人姓名');
+            return;
+        }
+        //联系方式
+        if (tel == "" && mobile == "") {
+            $.messager.alert('警告', '请输入联系方式');
+            return;
+        }
+
+        if (mobile != "" && /^1[3-8]\d{9}$/i.test(mobile) == false) {
+            $.messager.alert('警告', '无效的手机号码');
+            return;
+        }
+        if (tel != "") {
+            if (/((d{11})|^((d{7,8})|(d{4}|d{3})-(d{7,8})|(d{4}|d{3})-(d{7,8})-(d{4}|d{3}|d{2}|d{1})|(d{7,8})-(d{4}|d{3}|d{2}|d{1}))$)/.test(tel)) {
+                alert("无效的联系方式");
+                return;
+            }
+        }
+        var aid = "";
+
+        //保存
+        $.ajax({
+            url: '/order/savecustomeraddress',
+            dataType: 'json',
+            async: false,
+            type: 'post',
+            data: {
+                Id: id,
+                CustomerId: customerid,
+                IsDef: isdef,
+                Province: provice,
+                City: city,
+                Area: area,
+                Address: address,
+                Receiver: receivename,
+                ReceiverTel: tel,
+                ReceiverMobile: mobile,
+                DeliveryType: type,
+                LogisticsSiteId: staticid
+            },
+            success: function (data, status) {
+                aid = data.state.Id;
+                $.messager.alert('提示', '保存地址成功');
+            },
+            error: function () {
+                $.messager.alert('提示', '保存地址失败');
+            }
+        });
+        //重新载入
+        getReceive(aid);
+    }
+
+
+    function getareaofaddress(e, id) {
+
+        if ($(e).parent().next().is("table"))
+            return;
+        $("#receive>table").remove();
+        $.get("/order/editaddress/" + id, function (data, status) {
+            $("#receive>p").hide();
+            $(e).parent().after(data);
+        });
+    }
+</script>

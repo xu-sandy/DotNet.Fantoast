@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E2694570-5DF4-4C03-AB47-DDB899CE90F5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FCake.Domain</RootNamespace>
+    <AssemblyName>FCake.Domain</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\Pad\BasePageRequest.cs" />
+    <Compile Include="Common\Pad\Pagination.cs" />
+    <Compile Include="Common\PageInfo.cs" />
+    <Compile Include="Common\PermissionData.cs" />
+    <Compile Include="Common\UserData.cs" />
+    <Compile Include="EFDbContext.cs" />
+    <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Entities\BaseFile.cs" />
+    <Compile Include="Entities\Cart.cs" />
+    <Compile Include="Entities\Cooperation.cs" />
+    <Compile Include="Entities\CouponDetail.cs" />
+    <Compile Include="Entities\Coupons.cs" />
+    <Compile Include="Entities\GiftCards.cs" />
+    <Compile Include="Entities\GiftCardDetail.cs" />
+    <Compile Include="Entities\DictionaryData.cs" />
+    <Compile Include="Entities\DictionaryType.cs" />
+    <Compile Include="Entities\Distribution.cs" />
+    <Compile Include="Entities\HotProduct.cs" />
+    <Compile Include="Entities\Invoice.cs" />
+    <Compile Include="Entities\KitchenMake.cs" />
+    <Compile Include="Entities\KitchenMakeDetail.cs" />
+    <Compile Include="Entities\LogisticsSite.cs" />
+    <Compile Include="Entities\MemberGrowthValueLog.cs" />
+    <Compile Include="Entities\MemberIntegralLog.cs" />
+    <Compile Include="Entities\MemberLevel.cs" />
+    <Compile Include="Entities\MsgTemplate.cs" />
+    <Compile Include="Entities\OrderBatch.cs" />
+    <Compile Include="Entities\OrderDetailHist.cs" />
+    <Compile Include="Entities\OrderDetails.cs" />
+    <Compile Include="Entities\OrderException.cs" />
+    <Compile Include="Entities\OrderHist.cs" />
+    <Compile Include="Entities\OrderRefundRecord.cs" />
+    <Compile Include="Entities\PayLog.cs" />
+    <Compile Include="Entities\PhoneCode.cs" />
+    <Compile Include="Entities\PrePayInfo.cs" />
+    <Compile Include="Entities\ProductActivity.cs" />
+    <Compile Include="Entities\ProductActivityDetail.cs" />
+    <Compile Include="Entities\ProductActivityDetailPool.cs" />
+    <Compile Include="Entities\ReviewStatusLog.cs" />
+    <Compile Include="Entities\OperationLog.cs" />
+    <Compile Include="Entities\Slide.cs" />
+    <Compile Include="Entities\SysConfig.cs" />
+    <Compile Include="Entities\SysLog.cs" />
+    <Compile Include="Entities\SysTemp.cs" />
+    <Compile Include="Entities\VCoupons.cs" />
+    <Compile Include="Entities\VCustomer.cs" />
+    <Compile Include="Entities\VCustomOrders.cs" />
+    <Compile Include="EntityExtend\EntityExtends.cs" />
+    <Compile Include="Enum.cs" />
+    <Compile Include="Enums\ActiveStatus.cs" />
+    <Compile Include="Enums\CustomerType.cs" />
+    <Compile Include="Enums\Invoice.cs" />
+    <Compile Include="Enums\MenuType.cs" />
+    <Compile Include="Enums\OrderBatch.cs" />
+    <Compile Include="Enums\OrderEnums.cs" />
+    <Compile Include="Enums\ProductStatus.cs" />
+    <Compile Include="Enums\ReviewStatus.cs" />
+    <Compile Include="Enums\RightType.cs" />
+    <Compile Include="Enums\GiftCardStatus.cs" />
+    <Compile Include="Enums\DeliveryType.cs" />
+    <Compile Include="Enums\BoolType.cs" />
+    <Compile Include="Enums\Sex.cs" />
+    <Compile Include="Enums\SlideStatus.cs" />
+    <Compile Include="Enums\Status.cs" />
+    <Compile Include="Enums\YesOrNo.cs" />
+    <Compile Include="Mapping\BaseFilesMap.cs" />
+    <Compile Include="Entities\CustomerAddress.cs" />
+    <Compile Include="Entities\Customers.cs" />
+    <Compile Include="Entities\Menu.cs" />
+    <Compile Include="Entities\Orders.cs" />
+    <Compile Include="Entities\Permission.cs" />
+    <Compile Include="Entities\Product.cs" />
+    <Compile Include="Entities\Role.cs" />
+    <Compile Include="Entities\RolePermission.cs" />
+    <Compile Include="Entities\SubProduct.cs" />
+    <Compile Include="Entities\User.cs" />
+    <Compile Include="Entities\UserRole.cs" />
+    <Compile Include="Mapping\CartMap.cs" />
+    <Compile Include="Mapping\CooperationMap.cs" />
+    <Compile Include="Mapping\CouponDetailMap.cs" />
+    <Compile Include="Mapping\CouponsMap.cs" />
+    <Compile Include="Mapping\MemberIntegralLogMap.cs" />
+    <Compile Include="Mapping\MemberGrowthValueLogMap.cs" />
+    <Compile Include="Mapping\SysLogMap.cs" />
+    <Compile Include="Mapping\ProductActivityDetailPoolMap.cs" />
+    <Compile Include="Mapping\ProductActivityDetailMap.cs" />
+    <Compile Include="Mapping\ProductActivityMap.cs" />
+    <Compile Include="Mapping\MemberLevelMap.cs" />
+    <Compile Include="Mapping\GiftCardsMap.cs" />
+    <Compile Include="Mapping\GiftCardDetailMap.cs" />
+    <Compile Include="Mapping\OrderRefundRecordsMap.cs" />
+    <Compile Include="Mapping\PrePayInfoMap.cs" />
+    <Compile Include="Mapping\SysConfigMap.cs" />
+    <Compile Include="Mapping\CustomersMap.cs" />
+    <Compile Include="Mapping\DistributionMap.cs" />
+    <Compile Include="Mapping\HotProductMap.cs" />
+    <Compile Include="Mapping\InvoiceMap.cs" />
+    <Compile Include="Mapping\KitchenMakeDetailsMap.cs" />
+    <Compile Include="Mapping\KitchenMakesMap.cs" />
+    <Compile Include="Mapping\OrderBatchsMap.cs" />
+    <Compile Include="Mapping\OrderDetailsMap.cs" />
+    <Compile Include="Mapping\OperationLogMap.cs" />
+    <Compile Include="Mapping\OrderExceptionMap.cs" />
+    <Compile Include="Mapping\PhoneCodeMap.cs" />
+    <Compile Include="Mapping\ReviewStatusLogMap.cs" />
+    <Compile Include="Mapping\MenusMap.cs" />
+    <Compile Include="Mapping\OrdersMap.cs" />
+    <Compile Include="Mapping\PermissionsMap.cs" />
+    <Compile Include="Mapping\ProductsMap.cs" />
+    <Compile Include="Mapping\RolePermissionsMap.cs" />
+    <Compile Include="Mapping\RolesMap.cs" />
+    <Compile Include="Mapping\SlideMap.cs" />
+    <Compile Include="Mapping\SubProductsMap.cs" />
+    <Compile Include="Mapping\SysTempMap.cs" />
+    <Compile Include="Mapping\UserRolesMap.cs" />
+    <Compile Include="Mapping\UsersMap.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WebModels\KitchenInfo.cs" />
+    <Compile Include="WebModels\StatisticalAnalysisModel.cs" />
+    <Compile Include="WebModels\CreateOrderModel.cs" />
+    <Compile Include="WebModels\CartVM.cs" />
+    <Compile Include="WebModels\DistributionModel.cs" />
+    <Compile Include="WebModels\LoginUser.cs" />
+    <Compile Include="WebModels\MemberSession.cs" />
+    <Compile Include="WebModels\ProductListModel.cs" />
+    <Compile Include="WebModels\RegisterUser.cs" />
+    <Compile Include="WebModels\UserSession.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FCake.Core\FCake.Core.csproj">
+      <Project>{471bcc54-e5e3-45c7-a9b3-0cb4c9965cc1}</Project>
+      <Name>FCake.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

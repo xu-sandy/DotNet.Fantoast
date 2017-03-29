@@ -1,0 +1,309 @@
+﻿@charset "utf-8";
+/* CSS Document */
+ 
+
+.product{
+
+	/*width:915px;*/
+	height:400px;
+	/*margin-left:auto;
+	margin-right:auto;*/
+	}
+.product_img{
+	width:320px;
+	height:400px;
+	float:left;
+	}
+.product_img1{
+	width:320px;
+	height:320px;
+	background-image:url(Images/details/product.png);
+	}
+.product_imgtab{
+	width:170px;
+	text-align:center;
+	height:80px;
+	margin-left:auto;
+	margin-right:auto;
+	}
+.product_img2{
+	width:40px;
+	height:40px;
+	float:left;
+	margin-top:20px;
+	padding:0;
+	border:#999 solid 2px;
+	}
+.product_img3{
+	width:40px;
+	height:40px;
+	float:left;
+	margin-top:20px;
+	margin-left:23px;
+	border:0;
+	}
+.product_hr{
+	height:370px;
+	width:1px;
+	float:left;
+	background-color:#f2f2f2;
+	margin-left:50px;
+	}
+.product_inf{
+	width:450px;
+	height:400px;
+	float:left;
+	margin-left:80px;
+	}
+.product_inf1{
+	font-family:"微软雅黑";
+	font-size:19px;
+	color:#303030;
+	height:30px;
+	}
+.product_inf2{
+	font-size:27px;
+	color:#aa6915;
+	font-family:"微软雅黑";
+	height:45px;
+	}
+.product_hr2{
+	width:430px;
+	height:1px;
+	background-color:#f2f2f2;
+	margin-left:auto;
+	margin-right:auto;
+	}
+.hr2{
+	height:1px;
+	background-color:#f2f2f2;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:20px;
+	}
+.product_inf3{
+	font-family:"微软雅黑";
+	font-size:10px;
+	color:#888888;
+	text-align:center;
+	line-height:20px;
+	margin-top:6px;
+	margin-bottom:6px;
+	}
+.product_inf4{
+    position:relative;
+	margin-top:15px;
+    margin-left:50px;
+	width:400px;
+	height:30px;
+	}
+.product_inf4 li{
+	float:left;
+	font-family:"微软雅黑";
+	height:25px;
+	line-height:25px;
+	}
+.product_inf4 a{
+	color:#888888;
+	font-size:9px;
+	}
+.size{
+	width:40px;
+	background-color:#f5f5f5;
+	color:#888888;
+	font-size:9px;
+	margin-left:10px;
+	text-align:center;
+	line-height:25px;
+	}
+.size1{
+	width:40px;
+	background-color:#fff4e5;
+	border:1px solid #aa6915;
+	font-size:10px;
+	color:#aa6915;
+	text-align:center;
+	line-height:25px;
+    margin-left:10px;
+	}
+.quantity{
+	width:160px;
+	height:19px;
+	margin-top:8px;
+    margin-left:50px;
+	font-size:1em;
+	}
+.quantity1{
+	width:18px;
+	height:19px;
+	float:left;
+	margin-left:25px;
+	}
+.quantity2{
+	width:30px;
+	height:15px;
+	float:left;
+	border:#dddddd 1px solid;
+	}
+.quantity3{
+	width:18px;
+	height:18px;
+	float:left;
+	}
+.icon{
+	width:330px;
+	height:40px;
+	margin-top:30px;
+	margin-bottom:25px;
+	}
+.icon1{
+	height:37px;
+	width:144px;
+	background-image:url(../Content/images/shopcart.png);
+	float:left;
+	}
+.icon1_img{
+	background-image:url(../Content/images/car.png);
+	width:23px;
+	height:19px;
+	margin-left:14px;
+	margin-top:9px;
+	float:left;
+	}
+.icon1_text{
+	height:37px;
+    line-height:37px;
+	font-family:"微软雅黑";
+	font-size:17px;
+	color:#FFF;
+	float:left;
+	margin-left:5px;
+	}
+.icon2{
+	height:37px;
+	width:144px;
+	background-image:url(../Content/images/gobuy.png);
+	float:left;
+	margin-left:30px;
+	}
+.icon2_img{
+	background-image:url(../Content/images/buy.png);
+	width:16px;
+	height:19px;
+	margin-left:25px;
+	margin-top:9px;
+	float:left;
+	}
+.icon2_text{
+	height:37px;
+	line-height:37px;
+	font-family:"微软雅黑";
+	font-size:17px;
+	color:#FFF;
+	float:left;
+	margin-left:6px;
+	}
+.text{
+	font-family:"微软雅黑";
+	font-size:11px;
+	color:#bcbcbc;
+	margin-top:20px;
+	}
+
+.content{
+	width:915px;
+	height:420px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:60px;
+	}
+.content1{
+	float:left;
+	width:367px;
+	text-align:center;
+	height:367px;
+	border:1px solid #f2f2f2;
+	margin-left:20px;
+	}
+.content2{
+	float:left;
+	height:367px;
+	margin-left:20px;
+	margin-top:30px;
+	width:125px;
+	}
+.content2_text{
+	color:#76729b;
+	font-family:"微软雅黑";
+	font-size:15px;
+	margin-top:14px;
+	margin-bottom:4px;
+	}
+.content3_text{
+	color:#bcbcbc;
+	font-family:"微软雅黑";
+	font-size:11px;
+	}
+.content4{
+	float:left;
+	margin-left:15px;
+	margin-top:53px;
+	width:95px;
+	text-align:right;
+	font-family:"微软雅黑";
+	font-size:11px;
+	color:#767676;
+	}
+.content4 li{
+	margin-top:16px;
+	margin-bottom:16px;
+	}
+.content5{
+	float:left;
+	margin-left:20px;
+	margin-top:53px;
+	width:95px;
+	text-align:left;
+	font-family:"微软雅黑";
+	font-size:11px;
+	color:#bb9d78;
+	}
+.content5 li{
+	margin-top:16px;
+	margin-bottom:16px;
+	}
+
+.prompt{
+	width:915px;
+	line-height:17px;
+	margin-left:auto;
+	margin-right:auto;
+	font-family:"微软雅黑";
+	font-size:11px;
+	color:#767676;
+	}
+
+ .btn-decrease { border: solid 1px #d5c2b9; float: left; width: 24px; height: 24px; display: inline-block; text-indent: -9999px; margin-right: 4px; font-size: 24px; color: #d5c2b9; background: url("../content/images/btn-decrease.jpg") no-repeat 0 0; }
+ .btn-decrease:hover { width: 24px; height: 24px; display: inline-block; text-indent: -9999px; margin-right: 4px; font-size: 24px; color: #d5c2b9; background: url("../content/images/btn-decrease-hover.jpg") no-repeat 0 0; }
+ .btn-increase { border: solid 1px #d5c2b9; float: left; margin-left: 4px; width: 24px; height: 24px; display: inline-block; text-indent: -9999px; font-size: 24px; color: #d5c2b9; background: url("../content/images/btn-increase.jpg") no-repeat 0 0; }
+.btn-increase:hover { margin-left: 4px; width: 24px; height: 24px; display: inline-block; text-indent: -9999px; font-size: 24px; color: #d5c2b9; background: url("../content/images/btn-increase-hover.jpg") no-repeat 0 0; }
+
+
+/* box */
+.box{width:312px;margin:10px auto; position:absolute;}
+.tb-pic a{display:table-cell;text-align:center;vertical-align:middle;}
+.tb-pic a img{vertical-align:middle;}
+.tb-pic a{*display:block;*font-family:Arial;*line-height:1;}
+.tb-thumb{margin:10px 0 0;overflow:hidden;}
+.tb-thumb li{background:none repeat scroll 0 0 transparent;float:left;height:42px;margin:0 6px 0 0;overflow:hidden;padding:1px;}
+.tb-s310, .tb-s310 a{height:310px;width:310px;}
+.tb-s310, .tb-s310 img{max-height:310px;max-width:310px;}
+.tb-s310 a{*font-size:271px;}
+.tb-s40 a{*font-size:35px;}
+.tb-s40, .tb-s40 a{height:40px;width:40px;}
+.tb-booth{border:1px solid #CDCDCD;position:relative;z-index:1;}
+.tb-thumb .tb-selected{background:none repeat scroll 0 0 #C30008;height:40px;padding:2px;}
+.tb-thumb .tb-selected div{background-color:#FFFFFF;border:medium none;}
+.tb-thumb li div{border:1px solid #CDCDCD;}
+div.zoomDiv{z-index:98;position:absolute;top:0px;left:0px;width:200px;height:200px;background:#ffffff;border:1px solid #CCCCCC;display:none;text-align:center;overflow:hidden;}
+div.zoomMask{position:absolute;background:url("images/mask.png") repeat scroll 0 0 transparent;cursor:move;z-index:1;}

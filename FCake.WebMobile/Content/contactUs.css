@@ -1,0 +1,47 @@
+﻿    .title1 {
+        margin-top: 30px;
+        margin-left:5%;
+        margin-right: auto;
+        width:90%;
+        color: #673100;
+        /*font-family: "微软雅黑";*/
+        font-size:1.25em;
+        line-height: 50px;
+    }
+
+    .line_gray {
+        width: 90%;
+        height: 1px;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: #c8c3c3;
+    }
+
+    .addr {
+        margin: 20px 40px 20px 5%;
+    }
+
+    .h2 {
+        width: 700px;
+        margin: 50px 40px 20px 40px;
+    }
+
+    .bigbox {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        font-family: "微软雅黑";
+        font-size: 14px;
+        color: #4a2118;
+    }
+
+    .divM {
+        margin: 0 40px 0 5%;
+    }
+
+    .divX {
+        margin: 20px 40px 0 5%;
+    }
+    .divX1 {
+        margin: 0 40px 0 5%;
+    }

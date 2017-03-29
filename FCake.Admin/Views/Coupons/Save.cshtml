@@ -1,0 +1,707 @@
+﻿@model FCake.Domain.Entities.Coupons
+@{
+    ViewBag.Title = "新增优惠券";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+    var couponsSMS = new FCake.Bll.Services.MsgTemplateService().GetMsgTempByCategory("Coupons");
+    if (string.IsNullOrEmpty(couponsSMS))
+    {
+        couponsSMS = "";
+    }
+        
+}
+<style>
+    .form-tb {
+        width: 100%;
+    }
+
+        .form-tb .control {
+            padding-right: 25px;
+        }
+
+        .form-tb tr {
+            line-height: 40px;
+        }
+
+        .form-tb .giveway-tb tr {
+            line-height: 15px;
+        }
+
+    #wrap #submit {
+        text-align: right;
+        padding-right: 10px;
+    }
+
+        #wrap #submit a {
+            min-width: 100px;
+        }
+
+    .form-tb .lable {
+        width: 66px;
+    }
+
+    .dgedit a {
+        text-decoration: none;
+    }
+
+    .dgedit {
+        display: inline-block;
+        text-align: center;
+    }
+</style>
+
+<div id="wrap">
+    <form id="form1" method="post" style="overflow:auto;">
+        <div id="form_div">
+            <table class="form-tb">
+                <tr>
+                    <td class="lable" align="right">名称：</td>
+                    <td class="control"><input id="Title" name="Title" class="datacontrol easyui-textbox" data-options="required:true,height:32" value="@Model.Title" />券</td>
+                    <td class="lable" align="right">面额：</td>
+                    <td class="control"><input type="number" id="Denomination" name="Denomination" class="datacontrol easyui-textbox" data-options="required:true,height:32" value="@string.Format("{0:F}", Model.Denomination)" /></td>
+                    <td style="width:250px;"></td>
+                </tr>
+                <tr>
+                    <td class="lable" align="right">使用条件：</td>
+                    @if (Model.Id == null)
+                    {
+                        <td colspan="4" class="control">
+
+                            <input type="radio" name="Condition" value="1" checked="checked" />满
+                            <input id="ConditionMoney" name="ConditionMoney" style="width:40px;" />元使用
+                            <input type="radio" name="Condition" value="2" />无条件使用
+
+                        </td>
+                    }
+                    else
+                    {
+                        if (Model.ConditionMoney > 0)
+                        {
+                            <td colspan="4" class="control">
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <input type="hidden" name="CouponBatch" value="@Model.CouponBatch" />
+                                <input type="radio" name="Condition" value="1" checked="checked" />满
+                                <input id="ConditionMoney" name="ConditionMoney" value="@string.Format("{0:F}", Model.ConditionMoney)" style="width:40px;" />元使用
+                                <input type="radio" name="Condition" value="2" />无条件使用
+
+                            </td>
+                        }
+                        else
+                        {
+                            <td colspan="4" class="control">
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <input type="hidden" name="CouponBatch" value="@Model.CouponBatch" />
+                                <input type="radio" name="Condition" value="1" />满
+                                <input id="ConditionMoney" name="ConditionMoney" style="width:40px;" />元使用
+                                <input type="radio" name="Condition" value="2" checked="checked" />无条件使用
+
+                            </td>
+                        }
+                    }
+                </tr>
+                <tr>
+                    <td class="lable" align="right">有效期：</td>
+                    @if (Model.Id == null)
+                    {
+                        <td colspan="4" class="control">
+                            <input id="BeginValidDate" name="BeginValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'})" value="@DateTime.Now.ToString("yyyy-MM-dd")" /> &nbsp;-&nbsp;
+                            <input id="EndValidDate" name="EndValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'})" value="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")" />
+                        </td>
+                    }
+                    else
+                    {
+                        <td colspan="4" class="control">
+                            <input id="BeginValidDate" name="BeginValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'})" value="@Model.BeginValidDate.ToString("yyyy-MM-dd")" /> &nbsp;-&nbsp;
+                            <input id="EndValidDate" name="EndValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'})" value="@Model.EndValidDate.ToString("yyyy-MM-dd")" />
+                        </td>
+                    }
+                </tr>
+                <tr id="giveWay_tr">
+                    <td class="lable" align="right" valign="top" style="vertical-align:top">赠送方式：</td>
+                    <td colspan="4" class="control">
+                        <table class="giveway-tb">
+                            <tr>
+                                <td><input type="radio" name="GiveWay" id="GiveWay_BindUser" checked="checked" value="1" />绑定用户</td>
+                                <td>
+                                    <input type="radio" name="GiveWay" id="GiveWay_Card" value="2" />卡券发放
+                                    <div id="cartNumber_div" style="display:none;">
+                                        &nbsp;数量：<input id="CardNumber" name="CardNumber" value="@Model.Quantity" style="width:40px;" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr id="givenObject_tr">
+                    <td class="lable" align="right">赠送对象：</td>
+                    <td colspan="4" class="control">
+                        <input type="radio" name="GivenObjectType" id="GivenObject_all" checked="checked" value="1" />全部
+                        <input type="radio" name="GivenObjectType" id="GivenObject_member" value="2" />会员类型
+                        <input type="radio" name="GivenObjectType" id="GivenObject_specify" value="3" />指定用户
+                    </td>
+                </tr>
+                <tr id="memberType_tr" style="display:none;">
+                    <td class="label" align="right"></td>
+                    <td id="memberLevel" colspan="4" class="control"></td>
+                </tr>
+                <tr id="specifyCustomer_tr">
+                    <td class="label" align="right"></td>
+                    <td colspan="4" style="height:400px;padding-right:100px">
+                        <table id="customerDg"></table>
+                    </td>
+                </tr>
+                <tr id="sms_tr">
+                    <td class="lable" align="right" style="vertical-align:top">短信：</td>
+                    @if (Model.IsSendSMS == 1)
+                    {
+                        <td colspan="4" class="control">
+                            <input type="checkbox" checked="checked" id="IsSendSMS" name="IsSendSMS" />发送短信<br />
+                            <textarea id="SMSContent" name="SMSContent" class="datacontrol" style="height:87px;width:300px;">@Model.SMSContent</textarea>
+                            <span id="SMSContent_tip">(此项只做短信内容记录，实际以短信平台系统发送的内容为准。)</span>
+                        </td>
+                    }
+                    else
+                    {
+                        <td colspan="4" class="control">
+                            <input type="checkbox" id="IsSendSMS" name="IsSendSMS" />发送短信<br />
+                            <textarea id="SMSContent" name="SMSContent" class="datacontrol" style="height:87px;width:300px;display:none;">@couponsSMS</textarea>
+                            <span id="SMSContent_tip" style="display:none">(此项只做短信内容记录，实际以短信平台系统发送的内容为准。)</span>
+                        </td>
+                    }
+                </tr>
+            </table>
+            <input type="text" name="GivenObjectIds" id="GivenObjectIds" value="" style="display:none">
+        </div>
+    </form>
+    @if (Model.Status != 1)
+    {
+        <div id="submit">
+            <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-ok'" onclick="createCouponns(1)">保存</a>
+            <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-ok'" onclick="createCouponns(2)">保存并发放</a>
+        </div>
+    }
+</div>
+
+@if (Model.Status != 1)
+{
+    <div id="customerDg_toolBar">
+        <a href="javascript:void(0)" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add" onclick="selectCustomer()">添加用户</a>
+    </div>
+}
+<script type="text/javascript">
+    $(function () {
+        $("#IsSendSMS").change(function () {
+            $("#SMSContent").toggle();
+            $("#SMSContent_tip").toggle();
+        });
+    })
+
+</script>
+<script type="text/javascript">
+    $(function () {
+        $("#customerDg").datagrid({
+            url: '',
+            rownumbers: true,
+            singleSelect: true,
+            fitColumns: true,
+            //pagination: true,
+            pageSize: 10,
+            autoRowHeight: true,
+            fit: true,
+            toolbar: '#customerDg_toolBar',
+            columns: [[
+                { field: 'Id', hidden: true, },
+                { field: 'Mobile', title: '移动电话', width: 80, align: 'center' },
+                { field: 'FullName', title: '会员姓名', width: 50, align: 'center' },
+                { field: 'MemberLevelText', title: '会员等级', width: 80, align: 'center' },
+                { field: 'Integral', title: '会员积分', width: 80, align: 'center' },
+                {
+                    field: 'opState', title: '操作', width: 60, align: 'center', formatter: function (value, row, index) {
+                        var status = '@Model.Status';
+                        if (status != '1') {
+                            return "<div class='dgedit'>" +
+                            "<a href='javascript:void(0)'  class='easyui-linkbutton cus1 linkbtn' style='width:30px;display:block;'  onclick=\"deleteRow('" + row.Id + "')\">删除</a>" +
+                             "</div>"
+                        }
+                    }
+                }
+            ]]
+        })
+    });
+
+
+</script>
+
+<script type="text/javascript">
+    function deleteRow(id) {
+        $.messager.confirm('提示', '确定删除吗', function (r) {
+            if (r) {
+                var rows = $dg2.datagrid("getRows");
+                $.each(rows, function (i, v) {
+                    if (v.Id == id) {
+                        $dg2.datagrid("deleteRow", i);
+                    }
+                })
+            }
+        });
+
+    }
+    $(function () {
+        //$("#form_div").css("min-height", $(window.parent).height() - 280);
+        //赠送对象事件绑定
+        $("#specifyCustomer_tr").css('display', 'none');
+        $("input[name='GivenObjectType']").change(function () {
+            $("#memberType_tr").css('display', 'none');
+            $("#specifyCustomer_tr").css('display', 'none');
+            $("#giveWay_tr").css("display", '');
+            if ($(this).val() == 2) {
+                $("#memberType_tr").css('display', '');
+            }
+            if ($(this).val() == 3) {
+                $("#specifyCustomer_tr").css('display', '');
+                $("#customerDg").datagrid('resize');
+                // $("#giveWay_tr").css("display", 'none');
+            }
+        });
+
+        //赠送方式事件绑定
+        $("input[name='GiveWay']").change(function () {
+            $("#sms_tr").css("display", "none");
+            $("#cartNumber_div").css("display", "none");
+            $("#givenObject_tr").css("display", "none");
+            //$("#IsSendSMS")[0].checked = true;
+            if ($(this).val() == 1) {
+                $("#sms_tr").css("display", "");
+                $("#givenObject_tr").css("display", "");
+                $("#GivenObject_all")[0].checked = true;
+                $("#IsSendSMS")[0].checked = false;
+                $("#SMSContent").css("display", "none");
+                $("#SMSContent_tip").css("display", "none");
+
+            }
+            if ($(this).val() == 2) {
+                $("#cartNumber_div").css("display", "inline-block");
+                $("#IsSendSMS")[0].checked = false;
+                $("#SMSContent").css("display", "none");
+                $("#SMSContent_tip").css("display", "none");
+                $("#memberType_tr").css('display', 'none');
+                $("#specifyCustomer_tr").css('display', 'none');
+            }
+        })
+
+        //编辑、查看时候的数据绑定
+        //赠送方式 1=绑定用户  2=卡券发放
+        if ('@Model.GiveWay' == '2') {
+            var allGiveWay = $("input[name=GiveWay]");
+            $.each(allGiveWay, function (index, item) {
+                if ($(item).val() == '2') {
+                    $(item).click();
+                }
+            })
+        }
+
+        //当前已有会员信息绑定
+        $.ajax({
+            type: "post",
+            url: '@Url.Action("GetAllMemberLevel", "Coupons")',
+            data: "",
+            dataType: "Json",
+            success: function (data) {
+                if (data != null) {
+                    var baseHtml = "<input type='checkbox' name='MemberType' id='MemberType_{{id}}' value='{{val}}' /><label>{{text}}</label>";
+                    var resultHtml = "";
+                    for (var i = 0; i < data.length; i++) {
+                        resultHtml += baseHtml.replace("{{id}}", i).replace("{{val}}", data[i].MemberLevelValue).replace("{{text}}", data[i].Title);
+                    }
+                    $("#memberLevel").html(resultHtml);
+
+
+
+                    //赠送对象
+                    if ('@Model.Id' != "") {
+                        if ('@Model.GivenObjectType' != '1') {
+                            var options = $("input[name=GivenObjectType]");
+                            $.each(options, function (index, item) {
+                                if ($(item).val() == '@Model.GivenObjectType') {
+                                    $(item).click();
+                                    return false;
+                                }
+                            })
+                            //会员类型绑定
+                            if ('@Model.GivenObjectType' == '2') {
+                                var memberTypes = '@Model.GivenObjectIds';
+                                var doms = $("#memberLevel input");
+                                var checkeds = '@Model.GivenObjectIds';
+                                var isEach = false;
+                                if (checkeds.indexOf(',')) {
+                                    checkeds = checkeds.split(',');
+                                    isEach = true;
+                                }
+                                if (!isEach) {
+                                    $.each(doms, function (index, item) {
+                                        if ($(item).val() == checkeds) {
+                                            $(item).click();
+                                        }
+                                    })
+                                } else {
+                                    $.each(doms, function (index, item) {
+                                        $.each(checkeds, function (idx, itm) {
+                                            if ($(item).val() == itm) {
+                                                $(item).click();
+                                            }
+                                        })
+                                    })
+                                }
+                            }
+                            //指定用户绑定
+                            if ('@Model.GivenObjectType' == '3') {
+                                //已有的id
+                                var ids = '@Model.GivenObjectIds';
+                                //绑定网格
+                                $("#customerDg").datagrid({
+                                    url: '@Url.Action("PreLoadCustomers", "Coupons")' + "?ids=" + '@Model.GivenObjectIds'
+                                })
+                            }
+                        }
+                    }
+
+                }
+
+
+            }
+        })
+
+
+
+    })
+</script>
+
+<!--添加指定用户-->
+<div id="win" class="easyui-dialog" data-options="title:'添加指定用户',buttons:btns,cache:false,modal:true,width:800,height:450,closed:true,collapsible:false,minimizable:false,maximizable:false"></div>
+<script type="text/javascript">
+    var $dg2 = $("#customerDg");
+    var btns = [{
+        text: '确定继续添加',
+        iconCls: 'icon-ok',
+        width: 140,
+        handler: function () {
+            //$dg2.datagrid('loadData', { total: 0, rows: [] });
+            var chks = $('#win iframe')[0].contentWindow.$dg3.datagrid("getChecked");
+            var data = $dg2.datagrid("getData");
+            $.each(chks, function (idx, row) {
+                if (!isExists(data.rows, row.Id)) {
+                    $dg2.datagrid('insertRow',
+                    {
+                        row: {
+                            Id: row.Id, Mobile: row.Mobile, FullName: row.FullName, Integral: row.Integral, MemberLevelText: row.MemberLevelText
+                        }
+                    });
+                }
+            });
+        }
+    }, {
+        text: '确定并关闭',
+        iconCls: 'icon-ok',
+        width: 140,
+        handler: function () {
+            //$dg2.datagrid('loadData', { total: 0, rows: [] });
+            var chks = $('#win iframe')[0].contentWindow.$dg3.datagrid("getChecked");
+            var data = $dg2.datagrid("getData");
+            $.each(chks, function (idx, row) {
+                if (!isExists(data.rows, row.Id)) {
+                    $dg2.datagrid('insertRow',
+                    {
+                        row: {
+                            Id: row.Id, Mobile: row.Mobile, FullName: row.FullName, Integral: row.Integral, MemberLevelText: row.MemberLevelText
+                        }
+                    });
+                }
+            });
+            //$dg2.datagrid('reload');
+            $('#win').dialog('close');
+        }
+    }, {
+        text: '关闭',
+        iconCls: 'icon-cancel',
+        handler: function () {
+            $('#win').dialog('close');
+        }
+    }];
+    function selectCustomer() {
+        var url = "@Url.Action("SelectCustomer", "Coupons")?t=" + Math.random();
+        var rows = $dg2.datagrid("getRows");
+        //超过100个不再添加
+        if (rows.length >= 100) {
+            $.messager.alert("操作提示", "添加超过上限100，无法继续添加", "info", function () {
+                return;
+            })
+        } else {
+
+            var ids = $.map(rows, function (row) {
+                return row.Id;
+            }).join(",");
+            url += "&customerIds=" + ids;
+            //url += "&supplierID=" + $("#SupplierID").combobox("getValue");
+            //url += "&store=" + $("#StoreId").combobox("getValue");
+            //url += "&order=1";
+            var cont = "<iframe src='" + url + "' width='100%' height='99%' frameborder='0' />";
+            $("#win").dialog({ content: cont, buttons: btns }).dialog("open");
+        }
+    }
+
+    function isExists(rows, id) {
+        var result = false;
+        $.each(rows, function (idx, row) {
+            if (row.Id == id) {
+                result = true; return;
+            }
+        });
+        return result;
+    }
+</script>
+
+<!--保存或发放优惠券-->
+<script type="text/javascript">
+    function createCouponns(type) {
+        var name = $("#Title").val();//券名
+        if (name == "")
+            return alertWarningMsg("请输入券名");
+        var denomination = $("#Denomination").val();//面额
+        if (denomination == "" || isNaN(denomination))
+            return alertWarningMsg("请输入面额");
+        if (denomination <= 0)
+            return alertWarningMsg("面额需大于0")
+        var useCondition = "无条件使用";//使用条件
+        var conditionMoney = 0;
+        if ($("input[name=Condition]:checked").val() == 1) {
+            conditionMoney = $("#ConditionMoney").val();
+            if (conditionMoney == "" || isNaN(conditionMoney))
+                return alertWarningMsg("请输入使用条件的满足金额");
+            if (conditionMoney < 0)
+                return alertWarningMsg("使用条件的满足金额不能小于0");
+            useCondition = "满" + Number(conditionMoney).toFixed(2) + "元使用"
+        }
+        var beginValidDate = $("#BeginValidDate").val();//有效期
+        if (beginValidDate == "")
+            return alertWarningMsg("请选择开始有效期")
+        var endValidDate = $("#EndValidDate").val();//有效期
+        if (endValidDate == "")
+            return alertWarningMsg("请选择截至有效期");
+        var cardNumber = 0;//优惠券数量
+        var giveWay = $("input[name=GiveWay]:checked").val();//赠送方式
+        var givenObject = $("input[name=GivenObjectType]:checked").val();
+        var givenObjectStr = "";//
+        var isSendSMS = $("input[name=IsSendSMS]:checked").length;//是否发送短信
+        if (isSendSMS == 1) {
+            $("input[name=IsSendSMS]:checked").attr("value", 1);
+        }
+
+        //
+        var smsContent = $("#SMSContent").val();//短信内容
+
+        if (giveWay == 2) {
+            cardNumber = $("#CardNumber").val();
+            if (cardNumber == "" || isNaN(cardNumber))
+                return alertWarningMsg("请输入卡券发放数量");
+            if (cardNumber < 1)
+                return alertWarningMsg("卡券发放数量不能小于1")
+        } else if (giveWay == 1) {
+            if (givenObject == 1)
+                givenObjectStr = "全部";
+            if (givenObject == 2) {
+                if ($("input[name=MemberType]:checked").length == 0) {
+                    return alertWarningMsg("请选择会员类型");
+                } else {
+                    //读取选中的会员类型赋值到隐藏域
+                    var checkedVal = [];
+                    var checkedText = "";
+                    $.each($("input[name=MemberType]:checked"), function (index, item) {
+                        checkedVal.push($(item).val());
+                        checkedText += $(item).next().text() + ",";
+                    })
+                    $("#GivenObjectIds").val(checkedVal);
+                }
+                givenObjectStr = "指定会员类型:" + checkedText.substring(0, checkedText.length - 1);
+            }
+            if (givenObject == 3) {
+                if ($dg2.datagrid("getRows").length == 0) {
+                    return alertWarningMsg("请添加指定用户");
+                }
+                else {
+                    var selectUsers = [];
+                    var rows = $dg2.datagrid("getRows");
+                    $.each(rows, function (index, item) {
+                        selectUsers.push(item.Id)
+                    })
+                    if (selectUsers.length > 0) {
+                        $("#GivenObjectIds").val(selectUsers);
+                    }
+                }
+                cardNumber = $dg2.datagrid("getRows").length;
+                givenObjectStr = "指定用户";
+            }
+        }
+
+        if (isSendSMS == 1 && smsContent == "") {
+            return alertWarningMsg("请输入短信内容");
+        }
+        //if (denomination < conditionMoney) {
+        //    $.messager.confirm("提示", "确认发放使用条件大于面额的优惠券？", function () {
+
+        //    })
+        //}
+
+        var couponsId = ''
+        var couponBatch = '';
+        if ($("input[name=Id]").val() != undefined) {
+            couponsId = $("input[name=Id]").val();
+        }
+        if ($("input[name=CouponBatch]").val() != undefined) {
+            couponBatch = $("input[name=CouponBatch]").val();
+        }
+        if (giveWay == 1) {
+            //如果全部的话就统计数量
+            if (givenObject == 1 || givenObject == 2) {//1=全部 2=会员类型
+                $.post("@Url.Action("GetCustomersCount", "Customer")", { type: givenObject, data: $("#GivenObjectIds").val() }, function (data) {
+                    cardNumber = data;
+                    //发放数量控制
+
+
+                    switch (type) {
+                        case 1://保存
+                            $.ajax({
+                                type: "post",
+                                url: '@Url.Action("GenerateCoupons", "Coupons")',
+                                data: $("#form1").serialize(),
+                                dataType: "Json",
+                                success: function (data) {
+                                    if (data.successed) {
+                                        $.messager.alert("操作提示", "操作成功", "info", function () {
+                                            window.top.$("body").data("jq_win_formDiv")("#dg").datagrid("reload");
+                                            window.top.$("body").data("win_formDiv").window("close");
+                                            window.close();
+                                        })
+                                    }
+                                    else
+                                        //alert(data.message);
+                                        $.messager.alert("操作提示", data.message, "error")
+                                }
+                            })
+
+
+
+                            break;
+                        case 2://保存并发放
+                            var url = '@Url.Action("GenerateCoupons", "Coupons")';
+                            url += '?name=' + name + '&denomination=' + denomination + '&beginValidDate=' + beginValidDate + '&endValidDate=' + endValidDate;
+                            url += '&useCondition=' + useCondition + '&cardNumber=' + cardNumber + '&givenObjectStr=' + givenObjectStr;
+                            url += '&isSendSMS=' + isSendSMS + '&smsContent=' + smsContent + '&ConditionMoney=' + conditionMoney;
+                            url += '&giveWay=' + giveWay + "&givenObjectType=" + givenObject + "&givenObjectIds=" + $("#GivenObjectIds").val() + "&Id=" + couponsId + "&couponBatch=" + couponBatch;
+                            openGenerateCouponsDialog('发放优惠券', url);
+                            break;
+                    }
+
+                }, 'json')
+            } else {
+                //数量控制
+                var ids = $("#GivenObjectIds").val();
+                if (ids.length > 3400) {
+                    $.messager.alert("操作提示", "指定用户选择过多，指定用户不建议超过100个!", "error", function () {
+                        return;
+                    })
+                } else {
+
+                    switch (type) {//控制
+                        case 1://保存
+                            $.ajax({
+                                type: "post",
+                                url: '@Url.Action("GenerateCoupons", "Coupons")',
+                                data: $("#form1").serialize() + "&Quantity=" + cardNumber,
+                                dataType: "Json",
+                                success: function (data) {
+                                    if (data.successed) {
+                                        $.messager.alert("操作提示", "操作成功", "info", function () {
+                                            window.top.$("body").data("jq_win_formDiv")("#dg").datagrid("reload");
+                                            window.top.$("body").data("win_formDiv").window("close");
+                                            window.close();
+                                        })
+                                    }
+                                    else
+                                        //alert(data.message);
+                                        $.messager.alert("操作提示", data.message, "error")
+                                }
+                            })
+                            break;
+                        case 2://保存并发放
+                            var url = '@Url.Action("GenerateCoupons", "Coupons")';
+                            url += '?name=' + name + '&denomination=' + denomination + '&beginValidDate=' + beginValidDate + '&endValidDate=' + endValidDate;
+                            url += '&useCondition=' + useCondition + '&cardNumber=' + cardNumber + '&givenObjectStr=' + givenObjectStr;
+                            url += '&isSendSMS=' + isSendSMS + '&smsContent=' + smsContent + '&ConditionMoney=' + conditionMoney;
+                            url += '&giveWay=' + giveWay + "&givenObjectType=" + givenObject + "&givenObjectIds=" + ids + "&Id=" + couponsId + "&couponBatch=" + couponBatch;
+                            openGenerateCouponsDialog('发放优惠券', url);
+                            break;
+                    }
+                }
+            }
+        } else {
+            //卡券发放
+            switch (type) {
+                case 1://保存
+                    $.ajax({
+                        type: "post",
+                        url: '@Url.Action("GenerateCoupons", "Coupons")',
+                        data: $("#form1").serialize() + "&Quantity=" + cardNumber,
+                        dataType: "Json",
+                        success: function (data) {
+                            if (data.successed) {
+                                $.messager.alert("操作提示", "操作成功", "info", function () {
+                                    window.top.$("body").data("jq_win_formDiv")("#dg").datagrid("reload");
+                                    window.top.$("body").data("win_formDiv").window("close");
+                                    window.close();
+                                })
+                            }
+                            else
+                                $.messager.alert("操作提示", data.message, "error")
+                        }
+                    })
+
+
+
+                    break;
+                case 2://保存并发放
+                    var url = '@Url.Action("GenerateCoupons", "Coupons")';
+                    url += '?name=' + name + '&denomination=' + denomination + '&beginValidDate=' + beginValidDate + '&endValidDate=' + endValidDate;
+                    url += '&useCondition=' + useCondition + '&cardNumber=' + cardNumber + '&givenObjectStr=' + givenObjectStr;
+                    url += '&isSendSMS=' + isSendSMS + '&smsContent=' + smsContent + '&ConditionMoney=' + conditionMoney;
+                    url += '&giveWay=' + giveWay + "&givenObjectType=" + givenObject + "&givenObjectIds=" + $("#GivenObjectIds").val() + "&Id=" + couponsId + "&couponBatch=" + couponBatch;
+                    openGenerateCouponsDialog('发放优惠券', url);
+                    break;
+            }
+        }
+    }
+
+    function openGenerateCouponsDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 360,
+            height: 280,
+            id: "generateCoupons",
+            url: url,
+
+        });
+    }
+
+    function alertWarningMsg(msg) {
+        $.messager.alert("提示", msg, "warning");
+        return false;
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        $("input[name=Condition]").click(function () {
+            if ($("input[name=Condition]:checked").val() == 2) {
+                $("#ConditionMoney").val("");
+            }
+        })
+    })
+</script>

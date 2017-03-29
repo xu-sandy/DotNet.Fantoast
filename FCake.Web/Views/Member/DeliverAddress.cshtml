@@ -1,0 +1,266 @@
+﻿@model List<FCake.Domain.Entities.CustomerAddress>
+@{
+    ViewBag.Title = "收货地址";
+}
+<link href="~/Content/form.css" rel="stylesheet" />
+<link href="~/Content/address.css" rel="stylesheet" />
+
+<style type="text/css">
+    div.newAddr { width: 705px; margin: 0 auto; border: 1px solid #dac2ad; padding: 10px; color: #929292; font-size: 12px; }
+
+    .newAddr .clearfix { display: block; margin: 5px 0; line-height: 25px; }
+
+    span.laber { width: 80px; text-align: right; float: left; }
+
+    span.content input { width: 150px; height: 20px; float: left; line-height: 20px; border: 1px solid #ccd1d9; -webkit-border-radius: 5px; margin-left: 10px; font-size: .85em; }
+    select { border: 1px solid #ccd1d9; -webkit-border-radius: 5px; margin-left: 10px; height: 25px; font-size: .85em; }
+</style>
+
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top;">
+            @Html.Partial("_PartialMenu")
+        </td>
+        @*内容信息*@
+        <td style="text-align: left; vertical-align: top;">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "收货地址")
+
+                <div class="panelcontent">
+                    <div class="text" style="width:810px;">
+                        <ul>
+                            <li class="text_1">已有</li>
+                            <li class="text_2">@Model.Count()</li>
+                            <li class="text_1">个收货地址</li>
+                            <li class="text_3">（最多可添加10个收货地址）</li>
+                            <li class="text_5">
+                                <input type="button" class="text_4" name="toggleBtn" value="添加收货地址" />
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="null"></div>
+
+                    <div class="newAddr" style="display:none;">
+                        <form id="addressForm">
+                            <p class="clearfix" style="margin-bottom:10px;">
+                                <span style="margin-right:20px;vertical-align:middle;height:25px;line-height:25px;">新建/修改地址</span>
+                                <a href="/Member/DistributionRange" style="color: #629bcb">查看配送区域地图</a>
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">收货人<span style="color:red;">*</span></span>
+                                <span class="content"><input type="text" name="ttbReceiver" maxlength="20" /></span>
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">地区<span style="color:red;">*</span></span>
+                                <span class="content">@Html.Partial("~/Views/Cart/_PartialPosition.cshtml")</span>
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">街道地址<span style="color:red;">*</span></span>
+                                <span class="content"><input type="text" name="ttbAddress" /></span>
+                                <span class="laber">手机<span style="color:red;">*</span></span>
+                                <span class="content"><input type="text" name="ttbMobile" /></span>
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">邮政编码&nbsp;&nbsp;</span>
+                                <span class="content"><input type="text" name="ttbCode" /></span>
+                                <span class="laber">固定电话<span style="color:red;">*</span></span>
+                                <span class="content"><input type="text" name="ttbTel" maxlength="15"/></span>（手机或固定电话至少填写一项）
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">&nbsp;</span>
+                                <span style="margin-left:10px"><input type="checkbox" name="default_flg" id="default_flg" style="vertical-align:middle" /><span>&nbsp;&nbsp;设为默认地址</span></span>
+
+                                <input type="text" id="id" style="display:none" />
+                            </p>
+                            <p class="clearfix">
+                                <span class="laber">&nbsp;</span>
+                                <span style="margin-left:10px"><input class="text_4" type="button" value="保存" onclick="saveaddress()" /></span>
+                            </p>
+                        </form>
+                    </div>
+
+                    <table cellspacing="0" cellpadding="0" border="0" class="address_list1">
+                        <colgroup>
+                            <col class="null">
+                            <col class="address">
+                            <col class="man">
+                            <col class="phone">
+                            <col class="action">
+                        </colgroup>
+                        <tbody>
+                            <tr class="address_list2">
+                                <td></td>
+                                <td class="text_left">地址</td>
+                                <td>收货人</td>
+                                <td>联系电话</td>
+                                <td>操作</td>
+                            </tr>
+
+                            @foreach (var x in Model)
+                            {
+                                <tr class="address_list3">
+                                    <td></td>
+                                    <td class="text_left">@x.Province @x.City @x.Area @x.Address</td>
+                                    <td>@x.Receiver</td>
+                                    <td>@x.ReceiverTel @x.ReceiverMobile</td>
+                                    <td>
+                                        <ul>
+                                            @{
+                                if (x.IsDef == 0)
+                                {
+                                    <li class="default"><a href="#">默认地址</a></li>
+                                }
+                                else
+                                {
+                                    <li class="default_no"><a href="#" onclick="setDefAddr('@x.Id')">设为默认</a></li>
+                                }
+                                            }
+                                            <li class="editor"><a href="#" onclick="editAddress('@x.Id')">编辑</a></li>
+                                            <li class="delete"><a href="#" onclick="delAddress('@x.Id')">删除</a></li>
+                                        </ul>
+                                    </td>
+                                    @*<td hidden>>@x.Id</td>*@
+                                </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    function delAddress(addressId) {
+        $.ajax({
+            url: '/Member/DelAddress',
+            dataType: 'json',
+            type: 'post',
+            data: { addressId: addressId },
+            success: function (data, status) {
+                if (data.validate)
+                    window.location.reload();
+                else
+                    alert(data.msg);
+            }
+        });
+    }
+
+    function saveaddress() {
+        var receiver, province, city, area, address, tel, mobile, code, isDef, id;
+        receiver = $.trim($("input[name=ttbReceiver]").val());
+        if (receiver == "") {
+            alert("请输入收货人名称"); return;
+        }
+        province = $("select[name=ddlProvince] option:checked").val();
+        if (province == "") {
+            alert("请选择省份"); return;
+        }
+        city = $("select[name=ddlCity] option:checked").val();
+        if (city == "") {
+            alert("请选择城市"); return;
+        }
+        area = $("select[name=ddlArea] option:checked").val();
+        if (area == "") {
+            alert("请选择区域"); return;
+        }
+        address = $.trim($("input[name=ttbAddress]").val());
+        if (address == "") {
+            alert("请输入街道地址"); return;
+        }
+        tel = $.trim($("input[name=ttbTel]").val());
+        mobile = $.trim($("input[name=ttbMobile]").val());
+        if (tel == "" && mobile == "") {
+            alert("手机或固定电话至少填写一项"); return;
+        }
+
+        if (tel != "" && (!$("input[name=ttbTel]").controlValidate("cntel", false) && !$("input[name=ttbTel]").controlValidate("cnmobile", false))) {
+            alert('无效的联系电话');
+            return false;
+        }
+        if (mobile != "" && !$("input[name=ttbMobile]").controlValidate("cnmobile", false)) {
+            alert('手机号码格式不正确');
+            return;
+        }
+
+        code = $.trim($("input[name=ttbCode]").val());
+        if (code != "" && !$("input[name=ttbCode]").controlValidate("postcode", false)) {
+            alert('邮编格式不正确');
+            return;
+        }
+
+        try {
+            code = code.replace(/\D/g, '');
+            if (code != '' && code != undefined)
+            code = Number(code);
+        }
+        catch (e) {
+            code = "";
+        }
+        $("input[name=ttbCode]").val(code);
+
+        isDef = Number($("input#default_flg").is(':checked'));
+        id = $("input#id").val();
+
+        $.ajax({
+            url: '/Member/SaveAddress',
+            dataType: 'json',
+            type: 'post',
+            data: { receiver: receiver, province: province, city: city, area: area, address: address, tel: tel, mobile: mobile, code: code, isDef: isDef, id: id },
+            success: function (data, status) {
+                if (data.validate)
+                    window.location.reload();
+                else
+                    alert(data.msg);
+            }
+        });
+
+    }
+
+    $(function () {
+        var status;
+        $("input[name=toggleBtn]").click(function () {
+            $("#addressForm")[0].reset();
+            $('.newAddr').toggle();
+            status = $('.newAddr').css("display")
+            if (status == "block")
+                $("input[name=toggleBtn]").val("取消")
+            else
+                $("input[name=toggleBtn]").val("添加收货地址")
+        })
+    })
+
+
+    function editAddress(addrId) {
+        $.ajax({
+            url: '/Member/GetOneAddress',
+            dataType: 'json',
+            type: 'post',
+            data: { addressId: addrId },
+            success: function (data) {
+                $("div.newAddr").show();
+
+                $("input[name=ttbReceiver]").val(data.Receiver);
+                $("select[name=ddlProvince]").val(data.Province).change();
+                $("select[name=ddlCity]").val(data.City).change();
+                $("select[name=ddlArea]").val(data.Area).change();
+                $("input[name=ttbAddress]").val(data.Address);
+                $("input[name=ttbTel]").val(data.ReceiverTel);
+                $("input[name=ttbMobile]").val(data.ReceiverMobile);
+                $("input[name=ttbCode]").val(data.ZipCode);
+                $("input#default_flg").prop("checked", data.IsDef == 0 ? 1 : 0);
+                $("input#id").val(data.Id);
+            }
+        })
+    }
+
+    function setDefAddr(addrId) {
+        $.post("/Member/ModifyAsDefAddress", { addressId: addrId }, function (result) {
+            if (result)
+                window.location.reload();
+        }, "json")
+    }
+
+</script>

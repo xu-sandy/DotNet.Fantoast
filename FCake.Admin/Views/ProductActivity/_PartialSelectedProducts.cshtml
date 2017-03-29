@@ -1,0 +1,106 @@
+﻿<style type="text/css">
+    .lbltitle {
+        width: 100px;
+        display: inline-block;
+        text-align: right;
+        margin-right: 10px;
+    }
+</style>
+<table id="selectedproducts"></table>
+<script>
+    window.drpdata = window.drpdata || {};
+</script>
+<script type="text/javascript">
+    var $selectedproducts;
+    $(function () {
+        $product = $("#selectedproducts");
+        $selectedproducts = $product;
+        var d = [];
+        var editable = false;
+
+        var columns = [[]];
+        columns = [[
+            { field: 'ParentId', hidden: true },
+            { field: 'SizeTitle', hidden: true },
+            {
+                field: 'MainImgId', title: '缩略图', width: 100, align: 'center',
+                formatter: function (value, row, index) {
+                    var v = "";
+                    if (value != null && value != undefined && $.trim(value) != "") {
+                        v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                    }
+                    return v;
+                }
+            },
+            { field: 'Name', title: '产品名称', width: 240, align: 'center' },
+            {
+                field: 'Size', title: '产品单位', width: 60, align: 'center', formatter: function (value, row, index) {
+                    return row.SizeTitle;
+                }
+            },
+            { field: 'OrigonPrice', title: '原价', width: 60, align: 'center' },
+            { field: 'Price', title: '活动价', width: 60, align: 'center', editor: { type: 'numberbox', options: { required: true, min: 1 } } },
+            //{ field: 'Num', title: '数量', width: 70, align: 'center', editor: { type: 'numberbox', options: { required: true, min: 1 } } },
+            {
+                field: 'Id', title: '管理', width: 250, align: 'center',
+                formatter: function (value, row, index) {
+                    return "<div class='dgedit'><a href='javascript:;' class='easyui-linkbutton cus2 l-btn l-btn-small' data-options=\"disabled:" + editable + "\" onclick=\"editsub('" + row.Id + "')\" style=\"margin-right:10px;\">修改</a>" +
+                        "<a href='javascript:;'  class='easyui-linkbutton cus2 l-btn l-btn-small' data-options=\"disabled:" + editable + "\" onclick=\"savesub('" + row.Id + "')\" style=\"margin-right:10px;\">保存</a>" +
+                        "<a href='javascript:;'  class='easyui-linkbutton  l-btn l-btn-smal' data-options=\"disabled:" + editable + "\"  onclick=\"deletesub('" + row.Id + "')\" style=\"margin-right:10px;\">删除</a></div>";
+                }
+            }
+        ]];
+
+        $product.datagrid({
+            data: d,
+            idField: 'Id',
+            rownumbers: true,
+            singleSelect: true,
+            showFooter: true,
+            columns: columns,
+            onAfterEdit: function () {
+                $(".dgedit .easyui-linkbutton").linkbutton();
+            },
+            onLoadSuccess: function () {
+                //$(".easyui-linkbutton").linkbutton();
+                $.parser.parse($('.cus2').parent());
+            }
+        });
+    });
+
+    function editsub(id) {
+        var rows = $product.datagrid("getRows");
+        $.each(rows, function (i, v) {
+            if (v.Id == id) {
+                $product.datagrid("beginEdit", i);
+            }
+        })
+    }
+
+    function savesub(id) {
+
+        var rows = $product.datagrid("getRows");
+
+        $.each(rows, function (i, v) {
+            if (v.Id == id) {
+                $product.datagrid("endEdit", i);
+            }
+        })
+    }
+
+    function deletesub(id) {
+        $.messager.confirm('系统提示!', '确定删除吗', function (r) {
+            if (r) {
+                var rows = $product.datagrid("getRows");
+                $.each(rows, function (i, v) {
+                    if (v.Id == id) {
+                        $product.datagrid("deleteRow", i);
+                    }
+                })
+            }
+        });
+
+    }
+
+
+</script>

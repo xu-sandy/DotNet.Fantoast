@@ -1,0 +1,58 @@
+﻿@using FCake.Bll;
+@{
+    var userinfo = CurrentMember.MemberSession;
+    var username = CurrentMember.DisplayName;
+    if (userinfo != null)
+    {
+        if (!string.IsNullOrEmpty(userinfo.DisplayName)){
+            username = userinfo.DisplayName;
+        }
+        else
+        {
+            username = userinfo.LoginName.Substring(0, 3) + "****" + userinfo.LoginName.Substring(7, 4);
+        }
+    }
+
+    var dataactive = (ViewContext.RouteData.Values["controller"].ToString() + ViewContext.RouteData.Values["action"].ToString()).ToLower();
+    
+    //购物车条数
+    var count = new FCake.Bll.Services.CartService().GetCartsCount();
+}
+<link href="~/Content/global.css" rel="stylesheet" />
+<div class="header">
+    <div class="wallbox">
+        <a class="logo" href="/">
+            <img src="@Url.Content("~/content/images/logo.png")" />
+        </a>
+        <span class="CartCount">@count</span>
+        <div class="navbar">
+            <a class="cart" href="/Cart/Index"></a>
+            @if (userinfo == null)
+            {
+                <a class="user" href="/Member/Index"></a>
+                <a href="/Passport/Register">注册</a>
+                <a href="/Passport/Login">登录</a>
+            }
+            else
+            {
+                <a href="/Passport/Logout">[退出]</a>
+                <a class="highlight" href="/Member/Index">[个人中心]</a>
+                <a class="highlight" href="/Member/Index">@username</a>
+                <span>欢迎您</span>
+            }
+        </div>
+        <ul class="nav">
+            <li data-active="homeindex" class="first"><a href="/Home/Index"><span>首页</span></a></li>
+            <li data-active="productindex"><a href="/Product/Index"><span>蛋糕列表</span></a></li>
+            <li data-active="producthotsale"><a href="/Product/HotSale"><span>热卖产品</span></a></li>
+            <li data-active="homeactivecenter"><a href="/Home/ActiveCenter?v=00001"><span>活动中心</span></a></li>
+            <li data-active="homeaboutus"><a href="/Home/AboutUs"><span>关于我们</span></a></li>
+        </ul>
+    </div>
+</div>
+<div class="clearhead"></div>
+<script type="text/javascript">
+    $(function () {
+        $("li[data-active='@dataactive']").addClass("active");
+    });
+</script>

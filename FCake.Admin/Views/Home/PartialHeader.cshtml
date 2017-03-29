@@ -1,0 +1,9 @@
+﻿@using FCake.Admin.Helper
+<div class="index-top index-topheight">
+    <div class="logo index-topheight"></div>
+    <div class="info">
+        <span>您好,@UserCache.CurrentUser.UserName</span>
+        <span>&nbsp;|&nbsp;</span>
+        <a href="@Url.Action("LoginOut","Account")">[退出]</a>
+    </div>
+</div>

@@ -1,0 +1,18 @@
+﻿@model List<FCake.Domain.WebModels.DistributionModel>
+
+<table id="grid" class="table table-condensed table-hover control-datagrid">
+    <thead>
+        <tr>
+            <th id="OrderNo">订单号</th>
+            <th id="RequiredTime">要求送达时间</th>
+            <th id="BeginTime">实际开始时间</th>
+            <th id="EndTime">实际结束时间</th>
+            <th id="Address">收货地址</th>
+            <th id="Status">状态操作</th>
+        </tr>
+    </thead>
+    <tbody id="gridBody">
+        @Html.Partial("_PartialDistributionView", Model)
+    </tbody>
+</table>
+@Html.Partial("../Shared/_PartialMoreButton", ViewBag.Pager as FCake.Domain.Common.Pad.Pagination)

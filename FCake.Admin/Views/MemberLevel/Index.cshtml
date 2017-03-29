@@ -1,0 +1,81 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "会员等级管理";
+    string dicName = ViewBag.dicName;
+}
+<style>
+    .datagrid-header-row, .datagrid-row {
+        height: 40px;
+    }
+</style>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+</script>
+
+<div id="toobar" style="padding:5px">
+    <a href="javascript:void(0)" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add" onclick="addMemberLevel()">会员等级</a>
+</div>
+<table id="dg"></table>
+
+<script type="text/javascript">
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobar",
+            url: '@Url.Action("GetMemberLevelPaging", "MemberLevel")',
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            pageSize: 30,
+            fitColumns: true,
+            fit: true,
+            scrollbarSize: 0,
+            columns: [[
+                { field: 'Title', title: '名称', width: 100, align: 'center' },
+                { field: 'MemberLevelValue', title: '等级值', width: 100, align: 'center' },
+                { field: 'MinGrowthValue', title: '最小成长值', width: 100, align: 'center' },
+                { field: 'MaxGrowthValue', title: '最大成长值', width: 100, align: 'center' },
+                {
+                    field: 'DiscountRate', title: '折扣率', width: 100, align: 'center', formatter: function (value, row) {
+                        if (value != undefined && !isNaN(value))
+                            return (value * 100) + "%";
+                        return "";
+                    }
+                },
+                { field: 'IntegralMultiples', title: '积分倍数', width: 50, align: 'center' },
+                { field: 'GrowthValueMultiples', title: '成长值倍数', width: 50, align: 'center' },
+                { field: 'YearDeductGrowthValue', title: '每年扣除的成长值', width: 100, align: 'center' },
+                { field: 'operate', title: '操作', width: 50, align: 'center', formatter: operateFormatter }
+            ]]
+        })
+    });
+
+    function operateFormatter(vale, row, index) {
+        var html = "";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2 linkbtn l-btn l-btn-small\" data-options=\"iconCls:'custom-edit'\" onclick=\"editMemberLevel('" + row.Id + "')\">编辑</a>";
+        return html;
+    }
+
+    function editMemberLevel(id) {
+        openDialog("编辑会员等级", '@Url.Action("Edit", "MemberLevel")?memberLevelId=' + id);
+    }
+
+    function addMemberLevel() {
+        openDialog("新增会员等级", '@Url.Action("Edit", "MemberLevel")');
+    }
+
+
+
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: $(window.parent).width() >= 750 ? 750 : $(window.parent).width() - 80,
+            height: $(window.parent).height() >= 450 ? 450 : $(window.parent).height() - 80,
+            id: "add",
+            url: url,
+
+        });
+    }
+
+</script>

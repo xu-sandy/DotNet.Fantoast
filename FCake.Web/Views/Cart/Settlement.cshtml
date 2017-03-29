@@ -1,0 +1,1303 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Bll
+@model List<FCake.Domain.WebModels.CartVM>
+@{
+    ViewBag.Title = "订单详情";
+    var cards = new FCake.Bll.CommonService().GetDictionaryByCode("BirthdayCard"); //生日牌默认值
+    var times = new FCake.Bll.CommonService().GetDictionaryByCode("DistributionTime"); //物流配送时间选择
+    var address = new FCake.Bll.CustomerAddressService().GetCustomerAddressesById(CurrentMember.MemberId.ToString(), 0);//客户地址集合
+    var orderTips = new FCake.Bll.CommonService().GetDictionaryByCode("OrderTips", "PC", false);//温馨提示
+    var payTypes = FCake.Core.Common.EnumHelper.GetCacheList(typeof(FCake.Domain.Enums.FeeType)).Where(u => u.Value != "4" && u.Value != "3" );
+
+    var sites = ViewBag.Sites;
+    //最早可以选的时间
+    var earlyAllowDistributionTime = ViewBag.earlyAllowDistributionTime;
+
+    var shortcutSubProductList = ViewBag.shortcutSubProductList as List<SubProduct>;//可快捷添加的子产品列表
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;//产品为其他类型的数据字典值
+    var member = ViewBag.member as Customers;//当前会员
+    var integralDeductionCashRate = CommonRules.IntegralDeductionCashRate;//积分抵扣现金比例
+
+    var reservationTips = new FCake.Bll.CommonService().GetDictionaryByCode("ReservationTip");//预定时间提示（若有产品需要提前预定时间大于系统默认配置时间就给出提示）
+    int curMaxInadvanceHours = ViewBag.curMaxInadvanceHours;//当前订单中最大的提前预定的小时数
+    var salesConfig = SysConfigsCache.GetSalesConfig();
+    int productionHours = salesConfig.ProductionHours;//默认生产时间
+
+}
+<script src="~/Scripts/My97DatePicker/WdatePicker.js"></script>
+<style type="text/css">
+    .pc-orderdetail .span-price-color { color: #aa6915; }
+</style>
+<script type="text/javascript">
+    //全局变量
+    var orderTotalAmount = 0;   //订单总价格
+    var allowFavorableAmount = 0;//允许使用优惠券、代金卡部分，排除产品类型为其他（餐具、蜡烛等），使用优惠时保持不变与订单总价格类似
+    var orderNeedPay = 0;//订单最终需要支付的RMB，订单总价格-使用优惠部分
+    var couponPay = 0;//订单使用优惠券支付部分
+    var giftCardPay = 0;//代金卡支付部分
+    var integralPay = 0;//积分支付部分
+    var favorablePay = 0;//使用优惠合计
+
+    var useIntegralVal = 0;//用户使用的积分值
+
+    var curMemberIntegral = Number('@member.Integral');//当前会员积分
+    var integralDeductionCashRate = Number('@integralDeductionCashRate');//积分抵扣现金比例
+</script>
+
+<div class="clearfix wallbox orderdetail pc-orderdetail">
+    @*导航(我的购物车->订单明细->确认订单)*@
+    @Html.Partial("_PartialCartNav", "订单明细")
+
+    @*温馨提示*@
+    <div class="tips">
+        <span style="color:red;">温馨提示：</span>
+        <ul style="color:red;display:inline-block;vertical-align:top">
+            @foreach (var item in orderTips)
+            {
+                <li>@item.Text</li>
+            }
+        </ul>
+    </div>
+
+    @*商品清单*@
+    <h1>商品清单</h1>
+    <table class="details">
+        <thead>
+            <tr>
+                <th width="150">图片</th>
+                <th width="100">规格</th>
+                <th width="100">单价</th>
+                <th width="105">数量</th>
+                <th>生日牌</th>
+                <th width="80">小计</th>
+                @*<th>操作</th>*@
+            </tr>
+        </thead>
+        <tbody id="buyProductList_tbody">
+            @Html.Partial("_Partial_Settlement_ProductList", Model)
+        </tbody>
+        <tfoot>
+            @*是否需要生日蜡烛的代码，客户要求先不要*@
+            @*<tr>
+                    <td colspan="7">
+                        <div class="clearfix" style="text-align:left;padding:5px;">
+                            是否需要生日蜡烛？ <input type="radio" name="candle" value="0" /> 是 <input type="radio" name="candle" value="1" checked /> 否
+                        </div>
+                    </td>
+                </tr>*@
+            <tr>
+                <td colspan="6">
+                    <ul class="order-table">
+                        @if (shortcutSubProductList != null)
+                        {
+                            foreach (var shortcutSubProduct in shortcutSubProductList)
+                            {
+                                if (shortcutSubProduct.Product != null && shortcutSubProduct.Product.BaseFile != null)
+                                {
+                                    <li>
+                                        <a href="javascript:addOrDelOtherProtuct('@shortcutSubProduct.Id');">
+                                            <i><img width="24" height="24" src="@(Html.GetSysManageUrl() + shortcutSubProduct.Product.BaseFile.Url)_min.jpg"></i>
+                                            <span class="font-color-brown">@shortcutSubProduct.Product.ShortcutButtonTitle</span>
+                                        </a>
+                                    </li>
+                                }
+                            }
+                        }
+                        <li><a href="javascript:deliverMsg();"><i><img src="@Url.Content("~/Content/images/orderDetail_DeliverMsg.png")"></i><span class="font-color-brown">留言说明</span></a></li>
+                    </ul>
+
+                </td>
+            </tr>
+            <tr>
+                <td id="deliverMsg_tr" colspan="6" style="display:none;">
+                    <div class="clearfix" style="text-align:left;padding:5px;">
+                        告诉我们点什么?<input type="text" id="deliverMsg" name="DeliverMsg" placeholder="请输入100字以内的文字描述" maxlength="100" style="margin-left:10px;width:180px;" />
+                    </div>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <span style="color:red;padding-top:5px;display:inline-block;text-indent:2em;">温馨提示：1磅标配5人份餐具，2磅标配10人份餐具，3磅标配15人份餐具，5磅标配25人份餐具，如餐具不够，可另行购买</span>
+    @*收货人信息*@
+    <h1>收货人信息</h1>
+    <table class="receiver">
+        <thead>
+            <tr>
+                <th></th>
+                <th>地址</th>
+                <th>收件人</th>
+                <th>联系电话</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="address">
+            @foreach (var x in address)
+            {
+                <tr>
+                    <td width="20"><input type="radio" name="ckbaddress" value="@x.Id" @(x.IsDef == 0 ? "checked" : "") /></td>
+                    <td>@(x.Province + x.City + x.Area + x.Address)</td>
+                    <td width="80">@x.Receiver</td>
+                    <td width="200">@x.ReceiverTel @x.ReceiverMobile</td>
+                    <td width="30">
+                        <a href="javascript:;" onclick="removeaddress('@x.Id');return false;">删除</a>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td style="vertical-align:top;"><input type="radio" name="ckbaddress" id="newAddre" value="" disabled="disabled" style="visibility:hidden;" /></td>
+                <td colspan="4">
+                    <div class="createadd" style="display:none;">
+
+                        <p class="clearfix">
+                            <span class="laber">收货人<span style="color:red;">*</span></span>
+                            <span class="content"><input type="text" name="ttbReceiver" maxlength="20" /></span>
+                        </p>
+                        <p class="clearfix">
+                            <span class="laber">地区<span style="color:red;">*</span></span>
+                            <span class="content" style="width:230px;">@Html.Partial("_PartialPosition")</span>
+                        </p>
+                        <p class="clearfix">
+                            <span class="laber">街道地址<span style="color:red;">*</span></span>
+                            <span class="content"><input type="text" name="ttbAddress" /></span>
+                            <span class="laber" style="width:130px;">手机<span style="color:red;">*</span></span>
+                            <span class="content"><input type="text" name="ttbMobile" /></span>
+                        </p>
+                        <p class="clearfix">
+                            <span class="laber">邮政编码</span>
+                            <span class="content"><input type="text" name="ttbCode" /></span>
+                            <span class="laber" style="width:130px;">备选电话(手机或固话)<span style="color:red;">*</span></span>
+                            <span class="content"><input type="text" name="ttbTel" /></span>至少留一个联系方式
+                        </p>
+                        <p>
+                            <input type="button" value="确认添加" onclick="saveaddress()" style="padding:5px;cursor:pointer;"/>
+                            <input type="button" value="取消" onclick="$('.createadd').toggle(); " style="margin-left:20px;padding:5px;cursor:pointer" />
+                        </p>
+                    </div>
+                    <div style="text-align:center;cursor:pointer;" onclick="addNewAddress();">
+                        <a class="createadd" href="javascript:;" style="color: #cfac7f;">+添加新地址</a>
+                    </div>
+                    @*<div style="padding-top:10px;color:red">*泉州、晋江客户可跳过收货地址填写，直接选择下方配送方式“自提”并填写自提信息</div>*@
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <h1>配送方式</h1>
+    <div class="line">
+        <table class="delivery-method-tr">
+            <tr>
+                <td>配送方式</td>
+                <td>
+                    <div style="padding-left:20px;">
+                        <input type="radio" name="rdtype" value="0" checked /><span id="peisong" style="margin-right:10px;">枫客配送</span>
+                        @if (sites.Count > 0)
+                        {
+                            <input type="radio" name="rdtype" value="1" /><span id="ziti">自提</span>
+                        }
+                    </div>
+                </td>
+            </tr>
+            @if (sites.Count > 0)
+            {
+                <tr class="logistlist" style="display:none;">
+                    <td valign="top">自提站点</td>
+                    <td>
+                        <ul>
+                            @foreach (var x in sites)
+                            {
+                                <li><input type="radio" name="logistid" value="@x.Id" /><span style="margin-right:10px;">@x.SiteName</span> @(x.SiteProvince + x.SiteCity + x.SiteArea + x.SiteAddress)</li>
+                            }
+                            <li>提货人<span style="color:red;">*</span><input type="text" name="username" /> 手机<span style="color:red;">*</span><input type="text" name="usermobile" /></li>
+                        </ul>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td>配送时间</td>
+                <td>
+                    <div id="choosetime" class="order-day" style="padding-left:20px;">
+                        <input type="text" class="Wdate-day" onfocus="WdatePicker({ dateFmt: 'yyyy-MM-dd', onpicking: controlHour, minDate: '@earlyAllowDistributionTime' })" name="date" style="width:112px;height:26px;" placeholder="配送日期" />
+                        <span style="margin-left:30px;"></span><select style="height:27px;width:112px;" name="time">
+                            @foreach (var x in times.OrderBy(a => a.Value))
+                            {
+                                <option value="@x.Value">@x.Text</option>
+                            }
+                        </select>
+                    </div>
+                </td>
+            </tr>
+            @if (curMaxInadvanceHours > productionHours)
+            {
+                var reservationTip = reservationTips.FirstOrDefault(o => o.Value == "reservationTip");
+                if (reservationTip != null)
+                {
+                    <tr style="line-height:16px;">
+                        <td></td>
+                        <td><span style="color:red;margin-left:20px;">@string.Format(reservationTip.Text, curMaxInadvanceHours)</span></td>
+                    </tr>
+                }
+            }
+        </table>
+    </div>
+    <h1>使用优惠</h1>
+    <div class="order-favorable">
+
+        <ul class="favorable-box">
+            <li>
+                <a href="javascript:void(0)" onclick="changeFavorablePanel(this)" class="icon-order-favor">-</a>
+                <span class="font-color-brown">使用优惠券（至多只能使用一张，不可与代金卡同时使用）</span>
+            </li>
+            <li id="allCouponList_li">
+                @*<div class="select-box">
+                        <ul class="box-content">
+                            <li class="first-line"><div class="box-cash">金钱</div><div class="box-tip">(满100圆可用)</div></li>
+                            <li class="second-line">日期</li>
+                        </ul>
+                    </div>
+                    <div class="select-box">
+                        <ul class="box-content">
+                            <li class="first-line"><div class="box-cash">金钱</div><div class="box-tip">(满100圆可用)</div></li>
+                            <li class="second-line">日期</li>
+                        </ul>
+                    </div>
+                    <div class="select-box disabled">
+                        <ul class="box-content">
+                            <li class="first-line"><div class="box-cash disabled">金钱</div><div class="box-tip disabled">(满100圆可用)</div></li>
+                            <li class="second-line">日期</li>
+                        </ul>
+                    </div>*@
+            </li>
+            <li>
+                <span class="font-color-brown">请输入优惠券号：</span>
+                <input id="couponSN" name="couponSN" class="favorable-input">
+                <a class="btn-order-favorable" href="javascript:bindCouponByCouponSN()">添加绑定</a>
+            </li>
+            @*<li id="couponByCouponSN_li" style="margin-bottom:20px;">
+                    <div>
+                        <span>满x元减100</span>
+                        <a class="cancel-use-btn">[取消使用]</a>
+                    </div>
+                </li>*@
+            <li class="card-total">
+                <span>共使用<span id="usedCouponQuantity">0</span>张优惠券，可优惠<span id="usedCouponAmount">￥0</span></span>
+            </li>
+        </ul>
+
+
+        <ul class="favorable-box">
+            <li>
+                <a href="javascript:void(0)" onclick="changeFavorablePanel(this)" class="icon-order-favor">-</a>
+                <span class="font-color-brown">使用代金卡（不可与优惠券同时使用）</span>
+            </li>
+            <li>
+                <span class="font-color-brown">卡号：</span>
+                <input id="giftCardSN" name="giftCardSN" class="favorable-input">
+                <span class="font-color-brown">密码：</span>
+                <input id="giftCardPwd" name="giftCardPwd" class="favorable-input">
+                <a class="btn-order-favorable" href="javascript:addUseGiftCard()">添加使用</a>
+            </li>
+            <li id="allGiftCardList_li" style="margin-bottom:20px;" class="card-information">
+                @*<div>
+                        <span>卡号：123456</span>
+                        <span>可抵扣：1112元</span>
+                        <a class="cancel-use-btn">[取消使用]</a>
+                    </div>*@
+            </li>
+            <li class="card-total">
+                <span>共使用<span id="usedGiftCardQuantity">0</span>张代金卡，可抵扣<span id="usedGiftCardAmount">￥0</span></span>
+            </li>
+        </ul>
+
+        <ul class="favorable-box">
+            <li>
+                <a href="javascript:void(0)" onclick="changeFavorablePanel(this)" class="icon-order-favor">-</a>
+                <span class="font-color-brown">使用积分抵扣</span>
+            </li>
+            <li>
+                <span class="font-color-brown">使用积分抵扣：</span>
+                <input id="useIntegral" name="useIntegral" class="favorable-input-integral" onchange="useIntegralChange()">
+                <span class="font-color-brown">分</span>
+                <span class="font-color-gray">（你当前有@(member.Integral)分）</span>
+                <span class="font-color-brown">抵扣</span>
+                <span id="integralAmount_span" class="font-color-red">￥0.00</span>
+                @*<a class="btn-order-favorable" href="#">使用</a>*@
+            </li>
+        </ul>
+
+    </div>
+    <h1>付款方式</h1>
+    <div class="line">
+        <p>
+            @foreach (var x in payTypes)
+            {
+                <input type="radio" name="feetype" value="@x.Value" @(x.Value == "2" ? "checked" : "") /> @x.Text  @:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            }
+        </p>
+    </div>
+
+    <div style="margin-top:25px;margin-bottom:15px;">
+        <table style="width:100%">
+            <colgroup>
+                <col width="92%" />
+                <col width="8%" />
+            </colgroup>
+            <tr>
+                <td align="right">订单总额：</td>
+                <td align="left"><span id="orderTotalAmount_span" class="span-price-color">¥0.00</span></td>
+            </tr>
+            <tr>
+                <td align="right">可使用优惠部分：</td>
+                <td align="left"><span id="allowFavorableAmount_span" class="span-price-color">¥0.00</span></td>
+            </tr>
+            <tr>
+                <td align="right">优惠券抵扣：</td>
+                <td align="left"><span id="couponPay_span" class="span-price-color">¥0.00</span></td>
+            </tr>
+            <tr>
+                <td align="right">代金卡抵扣：</td>
+                <td align="left"><span id="giftCardPay_span" class="span-price-color">¥0.00</span></td>
+            </tr>
+            <tr>
+                <td align="right">积分抵扣：</td>
+                <td align="left"><span id="integralPay_span" class="span-price-color">¥0.00</span></td>
+            </tr>
+        </table>
+
+    </div>
+    <div class="confirm clearfix">
+        <table style="width:100%;">
+            <colgroup>
+                <col width="95%" />
+                <col width="5%" />
+            </colgroup>
+            <tr>
+                @*<td><a href="/cart">&lt;&lt;返回</a></td>*@
+                <td style="padding-bottom:8px;">您还需要支付：<span id="needPay_span" style="color:#aa6915;font-size:2em;">¥0.00</span></td>
+                <td>
+                    <a href="javascript:;" onclick="createorder(0);return false;" title="去支付">
+                        <span id="confirm_title_span">去支付</span>
+                        <img src="../content/images/submit.png" />
+                    </a>
+                </td>
+            </tr>
+        </table>
+
+
+    </div>
+</div>
+
+<!--价格统计-->
+<script type="text/javascript">
+    function changePayInfo() {
+        statisticsPayInfo();
+
+        //价格统计完后加载当前会员所有可用优惠券
+        loadCurMemberEnabledCouponDetail();
+    }
+    //计算支付信息，不初始化优惠券列表等，避免死循环调用
+    function statisticsPayInfo() {
+        //订单总价格
+        orderTotalAmount = getOrderTotalAmount();
+        allowFavorableAmount = getAllowFavorableAmount();
+        $("#orderTotalAmount_span").text(Number(orderTotalAmount).formatMoney());
+
+        //可使用优惠部分
+        $("#allowFavorableAmount_span").text(Number(allowFavorableAmount).formatMoney());
+        //优惠券支付
+        $("#couponPay_span").text(Number(couponPay) > 0 ? "-" + Number(couponPay).formatMoney() : Number(0).formatMoney());
+        //代金卡支付
+        $("#giftCardPay_span").text(Number(giftCardPay) > 0 ? "-" + Number(giftCardPay).formatMoney() : Number(0).formatMoney());
+        //如果优惠券+代金卡支付+积分支付超过订单总额，则减少积分支付部分
+        var allowIntegralPay = Number((allowFavorableAmount - (couponPay + giftCardPay)).toFixed(2) < 0 ? 0 : (allowFavorableAmount - (couponPay + giftCardPay)).toFixed(2));
+        if (integralPay > allowIntegralPay) {
+            var tempIntegralVal = allowIntegralPay * integralDeductionCashRate;
+            if (tempIntegralVal > parseInt(tempIntegralVal)) {
+                tempIntegralVal = parseInt(tempIntegralVal) + 1;
+            }
+            $("#useIntegral").val(tempIntegralVal);
+            useIntegralChange();
+            return;
+        }
+        //积分支付
+        $("#integralPay_span").text(Number(integralPay) > 0 ? "-" + Number(integralPay).formatMoney() : Number(0).formatMoney());
+
+        //使用优惠合计
+        favorablePay = Number(couponPay) + Number(giftCardPay) + Number(integralPay);
+        if (favorablePay > allowFavorableAmount) favorablePay = Number(allowFavorableAmount);
+
+        //实际还需支付
+        orderNeedPay = (orderTotalAmount - favorablePay) < 0 ? 0.00 : (orderTotalAmount - favorablePay);
+        $("#needPay_span").text(orderNeedPay.formatMoney());
+        if (parseFloat(orderNeedPay) == 0) {
+            $(".confirm #confirm_title_span").text("提交订单");
+        }
+    }
+    //取得订单总金额
+    function getOrderTotalAmount() {
+        var money = 0;
+        $('.allprice').each(function () {
+            money += Number($(this).attr("data-subtotal"));
+        });
+        return Number(parseFloat(money).toFixed(2));
+    }
+    //取得订单允许优惠部分
+    function getAllowFavorableAmount() {
+        var money = 0;
+        $('.allprice').each(function () {
+            money += Number($(this).attr("data-allowfavorable"));
+        });
+        return Number(parseFloat(money).toFixed(2));
+    }
+
+</script>
+
+<script>
+    //var currentday;
+    function intProductElementEvent() {
+        //检查是否输入整形
+        $("input[name=num]").keyup(function () {
+            checkInt(this);
+        });
+        //数量减
+        $(".btn-decrease").click(function () {
+            changeNum(this, -1);
+        });
+        //数量加
+        $(".btn-increase").click(function () {
+            changeNum(this, 1);
+        });
+
+        $("input[name=num]").change(function () {
+            debugger
+            //小计
+            var subtotal = parseFloat($(this).val() * $(this).attr("data-price"));
+            $(this).parent().parent().parent().find(".allprice").text(subtotal.formatMoney()).attr("data-subtotal", subtotal);
+
+            //允许使用优惠券部分
+            var allowFavorablePrice = parseFloat($(this).val() * $(this).attr("data-allowfavorableprice"));
+            $(this).parent().parent().parent().find(".allprice").text(subtotal.formatMoney()).attr("data-allowfavorable", allowFavorablePrice);
+
+            //实时改变商品总额、还需支付金额
+            changePayInfo();
+
+            //更改导航购物车数量值
+            savecartnum(this, $(this).val(), $(this).attr("data-target"));
+        });
+        $("select[name=birthdaycard]").change(function () {
+            var card = $(this).children(":checked").text();
+            $input = $(this).parent().children("input");
+            $input.hide();
+            if (card == "无") {
+                card = "";
+            }
+            else if (card == "其它") {
+                $input.val("").show();
+                return;
+            }
+            else {
+                $.ajax({
+                    url: '@Url.Action("savebirthdaycard")/' + $(this).attr("data-target") + "?card=" + escape(card),
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (data, status) {
+
+                    }
+                });
+            }
+        });
+        $("input[name=birthdaycard]").change(function () {
+            var card = $.trim($(this).val());
+            $.ajax({
+                url: '@Url.Action("savebirthdaycard")/' + $(this).parent().find("select").attr("data-target") + "?card=" + escape(card),
+                dataType: 'json',
+                type: 'post',
+                success: function (data, status) {
+
+                }
+            });
+        });
+    }
+    $(function () {
+
+        if ($('input[name=rdtype]:checked').val() == '1') {
+            $('.logistlist').show();
+
+        }
+        else {
+            $('.logistlist').hide();
+        }
+
+        if ($('input[name=usercard]:checked').length > 0) {
+            $('.goldcard').show();
+        }
+        else {
+            $('.goldcard').hide();
+        }
+
+        intProductElementEvent();
+        $("input[name=rdtype]").change(function () {
+            var value = $("input[name=rdtype]:checked").val();
+            if (value == 0) {
+                $(".logistlist").hide("fast");
+
+                //var timeHtml = $("#choosetime");
+                //$("#choosetime").remove();
+                //$("#peisong").after(timeHtml);
+                $("input[name=feetype]").eq(0).removeAttr("disabled");
+                $("input[name=feetype]").eq(1).removeAttr("disabled");
+            }
+            else {
+                $(".logistlist").show("fast");
+
+                //var timeHtml = $("#choosetime");
+                //$("#choosetime").remove();
+                //$("#ziti").after(timeHtml);
+                $("input[name=feetype]").eq(0).attr("disabled", "disabled");
+                $("input[name=feetype]").eq(1).attr("disabled", "disabled");
+                $("input[name=feetype]").eq(2).click();
+            }
+        });
+
+        //支付方式选择
+        $("input[name=feetype]").each(function (i, item) {
+            $(item).click(function () {
+                var val = $(item).val();
+                if (val == 0 || val == 1) {
+                    $(".confirm #confirm_title_span").text("提交订单");
+                }
+                else {
+                    $(".confirm #confirm_title_span").text("去支付");
+                }
+            })
+        })
+
+        //设置 福建省，厦门市默认选中
+        $("select[name=ddlProvince]").val("福建省");
+        $("select[name=ddlCity]").val("厦门市");
+
+        $("select[name=time]").click(function () {
+            date = $("input[name=date]").val();
+            if (date == "") {
+                alert("请先选择配送日期");
+                return false;
+            }
+            return true;
+        });
+
+
+        changePayInfo();//统计支付金额
+    });
+
+    function controlHour() {
+        //获取日历选择的时间
+        var choosedate = $dp.cal.getNewDateStr();
+        var options = $("select[name=time] option");
+        var earlyData = '@earlyAllowDistributionTime';
+        var earlyHour = earlyData.split(' ')[1].split(':')[0];
+        //转成时间
+        var cDate = new Date(Date.parse(choosedate));
+        var eDate = new Date(Date.parse(earlyData));
+        //选择的日期>最早可选的日期就不做小时的控制
+        if (cDate > eDate) {
+            for (var i = 0; i < options.length; i++) {
+
+                $(options[i]).removeAttr("disabled");
+
+            }
+        }
+        else {
+            for (var i = 0; i < options.length; i++) {
+                if (Number($(options[i]).val().split(':')[0]) <= Number(earlyHour)) {
+                    $(options[i]).attr("disabled", "disabled");
+                }
+            }
+        }
+        reselect();
+    }
+
+    //重新绑定select的选中，设置第一个可选的为选中
+    function reselect() {
+        var options = $("select[name=time] option");
+        var disa;
+        for (var i = 0; i < options.length; i++) {
+            disa = $(options[i]).attr("disabled");
+            if (disa != "disabled") {
+                var val = $(options[i]).val();
+                $("select[name=time]").val(val);
+                break;
+            }
+        }
+    }
+
+
+    //添加新地址
+    function addNewAddress() {
+        $('.createadd').toggle();
+        $('#newAddre').attr("checked", "checked");
+    }
+
+    function saveaddress() {
+        var receiver, province, city, area, address, tel, mobile, code;
+        receiver = $.trim($("input[name=ttbReceiver]").val());
+        if (receiver == "") {
+            alert("请输入收货人名称"); return;
+        }
+        province = $("select[name=ddlProvince] option:checked").val();
+        if (province == "") {
+            alert("请选择省份"); return;
+        }
+        city = $("select[name=ddlCity] option:checked").val();
+        if (city == "") {
+            alert("请选择城市"); return;
+        }
+        area = $("select[name=ddlArea] option:checked").val();
+        if (area == "") {
+            alert("请选择区域"); return;
+        }
+        address = $.trim($("input[name=ttbAddress]").val());
+        if (address == "") {
+            alert("请输入街道地址"); return;
+        }
+        tel = $.trim($("input[name=ttbTel]").val());
+        mobile = $.trim($("input[name=ttbMobile]").val());
+        if (tel == "" && mobile == "") {
+            alert("手机或固定电话至少填写一项"); return;
+        }
+        if (tel != "" && (!$("input[name=ttbTel]").controlValidate("cntel", false) && !$("input[name=ttbTel]").controlValidate("cnmobile", false))) {
+            alert("无效的联系电话");
+            return;
+        }
+        //if (mobile != "" && !(/^1[3-8]\d{9}$/i.test(mobile))) {
+        //    alert('手机号码格式不正确');
+        //    return;
+        //}
+        if (mobile != "" && !$("input[name=ttbMobile]").controlValidate("cnmobile", false)) {
+            alert('手机号码格式不正确'); return false;
+        }
+        code = $.trim($("input[name=ttbCode]").val());
+        if (code != "" && !$("input[name=ttbCode]").controlValidate("postcode", false)) {
+            alert('邮编格式不正确');
+            return;
+        }
+
+        try {
+            code = code.replace(/\D/g, '');
+            if (code != '' && code != undefined)
+                code = Number(code);
+        }
+        catch (e) {
+            code = "";
+        }
+        $("input[name=ttbCode]").val(code);
+
+
+        $.ajax({
+            url: '/cart/createaddress',
+            dataType: 'json',
+            type: 'post',
+            data: { receiver: receiver, province: province, city: city, area: area, address: address, tel: tel, mobile: mobile, code: code },
+            success: function (data) {
+                if (data.validate) {
+                    $("<tr><td width=\"20\"><input type=\"radio\" name=\"ckbaddress\" value=\"" + data.address.Id + "\"></td><td>" + data.address.Province + data.address.City + data.address.Area + data.address.Address + "</td><td width=\"80\">" + data.address.Receiver + "</td><td width=\"200\">" + data.address.ReceiverMobile + " " + data.address.ReceiverTel + "</td><td width=\"30\"><a href=\"javascript:;\" onclick=\"removeaddress('" + data.address.Id + "');return false;\">删除</a></td></tr>")
+                    .insertBefore($("#address tr").last());
+                    //设置新增的选中
+                    var radval = $("input[name=ckbaddress]");
+                    for (var i = 0; i < radval.length; i++) {
+                        if ($(radval[i]).val() == data.address.Id) {
+                            $(radval).attr("checked", "checked");
+                        }
+                    }
+
+                    //清除信息
+                    $("input[name=ttbReceiver],input[name=ttbAddress],input[name=ttbMobile],input[name=ttbTel],input[name=ttbCode]").val("");
+                    var selectarr = $("select[name=ddlProvince]");
+                    for (var i = 0; i < selectarr.length; i++) {
+                        selectarr[0].options[0].selected = true;
+                    }
+                    $("select[name=ddlCity]").val("");
+                    $("select[name=ddlArea]").val("");
+                    $(".createadd").toggle();
+                }
+                    //window.location.reload();
+                else
+                    alert(data.msg);
+            }
+        });
+
+
+    }
+
+    function removeaddress(id) {
+        if (confirm("确定删除该地址吗")) {
+            $.post("/cart/removeaddress/" + id, function () {
+                window.location.reload();
+            })
+        }
+    }
+
+    function depositcoupon() {
+        var code = $.trim($("input[name=couponcode]").val());
+        //var psw = $.trim($("input[name=couponpsw]").val());
+
+        if ($("input[name=rule]:checked").length == 0) {
+            alert("您是否同意代金卡使用规则");
+            return;
+        }
+
+        if (code == "") {
+            alert("请填写完整代金卡号码");
+            return;
+        }
+
+        $.ajax({
+            url: '/cart/depositcoupon',
+            data: { code: code },
+            dataType: 'json',
+            type: 'post',
+            success: function (data, status) {
+                if (data.validate) {
+                    $("input[name=couponcode]").val("");
+                    //$("input[name=couponpsw]").val("");
+                    $("input[name=money]").val(data.money);
+                }
+                else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+
+    //控制配送时间的选择
+    Date.prototype.pattern = function (fmt, interval) {
+        var o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "h+": this.getHours() % 12 == 0 ? 12 : this.getHours() % 12, //小时
+            "H+": this.getHours() + interval, //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        var week = {
+            "0": "/u65e5",
+            "1": "/u4e00",
+            "2": "/u4e8c",
+            "3": "/u4e09",
+            "4": "/u56db",
+            "5": "/u4e94",
+            "6": "/u516d"
+        };
+        if (/(y+)/.test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        }
+        if (/(E+)/.test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, ((RegExp.$1.length > 1) ? (RegExp.$1.length > 2 ? "/u661f/u671f" : "/u5468") : "") + week[this.getDay() + ""]);
+        }
+        for (var k in o) {
+            if (new RegExp("(" + k + ")").test(fmt)) {
+                fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+            }
+        }
+        return fmt;
+    }
+
+
+
+    function createorder(topay) {
+        var candle = 1, addressid, rdtype, date, time, logistid, feetype, name, mobile, timeBucket;
+        ////生日蜡烛
+        //candle = $("input[name=candle]:checked").val();
+        //if (candle != '0' && candle != '1') {
+        //    alert("网页数据异常，请刷新后重试");
+        //    return;
+        //}
+        //配送
+        rdtype = $("input[name=rdtype]:checked").val();
+        if (rdtype != '0' && rdtype != '1') {
+            alert("网页数据异常，请刷新后重试");
+            return;
+        }
+        //地址
+        if (rdtype == '0') {
+            if ($("input[name=ckbaddress]:checked").length == 0 || $("input[name=ckbaddress]:checked").val() == '') {
+                saveaddress();
+                //alert('请选择一个收货地址');
+                return;
+            }
+            addressid = $("input[name=ckbaddress]:checked").val();
+        }
+        //时间
+        date = $("input[name=date]").val();
+        if (date == '') {
+            var value = $("input[name=rdtype]:checked").val();
+            if (value == 0)
+            { alert('请输入配送时间'); } else { alert('请输入自提时间'); }
+
+            return;
+        }
+        time = $('select[name=time] option:checked').val();
+        timeBucket = $('select[name=time] option:checked').text();
+        if (rdtype == '1') {
+            if ($("input[name=logistid]:checked").length == 0 || $("input[name=logistid]:checked").val() == '') {
+                alert('请选择一个自提地址');
+                return;
+            }
+            name = $.trim($("input[name=username]").val());
+            mobile = $.trim($("input[name=usermobile]").val());
+            logistid = $("input[name=logistid]:checked").val();
+            if (name == '') {
+                alert('请输入提货人名称');
+                return;
+            }
+            if (mobile == '') {
+                alert('请输入提货人手机号码');
+                return;
+            }
+            if (!(/^1[3-8]\d{9}$/i.test(mobile))) {
+                alert('提货人手机号码格式不正确');
+                return;
+            }
+        }
+        //留言
+        var deliverMsg = $("#deliverMsg").val();
+        //付款方式
+        if ($("input[name=feetype]:checked").length == 0 || $("input[name=feetype]:checked").val() == '') {
+            alert('请选择支付方式');
+            return;
+        }
+        feetype = $("input[name=feetype]:checked").val();
+
+        var couponDetailIds = '';
+        var couponList = $("#allCouponList_li .checked_coupon_div");
+        if (couponList.length > 0) {
+            $.each(couponList, function (index, coupon) {
+                couponDetailIds += $(coupon).attr("data-couponid");
+                if (index < couponList.length - 1)
+                    couponDetailIds += ',';
+            })
+        }
+        var giftCardDetailIds = '';
+        var usedGiftCardList = $("#allGiftCardList_li .giftCardItem-div");
+        if (usedGiftCardList.length > 0) {
+            $.each(usedGiftCardList, function (index, giftCard) {
+                giftCardDetailIds += $(giftCard).attr("data-giftcardid");
+                if (index < usedGiftCardList.length - 1)
+                    giftCardDetailIds += ',';
+            })
+        }
+
+
+        $form = $("<form></form>")
+        $form.attr("action", '/cart/createorder');
+        $form.attr("method", 'post');
+        $form.append($("<input name='Candle'/>").val(candle));
+        $form.append($("<input name='AddressId'/>").val(addressid));
+        $form.append($("<input name='RdType'/>").val(rdtype));
+        $form.append($("<input name='Time'/>").val(date + " " + time + ":00"));
+        $form.append($("<input name='LogistId'/>").val(logistid));
+        $form.append($("<input name='GiftCardPay'/>").val(Number(Number(giftCardPay).toFixed(2))));
+        $form.append($("<input name='IntegralPay'/>").val(Number(Number(integralPay).toFixed(2))));
+        $form.append($("<input name='CouponPay'/>").val(Number(Number(couponPay).toFixed(2))));
+        $form.append($("<input name='UsedIntegralVal'/>").val(Number(useIntegralVal)));
+        $form.append($("<input name='FeeType'/>").val(feetype));
+        $form.append($("<input name='Name'/>").val(name));
+        $form.append($("<input name='Mobile'/>").val(mobile));
+        $form.append($("<input name='DeliverMsg'/>").val(deliverMsg));
+        $form.append($("<input name='TimeBucket'/>").val(date + " " + timeBucket));
+        $form.append($("<input name='IsPay'/>").val(topay));
+        $form.append($("<input name='CouponDetailIds'/>").val(couponDetailIds));
+        $form.append($("<input name='GiftCardDetailIds'/>").val(giftCardDetailIds));
+        $form.append($("<input name='OrderTotalAmount'/>").val(Number(orderTotalAmount)));
+
+
+        $('body').append($form.hide());
+        $form.submit();
+    }
+
+</script>
+
+<script type="text/javascript">
+    function deliverMsg() {
+        if ($("#deliverMsg_tr").css('display') == 'none') {
+            $("#deliverMsg_tr").css('display', '');
+        } else {
+            $("#deliverMsg_tr").css('display', 'none');
+        }
+    }
+    function changeOtherProductCallBack() {
+        $.ajax({
+            url: '@Url.Action("GetSettlementProductListHtml", "Cart")',
+            type: 'POST',
+            dataType: 'html',
+            async: false,
+            success: function (result) {
+                $("#buyProductList_tbody").html(result);
+                //实时改变商品总额、还需支付金额
+                changePayInfo();
+                intProductElementEvent();
+            }
+
+        })
+    }
+
+    //添加其他产品到购物车
+    function addOrDelOtherProtuct(subProsuctId) {
+        if ($("#subProduct_tr_" + subProsuctId).length > 0) {//删除
+            $.ajax({
+                aysnc: false,
+                url: '/cart/removeCart/' + subProsuctId,
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.validate) {
+                        changeOtherProductCallBack();
+                        //更改导航显示的购物车数量
+                        $(".CartCount").text(data.cartnum);
+                    }
+                },
+                error: function () {
+                    alert("网络异常，删除失败，请刷新后重试");
+                }
+            });
+
+        } else {//新增
+            settlementAddOtherToCart(subProsuctId, 1, false, changeOtherProductCallBack);
+        }
+    }
+
+
+</script>
+
+<!--使用优惠处理-->
+<script type="text/javascript">
+    $(function () {
+
+    })
+    //使用优惠模块
+
+    //默认隐藏优惠模块
+    function hideFavorablePanel() {
+        var ulList = $(".order-favorable .favorable-box")
+        $.each(ulList, function (index, ul) {
+            var li = $(ul).find("li:not(:first-child)");
+            li.css('display', 'none');
+            $(ul).find("li:first-child .icon-order-favor").html("+");
+        })
+    }
+
+    //展开收缩使用优惠
+    function changeFavorablePanel(el) {
+        var ul = $(el).parent().parent();
+        var li = $(ul).find("li:not(:first-child)");
+        if (li.css('display') == 'none') {
+            li.css('display', '');
+            $(el).html("-");
+        } else {
+            li.css('display', 'none');
+            $(el).html("+");
+        }
+    }
+
+    //Sub:使用优惠券
+
+    //加载当前会员所有可用优惠券
+
+    function loadCurMemberEnabledCouponDetail() {
+        $.ajax({
+            url: '@Url.Action("GetEnabledCouponDetailByMemberId", "CommonOrder")',
+            type: 'post',
+            async: false,
+            success: function (couponList) {
+                var allCouponListHtml = '';
+                $.each(couponList, function (index, coupon) {
+                    if (coupon.ConditionMoney <= allowFavorableAmount) {
+                        allCouponListHtml += createCouponHtml(coupon);
+                    }
+                });
+                $.each(couponList, function (index, coupon) {
+                    if (coupon.ConditionMoney > allowFavorableAmount) {
+                        allCouponListHtml += createCouponHtml(coupon);
+                    }
+                });
+
+                $("#allCouponList_li").html(allCouponListHtml);
+                changeSelectBox();
+                //默认隐藏优惠模块
+                hideFavorablePanel();
+                //优惠券初始加载，没有选中优惠券，选中标志位置为false
+                isClick = false;
+                //默认选中第一个
+                if ($("#allCouponList_li :first") != undefined && $("#allCouponList_li :first") != null && $("#allCouponList_li :first").length > 0) {
+                    $("#allCouponList_li :first").trigger('click');
+                    //如果优惠券不为空则显示优惠券部分
+                    var ul = $("#allCouponList_li").parent();
+                    var li = $(ul).find("li:not(:first-child)");
+                    li.css('display', '');
+                    $(ul).find("li:first-child .icon-order-favor").html("-");
+                }
+            }
+
+        })
+    }
+
+
+    //输入优惠号绑定优惠券号
+    function bindCouponByCouponSN() {
+        var couponSN = $("#couponSN").val();
+        if (couponSN == '') {
+            alert('请输入优惠券号');
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("BindCouponDetailByCouponSN", "CommonOrder")?couponSN=' + couponSN,
+            type: 'post',
+            success: function (result) {
+                if (result.successed == false) {
+                    alert(result.message);
+                } else {
+                    var coupon = result.data;
+                    var bindNewCouponHtml = createCouponHtml(coupon);
+                    $("#allCouponList_li").html($("#allCouponList_li").html() + bindNewCouponHtml);
+                    changeSelectBox();
+                    $("#coupon_" + coupon.Id).trigger('click');
+                    alert(result.message);
+                    $("#couponSN").val('');
+
+                }
+
+            }
+        })
+    }
+
+    //根据coupon对象创建coupon的Html
+    function createCouponHtml(coupon) {
+        var newCouponHtml = '';
+        var disabledCss = ''
+        var imgUrl = '@Url.Content("~/Content/images/logo-thumb.png")'
+        var useConditionMoneyStr = '无条件使用';
+        if (coupon.ConditionMoney > 0)
+            useConditionMoneyStr = $.format("满{0}元使用", coupon.ConditionMoney);
+        if (coupon.ConditionMoney > allowFavorableAmount) {
+            disabledCss = 'disable';
+            imgUrl = '@Url.Content("~/Content/images/logo-thumb3.png")'
+        }
+        if (allowFavorableAmount == 0) {
+            disabledCss = 'disable'
+            imgUrl = '@Url.Content("~/Content/images/logo-thumb3.png")'
+        }
+
+        newCouponHtml += $.format('<div class="select-box" id="coupon_{0}"  data-couponid="{1}" data-denomination="{2}" data-conditionmoney={3}>' +
+                                  '<ul class="box-content {4}">' +
+                                  '<li class="first-line">' +
+                                  '<div class="thumb-pic">' +
+                                  '<img class="logo-position" src="{5}" />' +
+                                  '</div><div class="align-right"><div class="box-cash">￥{6}</div><div class="box-tip">{7}</div>' +
+                                  '</div>' +
+                                  '</li>' +
+                                  '<li class="second-line">有效期至{8}</li>' +
+                                  '</ul>' +
+                                  '</div>', coupon.Id, coupon.Id, coupon.Denomination, coupon.ConditionMoney, disabledCss, imgUrl, coupon.Denomination,
+                                  useConditionMoneyStr, formatDateType1(coupon.EndValidDate));
+        return newCouponHtml;
+    }
+
+    //优惠券选择事件
+    var isClick = false;
+    var isSelelectCoupon;
+    function changeSelectBox() {
+        var box = $(".select-box");
+        var checkedDivHtml = '<div class="checked">' +
+                             '<img class="checked-bg" src="@Url.Content("~/Content/images/coupon-bg.png")" />' +
+                             '<img class="checked-choose" src="@Url.Content("~/Content/images/coupon-choose.png")" /></div>'
+        box.click(function () {
+            var conditionMoney = $(this).attr("data-conditionmoney");
+            if (Number(conditionMoney) > Number(allowFavorableAmount)) {//如果允许优惠价小于满足条件，就不让其点选
+                statisticsUsedCoupon();
+                return false;
+            }
+            if (allowFavorableAmount == 0) {//如果允许优惠部分为0，则不允许使用优惠券
+                statisticsUsedCoupon();
+                return false;
+            }
+            if (isSelelectCoupon != undefined && isSelelectCoupon != null && isSelelectCoupon.attr("data-couponid") != $(this).attr("data-couponid")) {
+                $(".select-box .checked").remove();
+                $(this).find(".first-line").html(checkedDivHtml + $(this).find(".first-line").html());
+                box.removeClass("checked_coupon_div");
+                $(this).addClass("checked_coupon_div");
+                isSelelectCoupon = $(this)
+                isClick = true;
+                //清空已使用的代金卡
+                clearUsedGiftCard();
+
+            } else {
+                if (isClick == false) {
+                    $(".select-box .checked").remove();
+                    $(this).find(".first-line").html(checkedDivHtml + $(this).find(".first-line").html());
+                    $(this).addClass("checked_coupon_div");
+                    isSelelectCoupon = $(this)
+                    isClick = true;
+                    //清空已使用的代金卡
+                    clearUsedGiftCard();
+                } else {
+                    $(".select-box .checked").remove();
+                    $(this).removeClass("checked_coupon_div");
+                    isSelelectCoupon = null;
+                    isClick = false;
+                }
+            }
+            statisticsUsedCoupon();
+        })
+    }
+
+    //统计使用的优惠券
+    function statisticsUsedCoupon() {
+        var couponList = $("#allCouponList_li .checked_coupon_div");
+        var usedCouponQuantity = 0;
+        var usedCouponAmount = 0;
+        if (couponList.length > 0) {
+            usedCouponQuantity = couponList.length;
+            usedCouponAmount = Number(couponList.attr("data-denomination"));
+        }
+        if (usedCouponAmount > allowFavorableAmount) {
+            usedCouponAmount = allowFavorableAmount;
+        }
+
+        $("#usedCouponQuantity").text(usedCouponQuantity);
+        $("#usedCouponAmount").text('￥' + usedCouponAmount);
+
+        couponPay = usedCouponAmount;
+        //统计订单支付金额
+        statisticsPayInfo();
+    }
+
+    //清空已使用的优惠券
+    function clearUsedCoupon() {
+        var couponList = $("#allCouponList_li .checked_coupon_div");
+        if (couponList.length > 0) {
+            $.each(couponList, function (index, coupon) {
+                $(coupon).find(".checked").remove();
+                $(coupon).removeClass("checked_coupon_div");
+            })
+        }
+        statisticsUsedCoupon();
+    }
+
+    //Sub:使用代金卡
+
+    //添加使用代金卡
+    function addUseGiftCard() {
+        var giftCardSN = $("#giftCardSN").val();
+        var giftCardPwd = $("#giftCardPwd").val();
+        if (giftCardSN == "") {
+            alert("请输入代金卡卡号");
+            return;
+        }
+        if (giftCardPwd == "") {
+            alert("请输入代金卡密码");
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("VerificationGiftCardAllowUse", "CommonOrder")?giftCardSN=' + giftCardSN + '&giftCardSPwd=' + giftCardPwd,
+            type: 'post',
+            success: function (result) {
+                if (result.successed == false) {
+                    alert(result.message);
+                } else {
+                    var giftCard = result.data;
+                    if ($("#giftCard_" + giftCard.Id).attr("data-giftcardid") == giftCard.Id) {
+                        alert("该代金卡已添加，请勿重复添加");
+                        return;
+                    }
+
+                    if ($("#allGiftCardList_li .giftCardItem-div").length > 0 || allowFavorableAmount == 0) {//已使用代金卡，或者订单允许优惠部分为0时
+                        if (favorablePay >= allowFavorableAmount) {
+                            alert("当前订单已无使用优惠部分，无法添加代金卡");
+                            return;
+                        }
+                    }
+                    var newGiftCardHtml = $.format('<div id="giftCard_{0}" data-giftcardid={1} data-giftcarddenomination={2} class="giftCardItem-div">' +
+                                                   '<span>卡号：{3}</span>' +
+                                                   '<span>面额：{4}元</span>' +
+                                                   '<a class="cancel-use-btn" href="javascript:void(0)" onclick="cancelUseAGiftCard(\'{5}\')">[取消使用]</a>' +
+                                                   '</div>', giftCard.Id, giftCard.Id, giftCard.Denomination, giftCard.GiftCardSN, giftCard.Denomination, giftCard.Id);
+
+                    $("#allGiftCardList_li").html($("#allGiftCardList_li").html() + newGiftCardHtml);
+
+
+                    $("#giftCardSN").val('');
+                    $("#giftCardPwd").val('');
+                    //清空已使用的优惠券
+                    clearUsedCoupon();
+                    //统计使用的代金卡
+                    statisticsUsedGiftCard();
+                }
+            }
+        })
+    }
+
+    //取消使用一张代金卡
+    function cancelUseAGiftCard(giftCardId) {
+        $("#giftCard_" + giftCardId).remove();
+        statisticsUsedGiftCard();
+    }
+
+    //统计使用的代金卡
+    function statisticsUsedGiftCard() {
+        var usedGiftCardList = $("#allGiftCardList_li .giftCardItem-div");
+        giftCardPay = 0;
+        var usedGiftCardQuantity = 0;
+        if (usedGiftCardList.length > 0) {
+            usedGiftCardQuantity = usedGiftCardList.length;
+            $.each(usedGiftCardList, function (index, usedGiftCard) {
+                giftCardPay += Number($(usedGiftCard).attr("data-giftcarddenomination"));
+            });
+        }
+        if (giftCardPay > allowFavorableAmount) {
+            giftCardPay = allowFavorableAmount;
+        }
+        $("#usedGiftCardQuantity").text(usedGiftCardQuantity);
+        $("#usedGiftCardAmount").text('￥' + giftCardPay);
+        //统计订单支付金额
+        statisticsPayInfo();
+    }
+
+    //清空已使用的代金卡
+    function clearUsedGiftCard() {
+        var usedGiftCardList = $("#allGiftCardList_li .giftCardItem-div");
+        usedGiftCardList.remove();
+        statisticsUsedGiftCard();
+    }
+
+    //Sub:使用积分抵扣
+    //改变使用积分
+    function useIntegralChange() {
+        var $useIntegral = $("#useIntegral");
+        useIntegralVal = $useIntegral.val();
+        if (useIntegralVal != "") {
+            if (isNaN(useIntegralVal) || useIntegralVal < 0) {
+                alert("对不起，您输入的积分不合法，请输入正整数");
+                $useIntegral.val(0);
+                useIntegralVal = $useIntegral.val();
+            }
+            if (useIntegralVal != parseInt(useIntegralVal)) {
+                $useIntegral.val(parseInt(useIntegralVal));
+                useIntegralVal = $useIntegral.val();
+            }
+            if (useIntegralVal > curMemberIntegral) {
+                alert($.format("对不起，您当前积分为{0}分，请输入小于等于{1}的正整数", curMemberIntegral, curMemberIntegral));
+                $useIntegral.val(parseInt(curMemberIntegral));
+                useIntegralVal = $useIntegral.val();
+            }
+            var allowIntegralPay = Number((allowFavorableAmount - (couponPay + giftCardPay)).toFixed(2) < 0 ? 0 : (allowFavorableAmount - (couponPay + giftCardPay)).toFixed(2));
+            if (Number(useIntegralVal / integralDeductionCashRate) > allowIntegralPay) {
+                alert($.format("对不起，当前订单最多还能使用{0}分", parseInt(allowIntegralPay * integralDeductionCashRate)));
+                $useIntegral.val(parseInt(allowIntegralPay * integralDeductionCashRate));
+                useIntegralVal = $useIntegral.val();
+            }
+
+            integralPay = (useIntegralVal / integralDeductionCashRate).toFixed(2);
+            $("#integralAmount_span").text('￥' + integralPay);
+            statisticsPayInfo();
+        }
+    }
+</script>

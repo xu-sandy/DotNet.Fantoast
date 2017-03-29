@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/easyui/default/css")
+    @Styles.Render("~/Content/easyui/css")
+    @Styles.Render("~/Content/themes/default/global.css?v=1.0.0")
+    @Styles.Render("~/Content/themes/default/form.css")
+
+    @Scripts.Render(
+        
+        "~/bundles/jquery",
+        "~/bundles/jquery.validate",
+        Html.JsCultureBundle("~/bundles/jquery-culture.{0}"),
+        "~/Scripts/jquery.easyui.min.js",
+        "~/Scripts/datagrid-detailview.js",
+        "~/Scripts/ajaxfileupload.js",
+        "~/Scripts/controls/My97DatePicker/WdatePicker.js",
+        "~/Scripts/global.js",
+        "~/bundles/form"
+    )
+    <script src="~/Scripts/easyui-lang-zh_CN.js"></script>
+</head>
+<body>
+    @RenderBody()
+
+
+    @RenderSection("scripts", required: false)
+    <script src="~/Scripts/loadedglobal.js"></script>
+</body>
+</html>

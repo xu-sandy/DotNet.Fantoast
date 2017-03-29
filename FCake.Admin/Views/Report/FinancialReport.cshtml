@@ -1,0 +1,192 @@
+﻿@{
+    ViewBag.Title = "FinancialReport";
+}
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['freetype'] = [];
+    window.drpdata['viewstatus'] = [];
+    window.drpdata['orderstatus'] = [];
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.FeeType>(false))
+    {
+        @:window.drpdata['freetype'].push({ value: '@item.Value', text: '@item.Text' });
+                                                                        }
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.ReviewStatus>(false))
+    {
+        if(int.Parse(item.Value)<2)
+        {
+            @:window.drpdata['viewstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+    }
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.OrderStatus>(true))
+    {
+        @:window.drpdata['orderstatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+</script>
+<div id="toobal">
+    <label>下单时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '#F{$dp.$D(\'endTime\',{M:-3});}' })" id="beginTime" name="beginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', maxDate: '#F{$dp.$D(\'beginTime\',{M:3});}' })" id="endTime" name="endTime" readonly="readonly" />
+    <label>要求送达时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '#F{$dp.$D(\'reqEndTime\',{M:-3});}' })" id="reqBeginTime" name="reqBeginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', maxDate: '#F{$dp.$D(\'reqBeginTime\',{M:3});}' })" id="reqEndTime" name="reqEndTime" readonly="readonly" /><br />
+    <div style="display:none">
+        审核状态：<input id="reviewStatus" name="reviewStatus" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['viewstatus'], panelHeight: 'auto', editable: false,width:140,onLoadSuccess:function(data){ $('#reviewStatus').combobox('setValue',data[1].text);}" />
+        订单状态：<input id="orderStatus" name="orderStatus" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['orderstatus'], panelHeight: 'auto', editable: false,width:140" />
+    </div>
+    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+    @*<input type="button" id="export" style="width:90px" value="导出到Excel" />*@
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>
+</div>
+<table id="dg"></table>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+<script type="text/javascript">
+    $grid = $("#dg");
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+    $(function () {
+        $("#dg").datagrid({
+            border: 2,
+            toolbar: "#toobal",
+            rownumbers: true,
+            singleSelect: true,
+            nowrap: false,
+            autoRowHeight: false,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            pagination: true,
+            pageSize: 100,
+            pageList: [100],
+            //url: "@Url.Action("ReportCycleTime", "Report")" + "?beginTime=&endTime=",
+            frozenColumns: [[
+                             { field: 'OrderNo', title: '订单号', width: 120 },
+
+            {
+                field: 'CreatedOn', title: '订单时间', width: 150, formatter: function (value, row, index) {
+                    if (row.CreatedOn == null) {
+                        return "时间段总计";
+                    }
+                    else {
+                        return value;
+                    }
+                }
+            },
+            { field: 'RequiredTime', title: '要求送达时间', width: 150 },
+            { field: 'OrderStatus', title: '订单状态', width: 100 },
+            { field: 'ReviewStatus', title: '审核状态', width: 100 },
+            {
+                field: 'FeeType', title: '支付方式', width: 100, formatter: function (value, row, index) {
+                    if (row.FeeType == null) {
+                        return "全部";
+                    }
+                    else {
+
+                        return formatColumn(value, window.drpdata['freetype'])
+                    }
+                }
+            },
+            { field: 'TotalPrice', title: '总价', width: 80 }
+            ]],
+            columns: [[
+                { "title": "订单金额", "colspan": 3 }
+            ], [
+            { field: 'RealPay', title: '支付金额', width: 50 },
+            { field: 'CouponPay', title: '优惠券支付', width: 50 },
+            { field: 'TotalMoney', title: '总额', width: 50 }
+            ]]
+        })
+        //查询点击事件
+        $("#search").click(function () {
+            var begintime = $("#beginTime").val();
+            var endtime = $("#endTime").val();
+            var reqBeginTime = $("#reqBeginTime").val();
+            var reqEndTime = $("#reqEndTime").val();
+            var reviewStatus = $("#reviewStatus").combobox('getValue');
+            var pageIndex = $("#dg").datagrid("options").pageNumber;
+            var pageSize = $("#dg").datagrid("options").pageSize;
+            //orderstatus
+            var orderStatus = $("#orderStatus").combobox('getValue');
+
+            if (begintime == "" && endtime == "" && reqBeginTime == "" && reqEndTime == "") {
+                alert("请选择统计时间段，下单时间或送达时间!");
+                return false;
+            } else {
+                if ((begintime != "" && endtime == "") || (begintime == "" && endtime != "") || (reqBeginTime != "" && reqEndTime == "") || (reqBeginTime == "" && reqEndTime != "")) {
+                    alert("请选择完整时间段!");
+                    return false;
+                }
+            }
+
+            $("#dg").datagrid({
+                url: "@Url.Action("FinancialReports", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&reqBeginTime=" + reqBeginTime + "&reqEndTime=" + reqEndTime + "&page=" + pageIndex + "&orderStatus=" + orderStatus + "&reviewStatus=" + reviewStatus + "&pageSize="
+            })
+        })
+    })
+    //取枚举对应值
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    //导出到excel
+    function Save_Excel() {
+        var begintime = $("#beginTime").val();
+        var endtime = $("#endTime").val();
+        var reqBeginTime = $("#reqBeginTime").val();
+        var reqEndTime = $("#reqEndTime").val();
+        var reviewStatus = $("#reviewStatus").combobox('getValue');
+        var pageIndex = $("#dg").datagrid("options").pageNumber;
+        var pageSize = $("#dg").datagrid("options").pageSize;
+        //orderstatus
+        var orderStatus = $("#orderStatus").combobox('getValue');
+
+        if (begintime == "" && endtime == "" && reqBeginTime == "" && reqEndTime == "") {
+            alert("请选择统计时间段，下单时间或送达时间!");
+            return false;
+        } else {
+            if ((begintime != "" && endtime == "") || (begintime == "" && endtime != "") || (reqBeginTime != "" && reqEndTime == "") || (reqBeginTime == "" && reqEndTime != "")) {
+                alert("请选择完整时间段!");
+                return false;
+            }
+        }
+
+        $grid.datagrid("loading", "正在生成Excel，请稍后");
+        $.ajax({
+            url: '@Url.Action("ExportExcel")',
+            dataType: 'json',
+            type: 'post',
+            data: { beginTime: begintime, endTime: endtime, reqBeginTime: reqBeginTime, reqEndTime: reqEndTime, reviewStatus: reviewStatus, pageSize: pageSize, page: pageIndex, orderStatus: orderStatus },
+            success: function (data) {
+                $grid.datagrid("loaded");
+                if (data.successed) {
+
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                } else {
+                    alert(data.message)
+                }
+            }
+        });
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

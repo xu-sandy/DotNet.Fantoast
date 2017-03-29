@@ -1,0 +1,13 @@
+﻿@*左边菜单*@
+<ul class="leftmenu">
+    <li data-active="index" class="corner5"><a href="@Url.Action("Index", "Member")" class="f2">我的账户</a></li>
+    <li data-active="member" class="corner5"><a href="@Url.Action("Member", "Member")" class="f2">个人信息</a></li>
+    <li data-active="modifypwd" class="corner5"><a href="@Url.Action("ModifyPWD", "Member")" class="f2">修改密码</a></li>
+    <li data-active="deliveraddress" class="corner5"><a href="@Url.Action("DeliverAddress", "Member")" class="f2">收货地址</a></li>
+    <li data-active="distributionrange" class="corner5"><a href="@Url.Action("DistributionRange", "Member")" class="f2">配送范围</a></li>
+</ul>
+<script type="text/javascript">
+    $(function () {
+        $("li[data-active='@ViewContext.RouteData.Values["action"].ToString().ToLower()']").addClass("active");
+    });
+</script>

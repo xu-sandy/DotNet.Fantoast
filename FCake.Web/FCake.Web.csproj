@@ -1,0 +1,599 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1BAE9389-714B-48DC-8CE1-63ECB919A1F5}</ProjectGuid>
+    <ProjectTypeGuids>{E3E379DF-F4C6-4180-9B81-6769533ABE47};{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FCake.Web</RootNamespace>
+    <AssemblyName>FCake.Web</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.FixedDisplayModes.1.0.0\lib\net40\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Net.Http.2.0.30506.0\lib\net40\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.4.0.30506.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http.WebRequest">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.Net.Http.2.0.30506.0\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Core.4.0.30506.0\lib\net40\System.Web.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.WebHost.4.0.30506.0\lib\net40\System.Web.Http.WebHost.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.4.0.30506.0\lib\net40\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.0.0\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Providers">
+      <HintPath>..\packages\Microsoft.AspNet.Providers.Core.1.2\lib\net40\System.Web.Providers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.Razor.2.0.30506.0\lib\net40\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="ThoughtWorks.QRCode, Version=1.0.3990.25764, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExtendFiles\ThoughtWorks.QRCode.dll</HintPath>
+    </Reference>
+    <Reference Include="WebGrease">
+      <Private>True</Private>
+      <HintPath>..\packages\WebGrease.1.3.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime">
+      <Private>True</Private>
+      <HintPath>..\packages\WebGrease.1.3.0\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\AppConfig.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\DeviceFilterAttribute.cs" />
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\ArticleController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\CartController.cs" />
+    <Compile Include="Controllers\CommonOrderController.cs" />
+    <Compile Include="Controllers\CommonController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MemberController.cs" />
+    <Compile Include="Controllers\PassportController.cs" />
+    <Compile Include="Controllers\ProductController.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
+    <Compile Include="Controllers\TenpayController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Models\CutleryVM.cs" />
+    <Compile Include="Models\MemberVM.cs" />
+    <Compile Include="Models\OderVM.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\aboutus.css" />
+    <Content Include="Content\activecenter.css" />
+    <Content Include="Content\address.css" />
+    <Content Include="Content\contactUs.css" />
+    <Content Include="Content\cooperate.css" />
+    <Content Include="Content\details.css" />
+    <Content Include="Content\form.css" />
+    <Content Include="Content\global.css" />
+    <Content Include="Content\images\aboutus.jpg" />
+    <Content Include="Content\images\aboutus\one.jpg" />
+    <Content Include="Content\images\aboutus\three.jpg" />
+    <Content Include="Content\images\aboutus\two.jpg" />
+    <Content Include="Content\images\activecenter\photo.jpg" />
+    <Content Include="Content\images\coupon-bg.png" />
+    <Content Include="Content\images\coupon-choose.png" />
+    <Content Include="Content\images\fancake.ico" />
+    <Content Include="Content\images\gocart.png" />
+    <Content Include="Content\images\headbg.png" />
+    <Content Include="Content\images\aboutus\dotted.png" />
+    <Content Include="Content\images\activecenter\choose.png" />
+    <Content Include="Content\images\activecenter\photo.png" />
+    <Content Include="Content\images\addressRange.png" />
+    <Content Include="Content\images\arrowright.png" />
+    <Content Include="Content\images\hot.png" />
+    <Content Include="Content\images\icon.png" />
+    <Content Include="Content\images\login\bg.png" />
+    <Content Include="Content\images\login\bg_white.png" />
+    <Content Include="Content\images\login\login_1.png" />
+    <Content Include="Content\images\login\login_2.png" />
+    <Content Include="Content\images\logo-thumb.png" />
+    <Content Include="Content\images\logo-thumb3.png" />
+    <Content Include="Content\images\orderDetail_day.png" />
+    <Content Include="Content\images\orderDetail_time.png" />
+    <Content Include="Content\images\OrderHelper.png" />
+    <Content Include="Content\images\pay.png" />
+    <Content Include="Content\images\Present.png" />
+    <Content Include="Content\images\products\birthday.png" />
+    <Content Include="Content\images\products\birthday_text.png" />
+    <Content Include="Content\images\products\fathersday.png" />
+    <Content Include="Content\images\products\fathersday_text.png" />
+    <Content Include="Content\images\products\mothersday.png" />
+    <Content Include="Content\images\products\mothersday_text.png" />
+    <Content Include="Content\images\products\prosperity.png" />
+    <Content Include="Content\images\products\prosperity_text.png" />
+    <Content Include="Content\images\products\valentinesday.png" />
+    <Content Include="Content\images\products\valentinesday_text.png" />
+    <Content Include="Content\images\Recommend.png" />
+    <Content Include="Content\images\reg\reg_1.png" />
+    <Content Include="Content\images\reg\reg_2.png" />
+    <Content Include="Content\images\reg\reg_3.png" />
+    <Content Include="Content\images\reg\reg_6.png" />
+    <Content Include="Content\images\reg\reg_7.png" />
+    <Content Include="Content\images\right.png" />
+    <Content Include="Content\images\shadow.jpg" />
+    <Content Include="Content\images\shopping-04.png" />
+    <Content Include="Content\images\ShoppingCart1.png" />
+    <Content Include="Content\images\wb.png" />
+    <Content Include="Content\images\wx.png" />
+    <Content Include="Content\images\x.png" />
+    <Content Include="Content\images\addcartbtn.jpg" />
+    <Content Include="Content\information.css" />
+    <Content Include="Content\login.css" />
+    <Content Include="Content\images\orderDetail_DeliverMsg.png" />
+    <Content Include="Content\password.css" />
+    <Content Include="Content\reset.css" />
+    <Content Include="Content\images\2wm.png" />
+    <Content Include="Content\images\add.png" />
+    <Content Include="Content\images\btn-decrease-hover.jpg" />
+    <Content Include="Content\images\btn-decrease.jpg" />
+    <Content Include="Content\images\btn-increase-hover.jpg" />
+    <Content Include="Content\images\btn-increase.jpg" />
+    <Content Include="Content\images\buy.png" />
+    <Content Include="Content\images\car.png" />
+    <Content Include="Content\images\cart.png" />
+    <Content Include="Content\images\form\butt.png" />
+    <Content Include="Content\images\form\confirm.png" />
+    <Content Include="Content\images\footer-bg.png" />
+    <Content Include="Content\images\form\slash.png" />
+    <Content Include="Content\images\logo.png" />
+    <Content Include="Content\images\shopcart.png" />
+    <Content Include="Content\images\gobuy.png" />
+    <Content Include="Content\images\balance.png" />
+    <Content Include="Content\images\shopping.png" />
+    <Content Include="Content\images\sub.png" />
+    <Content Include="Content\images\user.png" />
+    <Content Include="Content\images\submit.png" />
+    <Content Include="Content\index.css" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_flat_75_aaaaaa_40x100.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_glass_100_f5f0e5_1x400.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_glass_25_cb842e_1x400.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_glass_70_ede4d4_1x400.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_highlight-hard_100_f4f0ec_1x100.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_highlight-hard_65_fee4bd_1x100.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_highlight-hard_75_f5f5b5_1x100.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-bg_inset-soft_100_f4f0ec_1x100.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_c47a23_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_cb672b_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_f08000_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_f35f07_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_ff7519_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\jquery-ui.css" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\jquery-ui.min.css" />
+    <Content Include="Content\jquery-ui-themes-1.11.2-humanity\theme.css" />
+    <Content Include="Content\productimg.css" />
+    <Content Include="Content\productpic.css" />
+    <Content Include="Content\fcake.css" />
+    <Content Include="Content\home.css" />
+    <Content Include="Content\images\birt.png" />
+    <Content Include="Content\images\birthday.png" />
+    <Content Include="Content\images\cake_1.png" />
+    <Content Include="Content\images\choose.png" />
+    <Content Include="Content\images\nochoose.png" />
+    <Content Include="Content\images\prev.png" />
+    <Content Include="Content\images\next.png" />
+    <Content Include="Content\images\sell_bg.png" />
+    <Content Include="Content\images\unselect.png" />
+    <Content Include="Content\images\select.png" />
+    <Content Include="Content\images\servicer.png" />
+    <Content Include="Content\images\cake.png" />
+    <Content Include="Content\images\order.png" />
+    <Content Include="Content\images\arrow.png" />
+    <Content Include="Content\images\themes.gif" />
+    <Content Include="Content\themes\base\accordion.css" />
+    <Content Include="Content\themes\base\all.css" />
+    <Content Include="Content\themes\base\autocomplete.css" />
+    <Content Include="Content\themes\base\base.css" />
+    <Content Include="Content\themes\base\button.css" />
+    <Content Include="Content\themes\base\core.css" />
+    <Content Include="Content\themes\base\datepicker.css" />
+    <Content Include="Content\themes\base\dialog.css" />
+    <Content Include="Content\themes\base\draggable.css" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\base\menu.css" />
+    <Content Include="Content\themes\base\progressbar.css" />
+    <Content Include="Content\themes\base\resizable.css" />
+    <Content Include="Content\themes\base\selectable.css" />
+    <Content Include="Content\themes\base\selectmenu.css" />
+    <Content Include="Content\themes\base\slider.css" />
+    <Content Include="Content\themes\base\sortable.css" />
+    <Content Include="Content\themes\base\spinner.css" />
+    <Content Include="Content\themes\base\tabs.css" />
+    <Content Include="Content\themes\base\theme.css" />
+    <Content Include="Content\themes\base\tooltip.css" />
+    <Content Include="Files\city.xml" />
+    <Content Include="Global.asax" />
+    <None Include="Properties\PublishProfiles\fancakeweb.pubxml" />
+    <None Include="Scripts\jquery-1.11.1.intellisense.js" />
+    <Content Include="Resource\html\protection.html" />
+    <Content Include="Resource\html\agreement.html" />
+    <Content Include="Scripts\business.js" />
+    <Content Include="Scripts\common-form.js" />
+    <Content Include="Scripts\fcake\global.js" />
+    <Content Include="Scripts\fcake\home.js" />
+    <Content Include="Scripts\formValidator\formValidator-4.1.3.js" />
+    <Content Include="Scripts\formValidator\formValidator-4.1.3.min.js" />
+    <Content Include="Scripts\formValidator\formValidatorRegex.js" />
+    <Content Include="Scripts\formValidator\themes\126\Author.txt" />
+    <Content Include="Scripts\formValidator\themes\126\images\bgx.png" />
+    <Content Include="Scripts\formValidator\themes\126\images\global2.png" />
+    <Content Include="Scripts\formValidator\themes\126\js\theme.js" />
+    <Content Include="Scripts\formValidator\themes\126\Preview.jpg" />
+    <Content Include="Scripts\formValidator\themes\126\style\style.css" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\Author.txt" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\images\background.gif" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\images\bt.gif" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\images\onLoad.gif" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\images\reg-menu.gif" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\images\verification-ui6.gif" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\js\theme.js" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\Preview.jpg" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\style\style.css" />
+    <Content Include="Scripts\formValidator\themes\ArrowSolidBox\style\style_new.css" />
+    <Content Include="Scripts\formValidator\themes\Bull\Author.txt" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\bottom-left-w.gif" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\bottom-right-w.gif" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\error_01.png" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\ok_01.png" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\onLoad.gif" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\top-left-w.gif" />
+    <Content Include="Scripts\formValidator\themes\Bull\images\top-right-w.gif" />
+    <Content Include="Scripts\formValidator\themes\Bull\js\theme.js" />
+    <Content Include="Scripts\formValidator\themes\Bull\Preview.jpg" />
+    <Content Include="Scripts\formValidator\themes\Bull\style\style.css" />
+    <Content Include="Scripts\formValidator\themes\Default\images\bt.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onCorrect.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onError.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onFocus.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onLoad.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onShow.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\images\onSuccess.gif" />
+    <Content Include="Scripts\formValidator\themes\Default\js\theme.js" />
+    <Content Include="Scripts\formValidator\themes\Default\Preview.jpg" />
+    <Content Include="Scripts\formValidator\themes\Default\style\style.css" />
+    <Content Include="Scripts\formValidator\themes\Default\作者.txt" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\Author.txt" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onCorrect.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onError.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onFocus.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onLoad.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onShow.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\images\onSuccess.gif" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\js\theme.js" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\Preview.jpg" />
+    <Content Include="Scripts\formValidator\themes\SolidBox\style\style.css" />
+    <Content Include="Scripts\global.js" />
+    <Content Include="Scripts\jquery-1.11.1.js" />
+    <Content Include="Scripts\jquery-1.11.1.min.js" />
+    <Content Include="Scripts\jquery-1.11.1.min.map" />
+    <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery-ex.js" />
+    <Content Include="Scripts\jquery-ui-1.11.2.js" />
+    <Content Include="Scripts\jquery-ui-1.11.2.min.js" />
+    <Content Include="Scripts\jquery.imagezoom.js" />
+    <Content Include="Scripts\jquery.imagezoom.min.js" />
+    <Content Include="Scripts\jquery.ui.datepicker-zh-CN.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\knockout-2.2.0.debug.js" />
+    <Content Include="Scripts\knockout-2.2.0.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ar.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_bg.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ca.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_cs.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_da.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_de.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_el.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_es.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_et.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_eu.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_fa.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_fi.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_fr.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_he.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_hr.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_hu.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_it.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ja.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ka.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_kk.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ko.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_lt.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_lv.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_my.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_nl.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_no.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_pl.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_pt_BR.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_pt_PT.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ro.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_ru.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_si.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_sk.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_sl.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_sr.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_sv.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_th.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_tr.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_uk.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_vi.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_zh.js" />
+    <Content Include="Scripts\lang\jquery-validation\messages_zh_TW.js" />
+    <Content Include="Scripts\lang\jquery-validation\methods_de.js" />
+    <Content Include="Scripts\lang\jquery-validation\methods_nl.js" />
+    <Content Include="Scripts\lang\jquery-validation\methods_pt.js" />
+    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\My97DatePicker\calendar.js" />
+    <Content Include="Scripts\My97DatePicker\lang\en.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-cn.js" />
+    <Content Include="Scripts\My97DatePicker\lang\zh-tw.js" />
+    <Content Include="Scripts\My97DatePicker\skin\datePicker.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\default\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\default\img.gif" />
+    <Content Include="Scripts\My97DatePicker\skin\WdatePicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\bg.jpg" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\skin\whyGreen\img.gif" />
+    <Content Include="Scripts\My97DatePicker\WdatePicker.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\en.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\zh-cn.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\lang\zh-tw.js" />
+    <Content Include="Scripts\My97DatePicker\开发包\readme.txt" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\datePicker.gif" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\default\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\default\img.gif" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\WdatePicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\bg.jpg" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\datepicker.css" />
+    <Content Include="Scripts\My97DatePicker\开发包\skin\whyGreen\img.gif" />
+    <Content Include="Scripts\pharos.jquery-ex.js" />
+    <Content Include="Scripts\showpic.js" />
+    <Content Include="Scripts\slider.js" />
+    <Content Include="Scripts\_references.js" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Views\Web.config" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\Product\_condition.cshtml" />
+    <Content Include="Views\Passport\Register.cshtml" />
+    <Content Include="Views\Passport\Login.cshtml" />
+    <Content Include="Views\Cart\Index.cshtml" />
+    <Content Include="Views\Cart\_PartialCartNav.cshtml" />
+    <Content Include="Views\Shared\_PartialHotCake.cshtml" />
+    <Content Include="Views\Cart\Settlement.cshtml" />
+    <Content Include="Views\Member\DeliverAddress.cshtml" />
+    <Content Include="Views\Member\DistributionRange.cshtml" />
+    <Content Include="Views\Member\Member.cshtml" />
+    <Content Include="Views\Shared\_PartialBottom.cshtml" />
+    <Content Include="Views\Shared\_PartialHead.cshtml" />
+    <Content Include="Views\Member\ModifyPWD.cshtml" />
+    <Content Include="Views\Cart\_PartialPosition.cshtml" />
+    <Content Include="Views\Cart\_PartialCutlery.cshtml" />
+    <Content Include="Views\Product\_goShopCart.cshtml" />
+    <Content Include="Views\Home\AboutUs.cshtml" />
+    <Content Include="Views\Home\ActiveCenter.cshtml" />
+    <Content Include="Views\Product\HotSale.cshtml" />
+    <Content Include="Views\Home\OrderHelp.cshtml" />
+    <Content Include="Views\Home\ContactUs.cshtml" />
+    <Content Include="Views\Home\Cooperation.cshtml" />
+    <Content Include="Views\Cart\AliPay.cshtml" />
+    <Content Include="Views\Cart\WeiXinPay.cshtml" />
+    <Content Include="Views\Cart\OrderDetail.cshtml" />
+    <Content Include="Views\Cart\OrderConfirm.cshtml" />
+    <Content Include="Views\Member\Index.cshtml" />
+    <Content Include="Views\Member\_PartialMenu.cshtml" />
+    <Content Include="Views\Member\_PartialMapTitle.cshtml" />
+    <Content Include="Views\Article\Index.cshtml" />
+    <Content Include="Views\Product\Index.cshtml" />
+    <Content Include="Views\Shared\_PartialImageZoom.cshtml" />
+    <Content Include="Scripts\jquery1.8.3.js" />
+    <Content Include="Views\Passport\Forget.cshtml" />
+    <Content Include="Views\Product\Detail.cshtml" />
+    <Content Include="Views\Product\_productInfo.cshtml" />
+    <Content Include="Views\Cart\AlipayReturn.cshtml" />
+    <Content Include="Views\Member\BindNewPhone.cshtml" />
+    <Content Include="Views\Tenpay\GetPayUrl.cshtml" />
+    <Content Include="settings.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\Member\MyCoupons.cshtml" />
+    <Content Include="Views\Member\MyGiftCard.cshtml" />
+    <Content Include="Views\Cart\_Partial_Settlement_ProductList.cshtml" />
+    <Content Include="Views\Member\MemberRule.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\" />
+    <Folder Include="Content\images\NewFolder1\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FCake.API\FCake.API.csproj">
+      <Project>{6dbe3fab-f06a-4d6e-bb9c-15186a822ade}</Project>
+      <Name>FCake.API</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Bll\FCake.Bll.csproj">
+      <Project>{3502d176-6bcd-400a-a419-7ab6a15d03ee}</Project>
+      <Name>FCake.Bll</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Core\FCake.Core.csproj">
+      <Project>{471bcc54-e5e3-45c7-a9b3-0cb4c9965cc1}</Project>
+      <Name>FCake.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Domain\FCake.Domain.csproj">
+      <Project>{e2694570-5df4-4c03-ab47-ddb899ce90f5}</Project>
+      <Name>FCake.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>8044</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:8044/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target> -->
+</Project>

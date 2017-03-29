@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "会员介绍";
+
+}
+<style type="text/css">
+    .memberrule-management td{max-width:200px;}
+    .memberrule-management th { text-align:center;}
+</style>
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top; width:165px">
+            @Html.Partial("_PartialMenu")
+        </td>
+        <td style="text-align:left; vertical-align:top">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "会员介绍")
+
+                <div class="panelcontent">
+                    <div class="pc-memberrule">
+                        <h5 class="memberrule-subtitle">一、会员等级说明</h5>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;枫客会员等级共分为四个等级，分别为：普通卡、银卡、金卡、黑金卡。会员等级由成长值决定，当成长值达到对应会员等级的成长值范围时，会员等级将自动改变。不同的会员等级可享受不同的购物折扣，积分倍数（如黑金卡会员现金消费1元可获得2积分）。具体会员等级划分如下：</p>
+                        </br>
+                        <table class="memberrule-management">
+                            <tr>
+                                <th>会员等级</th>
+                                <th>成长值范围</th>
+                                <th>积分倍数</th>
+                                <th>成长值倍数</th>
+                                <th>折扣</th>
+                                <th>会员有效期</th>
+                            </tr>
+                            <tr>
+                                <td>普通卡</td>
+                                <td>0~499</td>
+                                <td>1倍</td>
+                                <td>1倍</td>
+                                <td>原价</td>
+                                <td>永久</td>
+                            </tr>
+                            <tr>
+                                <td>银卡</td>
+                                <td>500~999</td>
+                                <td>1.2倍</td>
+                                <td>1倍</td>
+                                <td>9折</td>
+                                <td>永久</td>
+                            </tr>
+                            <tr>
+                                <td>金卡</td>
+                                <td>1000~2999</td>
+                                <td>1.5倍</td>
+                                <td>1倍</td>
+                                <td>8.5折</td>
+                                <td>会员有效期1年，一年后扣除成长值500，根据剩余成长值重新计算级别</td>
+                            </tr>
+                            <tr>
+                                <td>黑金卡</td>
+                                <td>3000~以上</td>
+                                <td>2倍</td>
+                                <td>1倍</td>
+                                <td>8折</td>
+                                <td>会员有效期1年，一年后扣除成长值1000，根据剩余成长值重新计算级别</td>
+                            </tr>
+                                
+                        </table>
+                        </br>
+                        <div>
+                            <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;举例：会员小A在2013年2月1日升级为金卡会员，截止至2014年1月31日总成长值为1500，此时扣除800成长值，剩余成长值为700，系统根据剩余成长值重新判断会员小A为银卡会员，有效期为1年。</p>
+                        </div>
+                        <div>
+                        说明：
+                        <p>1.每个订单只有现金消费部分可累计积分和成长值。</p>
+                        <p>2.积分、成长值只取对应整数部分，如银卡会员消费110.50元，可获得132积分和110成长值。</p>
+                        </div>
+                        </br>
+                        <h5 class="memberrule-subtitle">二、积分使用规则</h5>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;50积分可抵扣一元消费金额，但不可抵用其它分类产品（如：蜡烛、餐具等）。使用积分部分，不累计积分和成长值。</p>
+                        </br>
+                        <h5 class="memberrule-subtitle">三、优惠券使用规则</h5>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;每个订单至多只能使用一张满足使用条件的优惠券，且不可与代金卡同时使用。使用优惠券部分，不累计积分和成长值。
+                            优惠券抵扣金额超出订单金额部分作废处理，不兑换现金。</p>
+                        </br>
+                        <h5 class="memberrule-subtitle">四、代金卡使用规则</h5>
+                        <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;每个订单可使用多张满足条件的代金卡，但不可与优惠券同时使用。使用代金卡部分，不累计积分和成长值。
+                            代金卡抵扣金额超出订单金额部分作废处理，不兑换现金。</p>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>

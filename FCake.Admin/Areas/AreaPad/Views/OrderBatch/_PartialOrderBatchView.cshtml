@@ -1,0 +1,26 @@
+﻿@using FCake.Domain.Enums;
+@using FCake.Core.Common;
+@model List<FCake.Domain.Entities.OrderBatch>
+
+@if (Model != null)
+{
+    foreach (var item in Model)
+    {
+        <tr class="contentRow">
+            <td class="hidden" data-id="@item.Id"></td>
+            <td class="batchno">@item.BatchNo</td>
+            <td>@item.RequiredTime</td>
+            <td>
+                @(EnumHelper.GetDescription((OrderBatchMakeStatus)item.MakeStatus))
+            </td>
+            <td>@item.CakeNum</td>
+        </tr>
+    }
+}
+
+<script type="text/javascript">
+    $("tr.contentRow").bind("click", function () {
+        var batchno = $(this).children(".batchno").text();
+        window.location.href = "/AreaPad/Kitchen?batchno=" + batchno + "&showtype=1";
+    });
+</script>

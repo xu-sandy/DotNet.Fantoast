@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3502D176-6BCD-400A-A419-7AB6A15D03EE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>FCake.Bll</RootNamespace>
+    <AssemblyName>FCake.Bll</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dynamic">
+      <HintPath>..\packages\DynamicQuery.1.0\lib\35\Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.1\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="LinqKit">
+      <HintPath>..\packages\LinqKit.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ExtendFiles\NPOI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\FCake.Core\bin\Debug\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BaseService.cs" />
+    <Compile Include="CommonRules.cs" />
+    <Compile Include="CommonWebSiteConfig.cs" />
+    <Compile Include="CurrentMember.cs" />
+    <Compile Include="MemberAuth\Constants.cs" />
+    <Compile Include="MemberAuth\FormAuthProvider.cs" />
+    <Compile Include="Services\CouponsService.cs" />
+    <Compile Include="Services\SysLogService.cs" />
+    <Compile Include="Services\SMSService.cs" />
+    <Compile Include="Services\TempOrderService.cs" />
+    <Compile Include="Services\MemberLevelService.cs" />
+    <Compile Include="Services\HotProductService.cs" />
+    <Compile Include="Services\OrderFavorableService.cs" />
+    <Compile Include="Services\ProductActivityService.cs" />
+    <Compile Include="Services\MsgTemplateService.cs" />
+    <Compile Include="Services\PayLogService.cs" />
+    <Compile Include="Services\PayService.cs" />
+    <Compile Include="Services\PhoneCodeService.cs" />
+    <Compile Include="Services\PrePayInfoService.cs" />
+    <Compile Include="Services\ReportIndexService.cs" />
+    <Compile Include="Services\ReportService.cs" />
+    <Compile Include="Services\PassportService.cs" />
+    <Compile Include="PermissionCache.cs" />
+    <Compile Include="Services\AccountService.cs" />
+    <Compile Include="Services\AddressService.cs" />
+    <Compile Include="Services\CartService.cs" />
+    <Compile Include="Services\CooperationService.cs" />
+    <Compile Include="Services\MemberService.cs" />
+    <Compile Include="Services\OrderBatchGenerateService.cs" />
+    <Compile Include="Services\BaseFileService.cs" />
+    <Compile Include="Services\CommonService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\GiftCardsService.cs" />
+    <Compile Include="Services\GiftCardDetailService.cs" />
+    <Compile Include="Services\CurdService.cs" />
+    <Compile Include="Services\CustomerAddressService.cs" />
+    <Compile Include="Services\CustomersService.cs" />
+    <Compile Include="Services\DistributionService.cs" />
+    <Compile Include="Services\InvoiceService.cs" />
+    <Compile Include="Services\KitchenService.cs" />
+    <Compile Include="Services\LogisticsSiteService.cs" />
+    <Compile Include="Services\MenuService.cs" />
+    <Compile Include="Services\OrderBatchService.cs" />
+    <Compile Include="Services\OrderService.cs" />
+    <Compile Include="Services\PermissionService.cs" />
+    <Compile Include="Services\ProductService.cs" />
+    <Compile Include="Services\RoleService.cs" />
+    <Compile Include="Services\SettingService.cs" />
+    <Compile Include="Services\OperationLogService.cs" />
+    <Compile Include="Services\SettlementService.cs" />
+    <Compile Include="Services\SlideService.cs" />
+    <Compile Include="Services\SysConfigService.cs" />
+    <Compile Include="Services\UserService.cs" />
+    <Compile Include="SysConfigsCache.cs" />
+    <Compile Include="UIHelper\PageHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FCake.API\FCake.API.csproj">
+      <Project>{6dbe3fab-f06a-4d6e-bb9c-15186a822ade}</Project>
+      <Name>FCake.API</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Core\FCake.Core.csproj">
+      <Project>{471bcc54-e5e3-45c7-a9b3-0cb4c9965cc1}</Project>
+      <Name>FCake.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.DAL\FCake.DAL.csproj">
+      <Project>{f65fa3b5-7226-4e68-8894-2b1ca7fb11ec}</Project>
+      <Name>FCake.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FCake.Domain\FCake.Domain.csproj">
+      <Project>{e2694570-5df4-4c03-ab47-ddb899ce90f5}</Project>
+      <Name>FCake.Domain</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Dynamic Expressions.html" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

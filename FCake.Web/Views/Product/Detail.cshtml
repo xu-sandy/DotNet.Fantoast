@@ -1,0 +1,218 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@using FCake.Bll;
+@model Product
+@{
+    ViewBag.Title = Model.Name + Model.EnglishName + "_枫客Fancake官网_厦门地区免费配送_蛋糕24小时在线预定";
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;
+    var fitpeople = new List<DropdownItem>();
+    if (Model.Type == otherProductTypeDicValue)
+    {
+        fitpeople = new FCake.Bll.CommonService().GetDictionaryDescriptionByCode("ProductUnitOther", false);//适合食用人数
+    }
+    else
+    {
+        fitpeople = new FCake.Bll.CommonService().GetDictionaryDescriptionByCode("ProductUnitCake", false);//适合食用人数
+    }
+}
+
+<script src="~/Scripts/jquery.imagezoom.min.js"></script>
+
+
+@if (Model != null)
+{
+    var subOrderBy = Model.SubProducts as ICollection<SubProduct>;
+    var pro = subOrderBy.OrderBy(a => a.Size);
+    <div class="productdetail wallbox clearfix">
+        <div class="clearfix" style="*overflow:auto;_overflow:inherit;">
+            <div class="pic clearfix">
+                @Html.Partial("_PartialImageZoom", Model)
+            </div>
+
+            <div class="detail">
+                <h1>@Model.Name</h1>
+                <h1>@Model.EnglishName</h1>
+                <div class="clearfix divsize">
+                    @if (pro.Any())
+                    {
+                        <p class="price highlight">
+                            <span id="price_span" style="font-size:12px;display:none;"> @pro.First().PriceTitle</span><span id="price" style="display:none;">@string.Format("{0:C}", pro.First().Price)</span>
+                            <span id="originalPrice_span">
+                                <span id="originalPrice_br" style="display:none;"><br /></span>
+                                <span style="font-size:14px;" id="originalPrice">@string.Format("{0:C}", pro.First().OriginalPrice)</span>
+                            </span>
+                        </p>
+                    }
+                    @if (Model.InadvanceHours != null)
+                    {
+                        <p class="time">需提前<span style="color: #734912"> @Model.InadvanceHours </span>小时预定</p>
+                    }
+
+                    <ul class="clearfix" style="width:275px;">
+                        @foreach (var item in pro)
+                        {
+                            <li class="itemsize size" style="float:left;" data-options="{price:@item.Price,originalprice:@item.OriginalPrice,id:'@item.Id',size:'@item.Size'}" data-target="@item.Id"><span>@item.SizeTitle</span></li>
+                        }
+
+                    </ul>
+                </div>
+                @*适合多少人食用*@
+                @if (fitpeople != null)
+                {
+                    <div id="people" style="margin-top:-18px;">
+                        <ul>
+                            @foreach (var item in fitpeople)
+                            {
+                                <li class="time" data-val="@item.Value">@item.Text</li>
+                            }
+                        </ul>
+                    </div>
+                }
+                <div class="clearfix divnum">
+                    <label class="color1">数量</label>
+                    <div class="clearfix num">
+                        <a class="btn-decrease">-</a>
+                        <input type="text" value="1" name="num" data-target="@Model.Id" />
+                        <a class="btn-increase">+</a>
+                    </div>
+                </div>
+
+                <div class="clearfix btn">
+                    <a class="addcart" onclick="goShopCart();">
+                        <img src="~/Content/images/ShoppingCart1.png" class="addcart_img" /><span class="addcart_text">加入购物车</span>
+                    </a>
+                    <a class="buynow" onclick="goBuy();">
+                        <img src="~/Content/images/Present.png" class="buynow_img" /><span class="addcart_text">立即购买</span>
+                    </a>
+                </div>
+                <div>
+                    <p class="warmTip">@Model.WarmTips</p>
+                </div>
+                <div class="desc clearfix">
+                    <p>@Model.Expatiate</p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="msg clearfix">
+            <div class="content clearfix">
+                @Html.Raw(Model.Desc)
+            </div>
+            @*温馨提示先不要（不要删掉）*@
+            @*<h5 class="highlight" style="margin:30px 0 10px;">温馨提示：</h5>
+                <p class="f0 desc">@Model.WarmTips</p>*@
+        </div>
+
+    </div>
+
+    @Html.Partial("_PartialHotCake")
+
+}
+<script type="text/javascript">
+
+    $(function () {
+        //默认选中第一个
+        $(".itemsize").first().removeClass("size").addClass("size1");
+        setPriceInfo($(".size1"));
+        //适用人数的默认显示
+        var attrs = getAttrsJson($(".size1").attr("data-options"));
+        fitProple(attrs.size);
+        //尺寸项的点击事件
+        $(".itemsize").each(function (i, item) {
+            $(item).click(function () {
+                //取消之前选中的样式
+                $(".itemsize").each(function (i, li) {
+                    $(li).removeClass("size1").addClass("size");
+                });
+                //设置当前选中的样式
+                $(item).removeClass("size").addClass("size1");
+
+                //设置价格信息
+                setPriceInfo($(item));
+                //适用人数的默认显示
+                var attrs = getAttrsJson($(".size1").attr("data-options"));
+                fitProple(attrs.size);
+            })
+        });
+        //控制数量输入框只能输入整形数字
+        $("input[name=num]").keyup(function () {
+            checkInt(this);
+        });
+        //数量减
+        $(".btn-decrease").click(function () {
+            changeNum(this, -1);
+        });
+        //数量加
+        $(".btn-increase").click(function () {
+            changeNum(this, 1);
+        });
+    });
+    //根据选中的磅数显示适合多少人食用
+    function fitProple(size) {
+        $("#people li").each(function (i, item) {
+            if ($(item).attr("data-val") == size) {
+                $(item).show();
+            }
+            else {
+                $(item).hide();
+            }
+        })
+
+    }
+    //获得子产品Id
+    function getSubProductId() {
+        var id = "";
+        $(".itemsize").each(function (i, item) {
+            if ($(item).hasClass("size1")) {
+                id = $(item).attr("data-target");
+            }
+        });
+        return id;
+    }
+    function setPriceInfo($obj) {
+        var attrs = getAttrsJson($obj.attr("data-options"));
+        $("#price").text(attrs.price.formatMoney());
+        $("#originalPrice").text(attrs.originalprice.formatMoney());
+        if (parseFloat(attrs.price) < parseFloat(attrs.originalprice)) {
+            //如果销售价小于定价则更改样式
+            $("#price").css("display", "inline");
+            $("#price_span").css("display", "inline");
+            $("#originalPrice_br").css("display", "inline");
+            $("#originalPrice").css("text-decoration", "line-through");
+            $("#originalPrice").css("font-size", "14px");
+        } else {
+            $("#price").css("display", "none");
+            $("#price_span").css("display", "none");
+            $("#originalPrice_br").css("display", "none");
+            $("#originalPrice").css("text-decoration", "");
+            $("#originalPrice").css("font-size", "1em");
+        }
+    }
+    //获取属性Json对象
+    function getAttrsJson(attrs) {
+        return (new Function("return " + $.trim(attrs)))();
+    }
+
+
+    //立即购买
+    function goBuy() {
+        //获取子产品id
+        var id = getSubProductId();
+        //获取数量
+        var num = $("input[name=num]").val();
+        if (id != "") {
+            //执行添加 子产品ID，数量
+            BuyNow(id, num);
+        }
+    }
+    function goShopCart() {
+        //获取子产品id
+        var id = getSubProductId();
+        var num = $("input[name=num]").val();
+        addCart(id, num, false, "dosuccess()");
+    }
+    function dosuccess() {
+        alert('添加成功！');
+    }
+</script>

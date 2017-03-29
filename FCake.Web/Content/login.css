@@ -1,0 +1,134 @@
+﻿@charset "utf-8";
+/* CSS Document */
+.loginbox {
+    margin: auto;
+    margin-top: 40px;
+}
+
+    .loginbox .title {
+        margin-left: 80px;
+        font-family: "微软雅黑";
+        font-size: 16px;
+        color: #b7834c;
+        background: url("Images/reg/reg_1.png") no-repeat left center;
+        padding-left: 30px;
+        height: 30px;
+        line-height: 30px;
+        display: inline-block;
+        border:0px;
+    }
+
+    .loginbox .remenber {
+        width:100%;
+        height:20px;
+    }
+
+        .loginbox .remenber .check {
+            float: left;
+            border: 1px solid #ccd1d9;
+            width: 18px;
+            height: 18px;
+            color: #999;
+            background-position: 0px 0px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .loginbox .remenber .text {
+            float: left;
+            color: #908f90;
+            font-size: 12px;
+            margin: 20px 0;
+        }
+
+        .loginbox .remenber .forget {
+            color: #629bcb;
+            display: inline-block;
+            float: right;
+        }
+
+            .loginbox .remenber .forget a {
+            float: right;
+                margin-right: 10px;
+                margin-top: 20px;
+                color: #908f90;
+            }
+
+.now_login {
+    background-color: #734912;
+    border: 1px solid #734912;
+    width: 250px;
+    height: 41px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    cursor:pointer;
+}
+
+.yes_line {
+    width: 250px;
+    color: #908f90;
+    font-size: 12px;
+    text-align: center;
+    height: 40px;
+    line-height: 35px;
+}
+
+.yellow_line {
+    border-bottom: 1px solid #dcc6a9;
+    width: 250px;
+    height: 20px;
+}
+
+.now_reg {
+    background-color: #FFF;
+    border: 1px solid #734912;
+    width: 250px;
+    height: 41px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.iog_img {
+    float: left;
+    margin-top: 8px;
+    margin-left: 95px;
+}
+
+.iog_img2 {
+    float: left;
+    margin-top: 8px;
+    margin-left: 80px;
+}
+
+.log_text {
+    /*float:left;*/
+    color: #FFF;
+    font-size: 18px;
+    line-height: 39px;
+    margin-left: 6px;
+    font-family:"微软雅黑";
+}
+
+.now_login a {
+    color: #FFF;
+    display: block;
+}
+
+.now_reg a {
+    display: block;
+}
+
+.log_color {
+    color: #734912;
+    line-height: 40px;
+}
+
+#form1{
+    margin-left:131px;
+    vertical-align:middle;
+}
+.link-text-color a{
+    color:#629bcb;
+}

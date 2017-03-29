@@ -1,0 +1,49 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Bll
+@model List<FCake.Domain.WebModels.CartVM>
+@{
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;//产品为其他类型的数据字典值
+    var cards = new FCake.Bll.CommonService().GetDictionaryByCode("BirthdayCard"); //生日牌默认值
+}
+@foreach (var x in Model)
+{
+    <tr id="subProduct_tr_@x.Id" data-cartid="@x.CartID">
+        <td>
+            <img src="@(Html.GetSysManageUrl()+x.Url)_min.jpg" width="100" height="100" />
+        </td>
+        <td>@x.SizeTitle</td>
+        <td class="g-money">@string.Format("{0:C}", x.Price)</td>
+        <td>
+            <div class="clearfix num">
+                <a href="javascript:;" class="btn-decrease">-</a>
+                <input type="text" value="@x.Num" name="num" data-target="@x.CartID" data-price="@x.Price"
+                       data-allowfavorableprice="@( x.ProductType == otherProductTypeDicValue ? 0 : x.Price)" />
+                <a href="javascript:;" class="btn-increase">+</a>
+            </div>
+        </td>
+        <td>
+            @if (x.ProductType != otherProductTypeDicValue)
+            {
+                <select name="birthdaycard" data-target="@x.CartID">
+                    <option>无</option>
+
+                    @foreach (var option in cards)
+                    {
+                        <option @(x.BirthdayCard == option.Text ? "selected" : "")>@option.Text</option>
+                    }
+                    <option @((x.BirthdayCard != null && x.BirthdayCard != "") && cards.Any(a => a.Text.Equals(x.BirthdayCard)) == false ? "selected" : "")>其它</option>
+
+                </select>
+                <br />
+                <input type="text" maxlength="8" name="birthdaycard" value="@x.BirthdayCard" @((x.BirthdayCard != null && x.BirthdayCard != "") && cards.Any(a => a.Text.Equals(x.BirthdayCard)) == false ? "style=display:inline-block;" : "") />
+            }
+        </td>
+        <td class="allprice g-money" data-subtotal="@(x.Price * x.Num)"
+            data-allowfavorable="@( x.ProductType == otherProductTypeDicValue ? 0 : (x.Price * x.Num) )">
+            @string.Format("{0:C}", x.Price * x.Num)
+        </td>
+        @*<td>
+                <a href="javascript:;" onclick="removeCart('@x.Id',true)">删除</a>
+            </td>*@
+    </tr>
+}

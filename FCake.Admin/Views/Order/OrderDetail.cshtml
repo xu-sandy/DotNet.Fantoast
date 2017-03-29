@@ -1,0 +1,151 @@
+﻿@{
+    ViewBag.Title = "OrderDetail";
+}
+
+<body style="margin:0 0;">
+    <form id="form" class="form" method="post">
+        <div>
+            <div style="border:1px solid #FFFFFF">
+                <table class="form-tb" width="100%" height="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">订单编号：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblOrderFormNo" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">购买人：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblPurchaser" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">收货人：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblConsignee" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">收货地址：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblLiveAddress" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width: 215px" nowrap="nowrap">
+                            <span style="color:Black">联系方式：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblPhone" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">邮编：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblZipCode" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">订单金额：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblProductTotalPrice" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" style="width:215px" nowrap="nowrap">
+                            <span style=" color:Black">下单时间：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblCreatDate" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="lable" nowrap="nowrap" style="line-height:100px;width:215px">
+                            <span style="color:Black">备注：</span>
+                        </td>
+                        <td class="control" nowrap="nowrap">
+                            <asp:Label ID="lblRemark" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="list2">
+                    <span>订单明细</span>
+                </div>
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px">
+                    <tr>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">商品编号</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">商品名称</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">商品图片</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">规格</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">单价</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">购买数量</span>
+                        </td>
+                        <td class="forms6_1" align="left">
+                            <span style="color:Black">金额</span>
+                        </td>
+                    </tr>
+                    <tbody id="tbodyf">
+                        <asp:Repeater runat="server" ID="rptOrderFormDetail">
+                            <itemtemplate>
+                                <tr onmouseover="this.style.background='#F3FBCA'" onmouseout="this.style.background='#ffffff';">
+                                    <td class="forms6_3" align="left">
+                                        <%# Eval("ProductNo")%>
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <%# Eval("ProductName") %>
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <img src='../Upfile/<%# getProductPic(Convert.ToInt64(Eval("ProductID")))  %>' alt="Shoes 1" style="width:100px;" />
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <%#Eval("Spec")%>
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <%# Convert.ToDecimal(Eval("Price")).ToString("00.00")%>
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <%#Eval("Number")%>
+                                    </td>
+                                    <td class="forms6_3" align="left">
+                                        <%# Convert.ToDecimal(Eval("TotalPrice")).ToString("00.00")%>
+                                    </td>
+                                </tr>
+                            </itemtemplate>
+                        </asp:Repeater>
+                    </tbody>
+                </table>
+                <table cellpadding="0" cellspacing="0" width="100%" style="margin-top:10px">
+                    <tr>
+                        <td colspan="8" style=" height:10px;">
+                            <a href="javascript:location.href='OrderForm_Manage.aspx'">返回</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </form>
+</body>

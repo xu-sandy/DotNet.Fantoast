@@ -1,0 +1,36 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@model Menu
+@{
+    ViewBag.Title = "Menu";
+    string id = ViewBag.id as string;
+}
+
+<table id="dg"></table>
+
+<script>
+    var d = [{ t: '全部' }, { t: '查看' }];
+    $(function () {
+        $("#dg").easyui_datagrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<Permission>())',
+            url: '/permission/Menu_GetData/@id',
+            columns_notitle: ['MenuId', 'Id', 'CreatedBy', 'CreatedOn', 'ModifiedBy', 'ModifiedOn', 'IsDeleted'],
+            columns_width: [100, 100,100,300],
+            columns_title: ['权限名称', '权限代码','权限类型', '参数正则'],
+            addDefault: { MenuId: '@id', Name: '' },
+            columns_editor: [
+                '','', {
+                    type: 'combobox',
+                    options: {
+                        valueField: 't',
+                        textField: 't',
+                        data: d,
+                        required: true,
+                        panelHeight: 'auto',
+                        editable: false
+                    }
+                }
+            ]
+        });
+    })
+</script>

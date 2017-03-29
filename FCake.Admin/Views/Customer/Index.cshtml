@@ -1,0 +1,235 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@using FCake.Admin.Models;
+@{
+    ViewBag.Title = "Index";
+}
+@*<style type="text/css">
+    .datagrid-cell{
+        height:33px;
+        line-height:33px;
+    }
+</style>*@
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['customerLevel'] = [];
+    $.post('@Url.Action("GetAllMemberLevelBindCombobox", "MemberLevel")', { isAddAll: false }, function (data) {
+        $.each(data, function (index, item) {
+            window.drpdata['customerLevel'].push({ value: item.MemberLevelValue, text: item.Title })
+        })
+    }, 'json')
+</script>
+<div id="tb">
+    <div>
+        姓名：<input id="customerName" type="text" class="easyui-textbox datacontrol" style="width:140px;height:30px">
+        电话号码：<input id="phone" type="text" class="easyui-textbox datacontrol" style="width:140px;height:30px">
+        用户等级：<input id="memberLevel" style="height:30px" />
+        排序：<input id="orderby" style="height:30px" />
+        <a id="search" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-search">查询</a>
+    </div>
+</div>
+<table id="dg" title="会员管理"></table>
+@*地址扩展表格*@
+<table class="dv-table" border="0" style="width:100%;">
+    <tr>
+        <td class="dv-label">用户的所有地址: </td>
+        <td></td>
+    </tr>
+</table>
+<script>
+    function myformatter(date) {
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        var d = date.getDate();
+        return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+    }
+    function myparser(s) {
+        if (!s) return new Date();
+        var ss = (s.split('-'));
+        var y = parseInt(ss[0], 10);
+        var m = parseInt(ss[1], 10);
+        var d = parseInt(ss[2], 10);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+            return new Date(y, m - 1, d);
+        } else {
+            return new Date();
+        }
+    }
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#tb",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: true,
+            pageSize: 30,
+            fit: true,
+            fitColumns: true, //自适应
+            pagination: true,//开启分页
+            striped: true, //True 奇偶行使用不同背景色
+            url: "@Url.Action("GetUsers", "Customer")" + "?fullName=&phone=&memberLevelVal=-1&orderby=0",
+            onLoadSuccess: function () {
+               // $.parser.parse($('.cus2').parent());
+            },
+            onAfterEdit: function (rowIndex, rowData, changes) {
+                $.ajax({
+                    url: '/common/savedata?type=@(FCake.Core.Common.DataHelper.GetTypeName<FCake.Domain.Entities.Customers>())',
+                    data: rowData,
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (data, status) {
+                        if (data.validate == false) {
+                            $.messager.alert("提示", data.msg, "error", function () {
+                                $('#dg').datagrid('reload');
+                            });
+                            
+                        }
+                        else {
+                            $('#dg').datagrid('reload');
+                        }
+                    }
+                })
+            },
+            view: detailview,//datagrid扩展地址
+            detailFormatter: function (index, row) { return '<div class="ddv" style="padding:5px 0"></div>'; },
+            onExpandRow: function (index, row) {
+                var ddv = $(this).datagrid('getRowDetail', index).find('div.ddv');
+                var url = "/Customer/CustomerAddress?customerAddressId=" + row.Id;
+                ddv.panel({
+                    border: false,
+                    cache: false,
+                    //href: "~/Customer/CustomerAddress?customerId=" + row.Id + "&a=" + Math.random(),
+                    content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;"></iframe>',
+                    onLoad: function () {
+                        $("#dg").datagrid('fixDetailRowHeight', index);
+                    }
+                });
+                $("#dg").datagrid('fixDetailRowHeight', index);
+            },
+            columns: [[
+
+            { title: '主键', field: 'Id', width: 0, hidden: true, },
+            { field: 'Mobile', title: '联系电话', width: 100,align:'center' },
+            { field: 'FullName', title: '真实姓名', width: 80, align: 'center' },
+            {
+                field: 'MemberLevelValue', title: '会员等级', width: 100, align: 'center', formatter: function (value, row, index) {
+                    var resultText = "";
+                    $.each(window.drpdata['customerLevel'], function (index, item) {
+                        if (value == item.value) {
+                            resultText = item.text;
+                            return false;
+                        }
+                    })
+                    return resultText;
+                }
+            },
+            { field: 'TotalActualRMBPay', title: '现金消费', width: 80, align: 'center' },
+            { field: 'Integral', title: '积分', width: 80, align: 'center' },
+            { field: 'GrowthValue', title: '成长值', width: 80, align: 'center' },
+            
+            {
+                field: 'Birthday', title: '生日', width: 100, align: 'center', formatter: function (value, row, index) {
+                    if (row.Birthday != undefined) {
+                        var birdate = new Date(value);
+                        return birdate.toLocaleDateString();
+                    }
+                }
+            },
+            {
+                field: 'CreatedOn', title: '注册时间', width: 100, align: 'center', formatter: function (value, row, index) {
+                    if (row.CreatedOn != undefined) {
+                        var createDate = new Date(value);
+                        return createDate.format("yyyy/MM/dd hh:mm");
+                    }
+                }
+            },
+            {
+                field: 'option', title: '操作', width: 100, align: 'center', formatter: function (value, row, index) {
+                    return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2 linkbtn l-btn l-btn-small\" style='width:80px;' onclick=\"jumpToDetail('" + row.Id + "')\">查看详情</a>";
+                }
+            }
+            ]]
+        })
+    })
+    var index = 0;
+    $(function () {
+        //绑定排序框的值
+        $("#orderby").combobox({
+            valueField: 'value',
+            textField: 'label',
+            editable:false,
+            data: [{
+                label: '注册时间(由早到晚)',
+                value:'1'
+            }, {
+                label: '消费金额(由多到少)',
+                value:'2'
+            }]
+        });
+        //用户等级下拉绑定
+        $("#memberLevel").combobox({
+            url: '@Url.Action("GetAllMemberLevelBindCombobox", "MemberLevel")' + "?isAddAll=true",
+            valueField: 'MemberLevelValue',
+            textField: 'Title',
+            editable:false
+        });
+        $("#memberLevel").combobox("setValue", -1);
+
+
+        //查询事件
+        $("#search").click(function () {
+            //姓名
+            var fullName = $("#customerName").val();
+            //电话
+            var phone = $("#phone").val();
+            //会员等级
+            var memberVal = $("#memberLevel").combobox('getValue');
+            //排序
+            var orderby = $("#orderby").combobox('getValue');
+            if (orderby == "") {
+                orderby = 0;
+            }
+            $("#dg").datagrid({
+                url: "@Url.Action("GetUsers", "Customer")" + "?fullName=" + fullName + "&phone=" + phone + "&memberLevelVal=" + memberVal + "&orderby=" + orderby
+            })
+        })
+    })
+    //window.onload = function () {
+    //    var data;
+    //    data = [];
+    //    for (var i = 5; i <= 80; i++) {
+    //        data.push({ "text": i, "id": i });
+    //    }
+    //    $("#beginage").combobox("loadData", data);
+    //    $("#endage").combobox("loadData", data);
+    //}
+    function jumpToDetail(customerId) {
+        openForm("会员信息", "@Url.Action("CustomerDetails", "Customer")" + "?customerId=" + customerId + "&orderNo=" , "addorder", 950, 600);
+    }
+
+
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                return list[i].text;
+            }
+        }
+        return value;
+    }
+    $('#beginage').numberspinner({
+        min: 0,
+        max: 120
+    });
+    $('#endage').numberspinner({
+        min: 0,
+        max: 120
+    });
+    function openForm(title, url, winId, width, height) {
+        pharos.g.openDialog({
+            title: title,
+            width: width,
+            height: height,
+            id: winId,
+            url: url
+        });
+    }
+</script>

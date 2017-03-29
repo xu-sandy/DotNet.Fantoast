@@ -1,0 +1,135 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "BatchDetail";
+}
+<table id="dg"></table>
+<div id="toolbar">
+    <a id="add" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-add">增加订单</a>
+    <a id="cute" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-cut">移除订单</a>
+</div>
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['ordersStatus'] = [];
+    window.drpdata['times'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderBatchMakeStatus>(false))
+    {
+        @:window.drpdata['ordersStatus'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+    @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("DistributionTime", false))
+    {
+        @:window.drpdata['times'].push({ value: '@item.Value', text: '@item.Text' });;
+        }
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toolbar",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            singleSelect: false,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            url: "@Url.Action("GetKitchenMakeByOrderBatch", "OrderBatch")" + "?batch=" + pharos.g.getUrlParam("batch"),
+            columns: [[
+                { field: 'ck', checkbox: 'true' },
+            { title: '主键', field: 'Id', width: 0, hidden: true, },
+            { field: 'OrderNo', title: '订单号', width: 80 },
+            {
+                field: 'RequiredTime', title: '要求送达时间', width: 100, formatter: function (value, row, index) {
+                    return value.split(' ')[0] + " " + formatColumn(value.split(' ')[1].substring(0, 5), window.drpdata['times'])
+                }
+            },
+            { field: 'Status', title: '订单状态', width: 100, formatter: function (value, row, index) { return formatColumn(value, window.drpdata['ordersStatus']); } },
+            { field: 'Customer', title: '会员编号', width: 100 }
+            ]]
+        })
+    })
+    //formatter状态
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    $(function () {
+        //移除批次中的订单
+        $("#cute").click(function () {
+            if ($(this).hasClass("l-btn-disabled"))
+                return;
+            var rows = $('#dg').datagrid("getSelections");
+            if (rows == "") {
+                alert("请先选择要移除的数据");
+                return false;
+            }
+            //一次操作最多移除10个订单
+            if (rows.length > 10) {
+                alert("一次操作最多移除10个订单，请重新选择！");
+                return false;
+            }
+
+            $.messager.defaults = { ok: "确认", cancel: "取消" };
+            $.messager.confirm("系统提示", "确认移除订单", function (r) {
+                if (r) {
+                    var orderNos = [];
+                    $.each(rows, function (index, value) {
+                        orderNos.push(value.OrderNo);
+                    });
+
+                    $.ajax({
+                        url: '/OrderBatch/DeleteOrderInBatch',
+                        type: 'post',
+                        dataType: 'json',
+                        data: { orderNos: orderNos, batchNo: pharos.g.getUrlParam("batch") },
+                        success: function (result) {
+                            if (result.successed) {
+                                alert(result.message);
+                                $("#dg").datagrid('reload');
+                                //刷新外面嵌套的网格
+                                window.top.$("body").data("batchWin").reloadGrid();
+                            } else {
+                                alert(result.message);
+                            }
+                        }
+                    })
+                }
+            });
+
+        })
+        //增加订单
+        $("#add").click(function () {
+            if ($(this).hasClass("l-btn-disabled"))
+                return;
+            window.top.$("body").data("windows", window);
+            openDialog("往批次里添加订单", "OrderBatch/AddOrderInBatch?batch=" + escape(unescape(pharos.g.getUrlParam("batch"))));
+        })
+
+    })
+    //打开添加或者编辑页
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 800,
+            height: 600,
+            id: "add",
+            url: url,
+            onClose: function () {
+                reloadWindow();
+            }
+        });
+    }
+    function reloadWindow() {
+        $("#dg").datagrid('reload');
+    }
+
+    $(function () {
+        var makestate = pharos.g.getUrlParam("state");
+        if (makestate == 2) {
+            $("#add").linkbutton('disable');//cute
+            $("#cute").linkbutton('disable');
+        }
+    })
+</script>

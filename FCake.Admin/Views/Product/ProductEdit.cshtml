@@ -1,0 +1,544 @@
+﻿@model FCake.Admin.Models.ProductEditVM
+@using FCake.Bll;
+@{
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+    ViewBag.Title = "ProductEdit";
+    FCake.Domain.EFDbContext context = new FCake.Domain.EFDbContext();
+    var baseFiles = ViewBag.ProductImgs as List<FCake.Domain.Entities.BaseFile>;
+    var otherProductTypeDicValue = CommonRules.OtherProductTypeDicValue;
+}
+
+<style type="text/css">
+    #imgs img { max-height: 100px; }
+
+    #imgs div { width: 100px; height: 100px; line-height: 100px; text-align: center; vertical-align: middle; margin: 0 10px 10px 0; float: left; }
+    #imgs img.active { max-height: 96px; border: 2px solid red; }
+
+    /*显隐推荐输入框*/
+    [type=checkbox] + * { display: none; }
+
+    [type=checkbox]:checked + * { display: inline-block; }
+</style>
+<script>
+    var otherProductTypeDicValue = '@otherProductTypeDicValue';
+
+    window.drpdata = window.drpdata || {};
+    window.drpdata['category'] = [];
+    window.drpdata['themes'] = [];
+    window.drpdata['productUnit'] = [];
+    window.drpdata['productUnitCake'] = [];
+    window.drpdata['productUnitOther'] = [];
+
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Themes", false))
+    {
+        @:window.drpdata['themes'].push({ value: '@item.Value', text: '@item.Text' });
+                                            }
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", false))
+    {
+        @:window.drpdata['category'].push({ value: '@item.Value', text: '@item.Text' });
+                                                    }
+        @foreach (var item in DropDownHelper.GetDictionaryByCode("ProductUnitCake", false))
+    {
+        @:window.drpdata['productUnitCake'].push({ value: '@item.Value', text: '@item.Text' });
+        }    
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("ProductUnitOther", false))
+            {
+                @:window.drpdata['productUnitOther'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+    @if (Model.Product.Type == otherProductTypeDicValue)
+    {
+        @:window.drpdata['productUnit'] = window.drpdata['productUnitOther'];
+    }
+    else
+    {
+        @:window.drpdata['productUnit'] = window.drpdata['productUnitCake'];
+    }
+</script>
+<form id="form" class="form" method="post" style="padding:20px 20px;">
+    <table class="form-tb">
+        <tr>
+            <td class="lable" style="width:80px;">
+                <label for="Name" class="datalable">名称</label>
+            </td>
+            <td class="control">
+                <input id="Name" name="Name" class="datacontrol" />
+            </td>
+            <td class="lable">
+                <label for="EnglishName" class="datalable">英文名</label>
+            </td>
+            <td class="control">
+                <input id="EnglishName" name="EnglishName" class="datacontrol" />
+            </td>
+
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Type" class="datalable">品种</label>
+            </td>
+            <td class="control">
+                <input id="Type" class="easyui-combobox datacontrol"
+                       data-options="required:true,valueField:'value',textField:'text',multiple:true,value:'@Model.Product.Type',height:24,data:window.drpdata['category'],panelHeight:'auto', editable: false,onSelect:productTypeSelect, onChange:productTypeChange" />
+            </td>
+            <td class="lable">
+                <label for="SaleOn" class="datalable">上架时间</label>
+            </td>
+            <td class="control">
+                <input id="SaleOn" name="SaleOn" class="Wdate datacontrol" style="width:180px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" />
+            </td>
+        </tr>
+        <tr id="shortcutButton_tr" style="display:none;">
+            <td class="lable">
+                <label for="IsShortcutButton" class="datalable">快捷按钮</label>
+            </td>
+            <td class="control">
+                <input type="checkbox" id="IsShortcutButton" name="IsShortcutButton" style="width:16px;" />(勾选将出现在订单明细页面中,可快速添加)
+            </td>
+            <td class="lable">
+                <label for="ShortcutButtonTitle" class="datalable">快捷按钮名称</label>
+            </td>
+            <td class="control">
+                <input id="ShortcutButtonTitle" name="ShortcutButtonTitle" class="datacontrol" />
+            </td>
+        </tr>
+        <tr class="cakeProperties_tr">
+            <td class="lable">
+                <label for="Taste" class="datalable">口味</label>
+            </td>
+            <td class="control">
+                <input id="Taste" name="Taste" class="datacontrol" />
+            </td>
+            <td class="lable">
+                <label for="IsRecommend" class="datalable">是否推荐</label>
+            </td>
+            <td class="control">
+                <input type="checkbox" id="IsRecommend" name="IsRecommend" style="width:16px;" />
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="SaleOff" class="datalable">下架时间</label>
+            </td>
+            <td class="control">
+                <input id="SaleOff" name="SaleOff" class="Wdate datacontrol" style="width: 180px; " onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" />
+            </td>
+            <td class="lable cakeProperties_td">
+                <label for="Material" class="datalable">主要原料</label>
+            </td>
+            <td class="control cakeProperties_td">
+                <input id="Material" name="Material" class="datacontrol" />
+            </td>
+        </tr>
+        <tr class="cakeProperties_tr">
+            <td class="lable">
+                <label for="SortNo" class="datalable">排序号</label>
+            </td>
+            <td class="control">
+                <input type="text" id="SortNo" name="SortNo" class="easyui-numberbox" style="width:50px" value="" />(排序号用于前台列表的排序，数字越大越前面)
+            </td>
+            <td class="lable">
+                <label for="InadvanceHours" class="datalable">需提前</label>
+            </td>
+            <td>
+                <input type="text" id="InadvanceHours" name="InadvanceHours" class="easyui-numberbox" value="" style="width:50px" data-options="min:0" /> &nbsp;小时预定<br/>（若不设定则按系统默认配置计算）
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="WarmTips" class="datalable">温馨提示</label>
+            </td>
+            <td class="control" colspan="3">
+                <input id="WarmTips" name="WarmTips" class="datacontrol" value="@Model.Product.WarmTips" />
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Brief" class="datalable">产品简述</label>
+            </td>
+            <td class="control" colspan="3">
+                <textarea id="Brief" name="Brief" class="datacontrol" style="height:40px; width:100%" placeholder="对应列表的描述">@Model.Product.Brief</textarea>
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Expatiate" class="datalable">产品详述</label>
+            </td>
+            <td class="control" colspan="3">
+                <textarea id="Expatiate" name="Expatiate" class="datacontrol" style="height:40px; width:100%" placeholder="对应产品详情页的描述">@Model.Product.Expatiate</textarea>
+            </td>
+        </tr>
+
+        <tr>
+            <td class="lable">
+                <label for="" class="datalable">电脑端产品描述</label>
+            </td>
+            <td class="control" colspan="3">
+                @Html.Partial("_P_ProductEdit_Desc")
+                <div id="editor1">
+                    <textarea id="Desc" cols="100" rows="8" style="width:700px;height:600px;visibility:hidden;">
+                        @Model.Product.Desc
+                    </textarea>
+                    <br />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="" class="datalable">手机端产品描述</label>
+            </td>
+            <td class="control" colspan="3">
+                @*@Html.Partial("_P_ProductEdit_Desc")*@
+                <div id="editor2">
+                    <textarea id="MobileDesc" cols="100" rows="8" style="width:700px;height:600px;visibility:hidden;">
+                        @Model.Product.MobileDesc
+                    </textarea>
+                    <br />
+                </div>
+
+            </td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Brief" class="datalable">价格设置</label>
+            </td>
+            <td>
+                <table id="subproduct" style="width:500px;"></table>
+                <input type="hidden" name="subproduct" />
+                <script>
+                    $(function () {
+                        initSubproductDataGrid();
+                    })
+                </script>
+            </td>
+        </tr>
+    </table>
+    <input id="Id" name="Id" type="hidden" />
+    <input type="hidden" id="MainImgId" name="MainImgId" value="@Model.Product.MainImgId" />
+</form>
+@{
+    if (baseFiles == null)
+    {
+        @Html.Partial("_Upload", new { ProductId = Model.Product.Id, BaseFiles = new List<FCake.Domain.Entities.BaseFile>() })
+    }
+    else
+    {
+        @Html.Partial("_Upload", new { ProductId = Model.Product.Id, BaseFiles = baseFiles })
+    }
+}
+
+<div style="width:99%; text-align:center;">
+    <a id="savebtn" href="javascript:void(0)" class="easyui-linkbutton cus4 linkbtn" style="margin:0 auto; padding-left:40px;padding-right:40px;">保存产品</a>
+</div>
+
+@*<div id="menu_img" class="easyui-menu" style="width:120px">
+        <div>设置主图</div>
+        <div>删除图片</div>
+    </div>
+    <script>
+        $(function () {
+            var $t;
+            $("#imgs").delegate("img", "contextmenu", function (e) {
+                e.preventDefault();
+                $t = $(this);
+                $('#menu_img').menu('show', {
+                    left: e.pageX,
+                    top: e.pageY
+                });
+            });
+
+            $("#menu_img").menu({
+                onClick: function (item) {
+                    if (item.text == "设置主图") {
+                        $("#imgs img").removeClass("active");
+                        $t.addClass("active");
+                    }
+                    if (item.text == "删除图片") {
+                        $.messager.confirm('确认', '您确认想要删除图片吗？', function (r) {
+                            if (r) {
+                                $.post("/product/deleteimg/" + $t.attr("data-id"));
+                                $t.remove();
+                            }
+                        });
+                    }
+                }
+            });
+        })
+    </script>*@
+
+@section scripts{
+    <script src="~/Scripts/easyui-ex.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#Id").val("@Model.Product.Id");
+            $("#Name").val("@Model.Product.Name");
+            $("#EnglishName").val("@Model.Product.EnglishName");
+            $("#Taste").val("@Model.Product.Taste");
+            if ("@Model.Product.IsRecommend" == 1) {
+                $("#IsRecommend").attr("checked", "checked");
+            }
+            if ("@Model.Product.IsShortcutButton" == 1) {
+                $("#IsShortcutButton").attr("checked", "checked");
+            }
+            $("#IsRecommend").val("@Model.Product.IsRecommend");
+            $("#IsShortcutButton").val('@Model.Product.IsShortcutButton');
+            $("#ShortcutButtonTitle").val('@Model.Product.ShortcutButtonTitle');
+            $("#Brief").val(decodeURIComponent("@Server.UrlEncode(Model.Product.Brief)"));
+            $("#SaleOn").val("@Model.Product.SaleOn");
+            $("#SaleOff").val("@Model.Product.SaleOff");
+            $("#InadvanceHours").numberbox('setValue', "@Model.Product.InadvanceHours");
+            $("#Material").val("@Model.Product.Material");
+            $("#SortNo").numberbox('setValue', "@Model.Product.SortNo");
+
+            if ($("#Name").val() == "") {
+                $("#SaleOn").val(new Date().format("yyyy-MM-dd hh:mm:ss"));
+            }
+
+            //checkbox状态设值
+            $("#IsRecommend").change(function () {
+                this.value = (Number(this.checked));
+            });
+            $("#IsShortcutButton").change(function () {
+                this.value = (Number(this.checked));
+            });
+
+
+            setTimeout(function () {
+                var themes = "@Model.Product.Themes";
+                if (!String.isNE(themes)) {
+                    $("#Themes").combobox("setValues", themes.split(","));
+                }
+            }, 10);
+            setTimeout(function () {
+                var type = "@Model.Product.Type";
+                if (!String.isNE(type)) {
+                    $("#Type").combobox("setValues", type.split(","));
+                }
+            }, 10);
+        });
+        $(function () {
+            //保存数据
+            $("#savebtn").click(function () {
+                $("#form").submit();
+            });
+
+            //保存数据
+            $("#form").submit(function (e) {
+                e.preventDefault();
+
+                var errorMsg = "";
+                var rows = $("#subproduct").datagrid("getRows");
+                $.each(rows, function (index, value) {
+                    $("#subproduct").datagrid("endEdit", index);
+                })
+                if ($("#Type").combobox("getValues") == "" || $("#Type").combobox("getValues") == undefined) {
+                    alert("请选择品种")
+                    return false;
+                }
+                if (!$(this).valid()) {
+                    alert("填写有误，请修改后重试");
+                    return false;
+                }
+                var url = "@Url.Action("SaveProduct")" + "?a=" + Math.random();
+
+                //处理价格设置
+                var alldata = $("#subproduct").datagrid("getRows");
+                var d = "";
+                $.each(alldata, function (index, value) {
+                    value.OriginalPrice = value.Price;//废弃的OriginalPrice字段值，存储时存与Price相同的值
+                    var curPrice = parseFloat(value.Price == undefined ? "0" : value.Price);
+                    var curOriginalPrice = parseFloat(value.OriginalPrice == undefined ? "0" : value.OriginalPrice);
+                    if (curPrice <= 0 || curOriginalPrice <= 0) {
+                        errorMsg = "定价与销售价不能小于0";
+                    }
+                    if (curPrice > curOriginalPrice) {
+                        errorMsg = "销售价不能大于定价";
+                    }
+
+                    var t = encodeURIComponent(value.Id == undefined ? "" : value.Id) + ","
+                        + encodeURIComponent(value.Size == undefined ? "" : value.Size) + ","
+                        + encodeURIComponent(value.Price == undefined ? "0" : value.Price) + ","
+                    + encodeURIComponent(value.OriginalPrice == undefined ? "0" : value.OriginalPrice) + ','
+                    + (value.Status == undefined ? '' : value.Status);
+
+                    if (d == "")
+                        d = t;
+                    else
+                        d += "|" + t;
+                });
+                if (errorMsg != "") {
+                    alert(errorMsg);
+                    return false;
+                }
+                $("input[name=subproduct]").val(d);
+
+                //var mainid = $("#imgs img.active").length > 0 ? $("#imgs img.active").attr("data-id") : "";
+                //if (mainid == "")
+                //    mainid = $("#imgs img").length > 0 ? $("#imgs img").eq(0).attr("data-id") : "";
+                var mainid = $("#img_0").attr("data-id");
+                if (String.isNE(mainid)) {
+                    alert("请先上传产品图片");
+                    return false;
+                }
+                $("input[name=MainImgId]").val(mainid);
+                editor.sync();
+                editor2.sync();
+                var dataStr = $("#form").serialize() + "&Type=" + encodeURIComponent($("#Type").combobox("getValues").join(","));
+                dataStr += "&Desc=" + encodeURIComponent($("#Desc").val());
+                dataStr += "&MobileDesc=" + encodeURIComponent($("#MobileDesc").val());
+                $.post(url, dataStr, function (result) {
+                    alert(result.message);
+                    window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                    window.top.$("body").data("win_add").window("close");
+                }, "json");
+            });
+
+            //验证
+            $("#form").validate({
+                rules: {
+                    Name: { required: true }
+                }
+            });
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        //品种选择事件
+        function productTypeSelect() {
+            var typeValueArr = $("#Type").combobox('getValues');
+            $.each(typeValueArr, function (index, typeValue) {
+                if (typeValue == otherProductTypeDicValue) {
+                    if (index == 0 && typeValueArr.length > 1 && typeValueArr[1] != otherProductTypeDicValue) {//如果上一次选择了其他类型，这次选择了蛋糕，则清除其他
+                        $("#Type").combobox('setValue', typeValueArr[1]);
+                    } else {
+                        $("#Type").combobox('hidePanel');
+                        $("#Type").combobox('setValue', otherProductTypeDicValue);
+
+                    }
+                }
+            })
+        }
+
+
+        //品种改变事件
+        function productTypeChange() {
+            var typeValueArr = $("#Type").combobox('getValues');
+            $("#shortcutButton_tr").css('display', 'none');
+            $(".cakeProperties_tr").css('display', '');
+            $(".cakeProperties_td").css('display', '');
+            if (typeValueArr[0] != undefined && typeValueArr[0] == otherProductTypeDicValue) {
+                //品种为其他
+                $("#shortcutButton_tr").css('display', '');
+                $(".cakeProperties_tr").css('display', 'none');
+                $(".cakeProperties_td").css('display', 'none');
+                $(".cakeProperties_tr input").val('');
+                $(".cakeProperties_td input").val('');
+
+                $("#IsRecommend")[0].checked = false;
+                $("#IsRecommend").val(0);
+                window.drpdata['productUnit'] = window.drpdata['productUnitOther'];
+                initSubproductDataGrid();
+                
+            
+            } else {
+                $("#IsShortcutButton")[0].checked = false;
+                $("#IsShortcutButton").val(0);
+                window.drpdata['productUnit'] = window.drpdata['productUnitCake'];
+                initSubproductDataGrid();
+            }
+        }
+
+
+        function initByProductType() {
+            var typeValueArr = $("#Type").combobox('getValues');
+            $("#shortcutButton_tr").css('display', 'none');
+            $(".cakeProperties_tr").css('display', '');
+            $(".cakeProperties_td").css('display', '');
+            if (typeValueArr[0] != undefined && typeValueArr[0] == otherProductTypeDicValue) {
+                //品种为其他
+                $("#shortcutButton_tr").css('display', '');
+                $(".cakeProperties_tr").css('display', 'none');
+                $(".cakeProperties_td").css('display', 'none');
+                window.drpdata['productUnit'] = window.drpdata['productUnitOther'];
+
+            } else {
+                window.drpdata['productUnit'] = window.drpdata['productUnitCake'];
+            }
+        }
+        $(function () {
+            initByProductType();
+
+        })
+    </script>
+
+
+    <script type="text/javascript">
+        function initSubproductDataGrid() {
+            var status = [];
+            @foreach (var x in FCake.Core.Common.EnumHelper.GetList<FCake.Domain.Enums.ActiveStatus>())
+            {
+                @:status.push({ value: '@x.Value', text: '@x.Text' });
+            }
+            $("#subproduct").easyui_datagrid({
+                type: '@(FCake.Core.Common.DataHelper.GetTypeName<FCake.Domain.Entities.SubProduct>())',
+                title: '',
+                url: '/product/getsubproduct/@Model.Product.Id',
+                fit: false,
+                pagination: false,
+                feedback: false,
+                onLoadSuccess:subproductDataGridLoadSuccess,
+                columns_notitle: [],
+                toolbar: ['add', 'edit', 'del1', 'save'],
+                columns_show: ['Size', 'OriginalPrice', 'Price', 'Status'],
+                columns_title: ['产品单位', '定价(原定价隐藏)', '定价', '状态'],
+                columns_width: [120, 120, 120, 60],
+                columns_editor: [{
+                    type: 'combobox',
+                    options: {
+                        required: true,
+                        data: window.drpdata['productUnit'],
+                        valueField: "value",
+                        textField: "text",
+                        panelHeight: 'auto'
+                    }
+                }, {
+                    hidden: true,
+                    options: {
+                        min: 0,
+                        
+                    }
+                }, {
+                    type: 'numberbox',
+                    options: {
+                        min: 0,
+                        required: true
+                    }
+                }, {
+                    type: 'combobox',
+                    options: {
+                        required: true,
+                        data: status,
+                        valueField: "value",
+                        textField: "text",
+                        panelHeight: 'auto'
+                    }
+                }],
+                columns_formatter: [function (value, row, index) {
+                    return pharos.json.getArrayValue(window.drpdata['productUnit'], 'value', value, 'text', value);
+                },
+                '', '',
+                function (value, row, index) {
+                    return pharos.json.getArrayValue(status, 'value', value, 'text', value);
+                }],
+                addDefault: { ParentId: '@(Model.Product.Id)' }
+            });
+
+
+            $(".datagrid .datagrid-toolbar table tr td a").addClass('cus1 _linkbtn');
+        }
+
+        function subproductDataGridLoadSuccess() {
+            $("#subproduct").datagrid("hideColumn", "OriginalPrice");
+        }
+
+    </script>
+}

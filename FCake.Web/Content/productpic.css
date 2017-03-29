@@ -1,0 +1,63 @@
+body,p,ul,li{
+	font-size:12px;padding:0;margin:0 auto;
+}
+a{text-decoration: none;}
+li{list-style:none;}
+#ifocus{
+	border:#D7D7D7 solid 1px;
+	height:418px;
+	width:418px;
+	overflow:hidden;
+	margin:10px auto
+}
+/**/
+#ifocus_pic{
+	overflow:hidden;
+	width:420px;
+	height:350px;
+	margin:5px auto 0 auto;	
+	position:relative;
+}
+/**/
+#ifocus_piclist{
+	position:absolute;
+	left:0;
+	top:0;
+}
+/**/
+#ifocus_piclist li{
+	width:420px;
+	height:350px;
+	overflow:hidden;
+}
+/**/
+#ifocus_piclist li a{
+	display:block;
+	height:350px;
+	overflow:hidden;
+}
+#ifocus_btn{
+	margin:0 auto;
+	height:66px;
+	overflow:hidden;
+}
+/**/
+#ifocus_btn li {
+	FILTER: alpha(opacity=80);
+	 WIDTH: 62px;
+	 HEIGHT: 60px;
+	 CURSOR: pointer;  
+	 opacity: 0.5;
+	  moz-opacity: 0.5;
+	  float:left;
+	  text-align:center;
+	  padding-top:3px;
+	  background:url(../images/outbg.gif) center top no-repeat; 
+}
+/**/
+#ifocus_btn .current {
+	background:url(../images/overbg.gif) center top no-repeat; 
+	FILTER: alpha(opacity=100); 
+	opacity: 1; 
+	moz-opacity: 1
+}

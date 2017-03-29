@@ -1,0 +1,85 @@
+﻿@using FCake.Core.Common;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "数据字典";
+}
+<div id="toolbar" class="dc-toolbar">
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" onclick="AddItem()">添加</a>
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-edit'" onclick="EditItem()">编辑</a>
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-remove'" onclick="DeleteItem()">删除</a>
+    &nbsp;名称&nbsp;<input id="dictionaryName" name="Name" class="datacontrol" style="width:120px">
+    &nbsp;编码&nbsp;<input id="dictionaryCode" name="Code" class="datacontrol" style="width:120px">
+    @*<a id="search" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-search">Search</a>*@
+    <a href="#" id="search" class="easyui-linkbutton" data-options="iconCls:'icon-search'">Search</a>
+</div>
+<table id="dg"></table>
+<script>
+    $(function () {
+        window.top.$("body").data("openWindow", window);
+        $("#dg").datagrid({
+            toolbar: '#toolbar',
+            title: '',
+            url: '/common/getdata?type=@(DataHelper.GetTypeName<DictionaryType>())',
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            pagination: true, //是否开启分页
+            pageSize: 30,
+            fitColumns: false, //栏框自适应
+            fit: true, //高度自适应
+            striped: true, //True 奇偶行使用不同背景色
+            columns: [[
+                { field: 'Id', title: '主键', hidden: true },
+                { field: 'Name', title: '字典名称', editor: { type: 'text', required: true }, width: 200 },
+                { field: 'Code', title: '字典编码', editor: { type: 'text' }, width: 200 }
+            ]]
+
+        });
+        //查询方法
+        $("#search").click(function () {
+            var url = "/Setting/QueryDictionary?_method=search&" + $("#toolbar").serialize() + "&a=" + Math.random();
+            pharos.gridHelper.refresh("dg", url);
+        });       
+
+    });
+    //添加
+    function AddItem() {
+        openDialog("添加", "Setting/DictionaryEdit?id=&a=" + Math.random());
+    }
+    function DeleteItem() {
+        var row = getSelectedRow();
+        if (row) {
+            CommonGridDeleteSelectd($('#dg'), '/common/deletedata?type=@(DataHelper.GetTypeName<DictionaryType>())', "确定删除?", { Id: row.Id });
+        }
+    }
+    //编辑
+    function EditItem() {
+        var row = getSelectedRow();
+        if (row) {
+            openDialog("编辑", "Setting/DictionaryEdit?id=" + row.Id + "&a=" + Math.random());
+        }
+    }
+    function ReloadGrid() {
+        $('#dg').datagrid('reload');
+    }
+    //打开添加或者编辑页
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 400,
+            height: 300,
+            id: "add",
+            url: url
+        });
+    }
+    function getSelectedRow() {
+        var row = $("#dg").datagrid("getSelected");
+        if (row) {
+            return row;
+        }
+        else {
+            $.messager.alert('提示', '请先选中要操作的行');
+            return null;
+        }
+    }
+</script>

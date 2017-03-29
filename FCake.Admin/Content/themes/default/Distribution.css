@@ -1,0 +1,23 @@
+﻿body {
+}
+
+.orderDetail {
+    font-size: 12px;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+}
+
+    .orderDetail td, .orderDetail th {
+        padding: 3px;
+    }
+
+        .orderDetail td.r {
+            text-align: right;
+        }
+
+    .orderDetail table {
+        margin-top: 10px;
+    }
+
+    .orderDetail thead tr {
+        border-bottom: solid 1px gray;
+    }

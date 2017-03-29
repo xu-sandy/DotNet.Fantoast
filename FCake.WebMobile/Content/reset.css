@@ -1,0 +1,40 @@
+﻿/*字体*/
+* { font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif; }
+
+/*清除焦点虚线*/
+* { padding: 0; margin: 0; outline: 0; }
+
+/*清除标记*/
+ul, li { list-style: none; }
+a, a:link { text-decoration: none; }
+
+/*清除边框*/
+img { border: 0; }
+
+/*清除浮动*/
+.clearfix:after { visibility: hidden; display: block; font-size: 0; content: " "; clear: both; height: 0; }
+.clearfix { display: inline-table; }
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;margin-left:5px;}
+.clearfix { display: block;  }
+/* End hide from IE-mac */
+
+/*隐藏*/
+.hide { display: none; }
+/*左浮动*/
+.fl-l{float:left;}
+/*右浮动*/
+.fl-r{float:right;}
+/*垂直剧中*/
+.vl-m{vertical-align: middle;}
+/*手形*/
+.pointer{cursor: pointer;}
+.tl-c{text-align:center;}
+.tl-r{text-align:right;}
+.tl-l{text-align:left;}
+
+.space10{margin-left: 10px;}
+.space20{margin-left: 20px;}
+
+/*去除IE6BUG*/
+body{*position:relative;}

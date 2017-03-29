@@ -1,0 +1,164 @@
+﻿@using FCake.Core.Common;
+<h1>订单历史</h1>
+
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['feetype'] = [];
+    window.drpdata['orderstatus'] = [];
+    window.drpdata['tradestatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.FeeType>(true))
+    {
+        @:window.drpdata['feetype'].push({ value: '@item.Value', text: '@item.Text' });
+                        }
+
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderStatus>(true))
+    {
+        @:window.drpdata['orderstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                        }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.TradeStatus>(true))
+    {
+        @:window.drpdata['tradestatus'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+</script>
+
+<table id="dgHistory"></table>
+
+<script type="text/javascript">
+    function formatData(value) {
+        if (!String.isNE(value)) {
+            //value = value.replace('-', '/');
+            value = value.toString().replace(/-/g, "/");
+            var newData = new Date(value);
+            return newData.format('yyyy-MM-dd hh:mm:ss');
+        }
+    }
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    $(function () {
+
+        $("#dgHistory").datagrid({
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            pageSize: 30,
+            height:300,
+            fitColumns: true, //自适应
+            autoRowHeight: true,
+            url: "@Url.Action("GetShoppingHistory", "Order")" + "?customerId=" + pharos.g.getUrlParam("customerId"),
+            columns: [[
+                { field: 'Id', title: '主键', width: 0, hidden: true },
+                { field: 'No', title: '订单号', width: 100 },
+                { field: 'Receiver', title: '收货人', width: 50 },
+                {
+                    field: 'CreatedOn', title: '下单时间', width: 100, formatter: function (value, rows, index) {
+                        return formatData(value);
+                    }
+                },
+                {
+                    field: 'FeeType', title: '支付类型', width: 50, formatter: function (value, row, index) {
+                        return formatColumn(value, window.drpdata['feetype']);
+                    }
+                },
+                {
+                    field: 'Status', title: '订单状态', width: 50, formatter: function (value, row, index) {
+                        return formatColumn(value, window.drpdata['orderstatus']);
+                    }
+                },
+                {
+                    field: 'TradeStatus', title: '支付状态', width: 50, formatter: function (value, row, index) {
+                        return formatColumn(value, window.drpdata['tradestatus']);
+                    }
+                },
+                { field: 'OpState', title: '操作', width: 190, formatter: opFormat },
+            ]],
+            view: detailview,
+            detailFormatter: function (rowIndex, rowData) {
+                return '<div class="ddv"></div>';
+            },
+            onExpandRow: function (rowIndex, rowData) {
+                $("#dgHistory").datagrid("collapseRow");
+
+                var ddv = $(this).datagrid('getRowDetail', rowIndex).find('div.ddv');
+                ddv.datagrid({
+                    url: '@Url.Action("GetOrderDetails", "Order")' + '?orderNo=' + rowData.No,
+                    fitColumns: true,
+                    singleSelect: true,
+                    rownumbers: true,
+                    loadMsg: '',
+                    //height: 'auto',
+                    columns: [[
+                        { field: 'Name', title: '产品名称', width: 200 },
+                        { field: 'Size', title: '规格', width: 100 },
+                        { field: 'Price', title: '单价', width: 100 },
+                        { field: 'Num', title: '数量', width: 100 },
+                        { field: 'TotalPrice', title: '总价', width: 100 }
+                    ]],
+                    onResize: function () {
+                        $('#dgHistory').datagrid('fixDetailRowHeight', rowIndex);
+                    },
+                    onLoadSuccess: function () {
+                        setTimeout(function () {
+                            $('#dgHistory').datagrid('fixDetailRowHeight', rowIndex);
+                        }, 0);
+                    }
+                });
+                $('#dgHistory').datagrid('fixDetailRowHeight', rowIndex);
+            },
+            onLoadSuccess: function () {
+                $.parser.parse($('.cus1').parent());
+            }
+        })
+    })
+
+    function opFormat(value, row) {
+        var html = "";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus1 linkbtn\" data-options=\"iconCls:'icon-search'\" onclick=\"viewOrder('" + row.No + "')\" >详情</a>";
+        if (row.Status < 2 && row.Status >= 0) {
+            html += "&nbsp;<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus1 linkbtn\" data-options=\"iconCls:'icon-edit'\" onclick=\"editOrder('" + row.No + "')\" >修改</a>";
+        }
+        if (row.Status < 2 && row.Status != 99) {
+            html += "&nbsp;<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus1 linkbtn\" data-options=\"iconCls:'icon-cancel'\" onclick=\"CancelOrder('" + row.No + "')\" >取消</a>";
+        }
+        return html;
+    }
+
+    function editOrder(rowNo) {
+        var row = $("#dgHistory").datagrid("getSelected");
+        openForm("修改订单", "@Url.Action("AddOrder","Order")" + "?orderId=" + rowNo + "&a=" + Math.random(), "addorder", 900, 600);
+    }
+
+    function viewOrder(rowNo) {
+        openForm("查看订单详情", "@Url.Action("_PartialOrderDetail", "Order")" + "?orderid=" + rowNo + "&a=" + Math.random(), "viewOrderDetail", 900, 600);
+    }
+    function CancelOrder(No) {
+        if (confirm("确定取消订单吗？")) {
+            $.ajax({
+                url: '/Order/CancelOrder',
+                type: 'POST',
+                data: { orderNo: No },
+                dataType: 'Json',
+                error: function () {
+                    $.messager.alert("提示", '提交数据时发生错误！', "error");
+                },
+                success: function (data) {
+                    if (data.successed) {
+                        $.messager.alert("提示", '订单取消成功！', "info", function () {
+                            location.reload();
+                        });
+                    }
+                    else {
+                        $.messager.alert("提示", data.Message, "error");
+                    }
+                }
+            });
+        }
+    }
+</script>

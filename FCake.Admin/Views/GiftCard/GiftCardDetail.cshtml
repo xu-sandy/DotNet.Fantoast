@@ -1,0 +1,177 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "CouponInfo";
+}
+
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['status'] = [];
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.GiftCardUseStatus>(false))
+    {
+        @:window.drpdata['status'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+</script>
+<style>
+    #toobal {
+        padding: 10px;
+    }
+</style>
+<div id="toobal">
+    <label>批次号</label><input id="giftbatch" name="giftbatch" class="datacontrol" style="width:100px" />
+    <label>代金卡卡号</label><input id="giftCardNo" name="giftCardNo" class="datacontrol" style="width:100px" />
+    <label>生成时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;height:26px;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" id="beginTime" name="beginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; height: 26px;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd'})" id="endTime" name="endTime" readonly="readonly" />
+    面值：<input id="denomination" name="denomination" class="datacontrol" style="width:100px" />
+    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+    @*<input type="button" id="export" style="width:90px" value="导出到Excel" />*@
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>
+</div>
+
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<table id="dgCouponInfo"></table>
+
+<script type="text/javascript">
+
+    $grid = $("#dg");
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+
+    $(function () {
+        $("#dgCouponInfo").datagrid({
+            toolbar: "#toobal",
+            url: '/GiftCard/GetAuditGiftCardsData',
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            pageSize: 30,
+            fitColumns: true,
+            fit: true,
+            scrollbarSize: 0,
+            columns: [[
+                { field: 'GiftBatch', title: '批次号', width: 100, align: 'center', formatter: function (value, row) { return row.giftCardDetail.GiftBatch } },
+                { field: 'GiftCardSN', title: '代金卡卡号', width: 100, align: 'center', formatter: function (value, row) { return row.giftCardDetail.GiftCardSN } },
+                { field: 'GiftCardPwd', title: '代金卡密码', width: 90, align: 'center', formatter: function (value, row) { return row.giftCardDetail.GiftCardPwd } },
+                { field: 'Denomination', title: '面值', width: 60, align: 'center', formatter: function (value, row) { return "￥ " + row.giftCardDetail.Denomination } },
+                {
+                    field: 'SalesMoney', title: '销售价', width: 60, align: 'center', formatter: function (value, row) {
+                        if (value == 0) return "赠送"
+                        else return "￥ " + row.giftCardDetail.SalesMoney
+                    }
+                },
+                {
+                    field: 'CreatedOn', title: '生成时间', width: 110, align: 'center', formatter: function (value, row, index) {
+                        return formatData(row.giftCardDetail.CreatedOn);
+                    }
+                },
+                {
+                    field: 'BeginValidDate', title: '有效期始于', width: 110, align: 'center', formatter: function (value, row, index) {
+                        return formatData(row.giftCardDetail.BeginValidDate);
+                    }
+                },
+                {
+                    field: 'EndValidDate', title: '有效期终于', width: 110, align: 'center', formatter: function (value, row, index) {
+                        return formatData(row.giftCardDetail.EndValidDate);
+                    }
+                },
+                {
+                    field: 'UseDate', title: '使用时间', width: 100, align: 'center', formatter: function (value, row, index) {
+                        return formatData(row.giftCardDetail.UseDate);
+                    }
+                },
+                { field: 'UseOrderSN', title: '使用订单号', width: 100, align: 'center', formatter: function (value, row) { return row.giftCardDetail.UseOrderSN } },
+                { field: 'UsedMemberName', title: '使用会员', width: 100, align: 'center', formatter: function (value, row) { return row.usedMemberName } },
+
+                {
+                    field: 'UseState', title: '使用状态', width: 100, align: 'center', formatter: function (value, row, index) {
+                        return formatColumn(row.giftCardDetail.UseState, window.drpdata['status'])
+                    }
+                }
+            ]]
+        });
+
+        $("#search").click(function () {
+            $("#dgCouponInfo").datagrid({
+                url: '@Url.Action("GetAuditGiftCardsData")' + "?beginTime=" + $("#beginTime").val() + "&endTime=" + $("#endTime").val() + "&denomination=" + $("#denomination").val() + "&giftBatch=" + $("#giftbatch").val() + "&giftCardNo=" + $("#giftCardNo").val()
+            })
+        })
+    });
+
+    //时间日期格式化
+    //function formatData(value) {
+    //    if (!String.isNE(value)) {
+    //        var newData = new Date(value);
+    //        return newData.format('yyyy-MM-dd hh:mm') + "||" + value;
+    //    }
+    //}
+    function formatData(value) {
+        if (!String.isNE(value)) {
+            //value = value.replace('-', '/');
+            value = value.toString().replace(/-/g, "/");
+            var newData = new Date(value);
+            return newData.format('yyyy-MM-dd hh:mm');
+        }
+    }
+    function formatStatus(value) {
+
+    }
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    //导出到excel
+    function Save_Excel() {
+        var begintime = $("#beginTime").val();
+        var endtime = $("#endTime").val();
+        var denomination = $("#denomination").val();
+        if (begintime == "" || endtime == "") {
+            $.messager.alert("提示", "请选择导出时间！", "error", function () {
+                return false;
+            });
+
+        } else {
+            $grid.datagrid("loading", "正在生成Excel，请稍后");
+            $("#dgCouponInfo").datagrid({
+                url: '@Url.Action("GetAuditGiftCardsData")' + "?beginTime=" + $("#beginTime").val() + "&endTime=" + $("#endTime").val() + "&denomination=" + $("#denomination").val() + "&giftBatch=" + $("#giftbatch").val() + "&giftCardNo=" + $("#giftCardNo").val()
+            });
+            $.ajax({
+                url: '@Url.Action("ExportExcel")',
+                dataType: 'json',
+                type: 'post',
+                data: { beginTime: begintime, endTime: endtime, denomination: denomination, giftBatch: $("#giftbatch").val(), giftCardNo: $("#giftCardNo").val() },
+                success: function (data) {
+                    $grid.datagrid("loaded");
+                    if (data.successed) {
+
+                        DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                    } else {
+                        $.messager.alert("提示", data.message, "error");
+                    }
+                }
+            });
+        }
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

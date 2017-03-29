@@ -1,0 +1,81 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<table id="dg"></table>
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['coopStatus'] = [];
+    @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("CoopStatus", false))
+    {
+        @:window.drpdata['coopStatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+</script>
+<script type="text/javascript">
+    $("#dg").datagrid({
+        url: '/Cooperation/GetCooperationsAll',
+        rownumbers: true,
+        singleSelect: true,
+        pagination: true,
+        pageSize: 20,
+        //fitColumns: true,
+        fit: true,
+        onLoadSuccess: function () {
+            //$.parser.parse($('td .easyui-linkbutton').parent());
+            $.parser.parse($('.cus2').parent());
+        },
+        columns: [[
+            { field: 'Id', title: 'id', width: 0, hidden: true },
+            { field: 'CustomerMobile', title: '申请用户', width: 80, align: 'center' },
+            { field: 'CompanyName', title: '公司全称', width: 200 },
+            { field: 'CompanyAddress', title: '公司地址', width: 250 },
+            { field: 'CompanyPopulation', title: '公司人数', width: 50, align: 'center' },
+            { field: 'Name', title: '联系人姓名', width: 60, align: 'center' },
+            { field: 'Phone', title: '联系人电话', width: 100, align: 'center' },
+            { field: 'ApplyForTime', title: '申请时间', width: 130, align: 'center' },
+            {
+                field: 'Status', title: '审核状态', width: 60, align: 'center', formatter: function (value, row, index) {
+                    //if (value == 0) {
+                    //    return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:80px;' onclick=\"checkCooperation('" + row.Id + "')\">待审核</a>";
+                    //} else {
+                    return formatColumn(value, window.drpdata['coopStatus']);
+                }
+            },
+            {
+                field: 'option', title: '操作', width: 100, align: 'center', formatter: function (value, row, inddex) {
+                    if (row.Status == 0) {
+                        return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus1 l-btn l-btn-small\" style='width:80px;' onclick=\"checkCooperation('" + row.Id + "')\">审核</a>";
+                    } else {
+                        return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:80px;' onclick=\"checkCooperation('" + row.Id + "')\">查看详情</a>";
+                    }
+                }
+            }
+        ]]
+    })
+    //审核
+    function checkCooperation(id) {
+        window.top.$('body').data("grid", $);
+
+        pharos.g.openDialog({
+            title: "企业试吃审核",
+            width: 600,
+            height: 400,
+            id: "checkDlg",
+            url: "@Url.Action("CooperationCheck")?Id=" + id,
+            onClose: function () {
+                $('#dg').datagrid('reload');
+            }
+        })
+    }
+
+    //取枚举对应值
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+</script>

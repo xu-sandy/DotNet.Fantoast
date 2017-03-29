@@ -1,0 +1,136 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+    ViewBag.Title = "会员介绍";
+}
+<style>
+    .pc-memberrule .memberrule-subtitle { font-weight: bold; }
+
+    .pc-memberrule table { border-collapse: collapse; margin: auto; }
+
+        .pc-memberrule table td, .pc-memberrule table th { border: 1px solid #000; }
+</style>
+<link href="~/Content/form.css" rel="stylesheet" />
+<div class="container" style="font-family: 微软雅黑; ">
+    <div class="row" style="height: 5%;">
+        <div class="col-xs-12 col-sm-12  col-md-12  col-lg-12 " style="background-color: #bd9663;">
+            <img src="~/Content/images/PersonalCenter/l_arrow.png" style="height:21px; width:14px; margin-top:15px; float:left" onclick="back()" />
+            <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">会员介绍</span>
+            <img src="~/Content/images/PersonalCenter/index.png" style=" height:19px; width:20px; float:right; margin-top:15px;" onclick="backHome()" />
+        </div>
+    </div>
+    <div style="margin-bottom:15px;">
+        <table class="wallbox content">
+            <tr>
+                <td style="text-align: left; vertical-align: top;">
+                    <div class="datapanel">
+                        <div class="panelcontent" style="width:100%;padding-left:10px;;">
+                            <div class="pc-memberrule">
+                                <h5 class="memberrule-subtitle">一、会员等级说明</h5>
+                                <p>枫客会员等级共分为四个等级，分别为：普通卡、银卡、金卡、黑金卡。会员等级由成长值决定，当成长值达到对应会员等级的成长值范围时，会员等级将自动改变。不同的会员等级可享受不同的购物折扣，积分倍数（如黑金卡会员现金消费1元可获得2积分）。具体会员等级划分如下：</p>
+                                <table class="memberrule-management">
+                                    <tr>
+                                        <th colspan="4">普通卡</th>
+                                    </tr>
+                                    <tr>
+                                        <td>成长值范围</td>
+                                        <td>积分倍数</td>
+                                        <td>成长值倍数</td>
+                                        <td>折扣</td>
+                                    </tr>
+                                    <tr>
+                                        <td>0~499</td>
+                                        <td>1倍</td>
+                                        <td>1倍</td>
+                                        <td>原价</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">会员有效期</td>
+                                        <td colspan="3">永久</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4">银卡</th>
+                                    </tr>
+                                    <tr>
+                                        <td>成长值范围</td>
+                                        <td>积分倍数</td>
+                                        <td>成长值倍数</td>
+                                        <td>折扣</td>
+                                    </tr>
+                                    <tr>
+                                        <td>500~999</td>
+                                        <td>1.2倍</td>
+                                        <td>1倍</td>
+                                        <td>9折</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">会员有效期</td>
+                                        <td colspan="3">永久</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4">金卡</th>
+                                    </tr>
+                                    <tr>
+                                        <td>成长值范围</td>
+                                        <td>积分倍数</td>
+                                        <td>成长值倍数</td>
+                                        <td>折扣</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1000~2999</td>
+                                        <td>1.5倍</td>
+                                        <td>1倍</td>
+                                        <td>8.5折</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">会员有效期</td>
+                                        <td colspan="3">会员有效期1年，一年后扣除成长值500，根据剩余成长值重新计算级别</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4">黑金卡</th>
+                                    </tr>
+                                    <tr>
+                                        <td>成长值范围</td>
+                                        <td>积分倍数</td>
+                                        <td>成长值倍数</td>
+                                        <td>折扣</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3000~以上</td>
+                                        <td>2倍</td>
+                                        <td>1倍</td>
+                                        <td>8折</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1">会员有效期</td>
+                                        <td colspan="3">会员有效期1年，一年后扣除成长值1000，根据剩余成长值重新计算级别</td>
+                                    </tr>
+                                </table>
+                                </br>
+                                <p>举例：会员小A在2013年2月1日升级为金卡会员，截止至2014年1月31日总成长值为1500，此时扣除800成长值，剩余成长值为700，系统根据剩余成长值重新判断会员小A为银卡会员，有效期为1年。</p>
+                                <p>
+                                    说明：
+                                <p>1.每个订单只有现金消费部分可累计积分和成长值。</p>
+                                <p>2.积分、成长值只取对应整数部分，如银卡会员消费110.50元，可获得132积分和110成长值。</p>
+                                </p>
+                                <h5 class="memberrule-subtitle">二、积分使用规则</h5>
+                                <p>50积分可抵扣一元消费金额，但不可抵用其它分类产品（如：蜡烛、餐具等）。使用积分部分，不累计积分和成长值。</p>
+                                <h5 class="memberrule-subtitle">三、优惠券使用规则</h5>
+                                <p>
+                                    每个订单至多只能使用一张满足使用条件的优惠券，且不可与代金卡同时使用。使用优惠券部分，不累计积分和成长值。
+                                    优惠券抵扣金额超出订单金额部分作废处理，不兑换现金。
+                                </p>
+                                <h5 class="memberrule-subtitle">四、代金卡使用规则</h5>
+                                <p>
+                                    每个订单可使用多张满足条件的代金卡，但不可与优惠券同时使用。使用代金卡部分，不累计积分和成长值。
+                                    代金卡抵扣金额超出订单金额部分作废处理，不兑换现金。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+

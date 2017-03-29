@@ -1,0 +1,89 @@
+﻿@using FCake.Domain.Entities
+@{
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+    ViewBag.Title = "我的优惠券";
+    var couponList = ViewBag.CouponList as List<CouponDetail>;
+}
+
+<link href="~/Content/form.css" rel="stylesheet" />
+
+
+<div class="container" style="font-family: 微软雅黑; overflow:hidden; overflow-y:hidden; ">
+
+    <div class="row" style="height: 5%;">
+        <div class="col-xs-12 col-sm-12  col-md-12  col-lg-12 " style="background-color: #bd9663;">
+            <img src="~/Content/images/PersonalCenter/l_arrow.png" style="height:21px; width:14px; margin-top:15px; float:left" onclick="back()" />
+            <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">我的优惠券</span>
+            <img src="~/Content/images/PersonalCenter/index.png" style=" height:19px; width:20px; float:right; margin-top:15px;" onclick="backHome()" />
+        </div>
+    </div>
+    <br />
+    <div>
+        <input type="text" id="couponSN" name="couponSN" class="form-control coupon-control" placeholder="请输入优惠券号" style="display:inline-block;width:60%;">
+            <button class="btn btn-use" type="button" style="display:inline-block;margin-top:5px;" onclick="javascript:bindCouponByCouponSN()">添加绑定</button>
+    </div>
+    <div id="form1" role="form" class="form-horizontal table-list">
+
+        @if (couponList != null)
+        {
+            foreach (var coupon in couponList)
+            {
+                <div class="coupon-info">
+                    <ul class="couponinfo-left">
+                        <li class="couponinfo-title">@(coupon.Title)券</li>
+                        <li class="adjust-lineheight coupon-color">有效期至：<time>@coupon.EndValidDate.ToString("yyyy.MM.dd")</time></li>
+                        <li class="coupon-color">@(coupon.ConditionMoney > 0 ? string.Format("满{0}元使用", coupon.ConditionMoney.ToString("N2")) : "无条件使用")</li>
+                    </ul>
+
+                    <ul class="couponinfo-right">
+                        <li>￥<span class="couponinfo-money">@coupon.Denomination.ToString("N2")</span></li>
+                        @if (coupon.UseState == 0 && coupon.BeginValidDate <= DateTime.Now && coupon.EndValidDate >= DateTime.Now)
+                        {
+                            <li class="coupon-color">可用</li>
+                        }
+                        else
+                        {
+                            <li class="coupon-color">不可用</li>
+                            if (coupon.UseState == 1)
+                            {
+                                <li class="coupon-color">已使用</li>
+                            }
+                            else
+                            {
+                                <li class="coupon-color">不在有效期内</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+        }
+
+    </div>
+
+
+</div>
+
+
+<script type="text/javascript">
+    //输入优惠号绑定优惠券号
+    function bindCouponByCouponSN() {
+        var couponSN = $("#couponSN").val();
+        if (couponSN == '') {
+            alert('请输入优惠券号');
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("BindCouponDetailByCouponSN", "CommonOrder")?couponSN=' + couponSN,
+            type: 'post',
+            success: function (result) {
+                if (result.successed == false) {
+                    alert(result.message);
+                } else {
+                    alert(result.message);
+                    window.location.reload();
+                }
+
+            }
+        })
+    }
+</script>

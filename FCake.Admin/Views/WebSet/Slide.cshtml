@@ -1,0 +1,68 @@
+﻿@{
+    ViewBag.Title = "幻灯片设定";
+}
+
+<table id="dg"></table>
+<script>
+    $(function () {
+        $("#dg").easyui_datagrid({
+            url: '/webset/getslides',
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<FCake.Domain.Entities.Slide>())',
+            title: '幻灯片(双击修改)',
+            idField: 'Id',
+            toolbar: [{
+                text: '添加',
+                iconCls: 'icon-add',
+                handler: function () {
+                    window.top.$("body").data("slide", $);
+                    pharos.g.openDialog({
+                        title: '添加幻灯片',
+                        width: 560,
+                        height: 450,
+                        id: "add",
+                        url: '/webset/createslide'
+                    });
+                }
+            }, 'del', 'save', 'reload'],
+            pagination: false,
+            columns_title: ['缩略图', '链接地址', '宽', '高', '大小', '状态', '显示在','排序'],
+            columns_width: ['210', '300', '70', '70', '70', '70', '70', '70'],
+            columns_show: ['Url', 'LinkUrl', 'Width', 'Height', 'Length', 'Status', 'Apply', 'SortOrder'],
+            columns_formatter: [function (value, row, index) {
+                return "<img src=\"" + value + "\" style='height:100px'/>";
+            }, function (value, row, index) {
+                return "<a href='" + value + "' target='_blank' >" + value + "</a>";
+            }, '', '', function (value, row, index) {
+                return parseInt(value / (1024)) + "KB";
+            }, function (value, row, index) {
+                return value == 1 ? "禁用" : "启用";
+            }, function (value, row, index) {
+                switch (value)
+                {
+                    case 2:
+                        return "电脑端";
+                    case 1:
+                        return "移动端";
+                    default:
+                        return "";
+                }
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                window.top.$("body").data("slide", $);
+                pharos.g.openDialog({
+                    title: '修改幻灯片',
+                    width: 560,
+                    height: 450,
+                    id: "add",
+                    url: '/webset/createslide/' + rowData.Id
+                });
+            }
+        });
+    })
+</script>
+
+<style>
+    a {
+        text-decoration: none;
+    }
+</style>

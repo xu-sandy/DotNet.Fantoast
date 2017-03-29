@@ -1,0 +1,106 @@
+﻿
+<style type="text/css">
+    #userDetail tr td:nth-child(2n+1) {
+        width: 60px;
+        color: #ff6a00;
+        text-align: right;
+    }
+</style>
+<div class="userPanel">
+    <div style="float: left"><img src="~/Content/themes/default/images/login/portrait.jpg" width="100" height="100" /></div>
+    <table id="userDetail" class="userDetail">
+        <tr>
+            <td class="title" style="width:60px;">
+                <label>姓名：</label>
+            </td>
+            <td class="info" style="width:200px;">
+                <label id="FullName">@Model.FullName</label>
+            </td>
+            <td class="title" style="width:50px;">
+                <label>性别：</label>
+            </td>
+            <td class="info">
+                <label id="Sex">
+                    @{var sex = "";
+                    if (Model.Sex != null)
+                    {
+                        switch ((int)Model.Sex)
+                        {
+                            case 1:
+                                sex = "男"; break;
+                            case 2:
+                                sex = "女"; break;
+                            case 3:
+                                sex = "保密"; break;
+                        }
+                    }}
+                    @sex
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td class="title">
+                <label>会员帐号：</label>
+            </td>
+            <td class="info">
+                <label id="Mobile">
+                    @if (!string.IsNullOrEmpty(Model.Mobile) && !string.IsNullOrEmpty(Model.Tel))
+                    {@Model.Mobile<span> / </span>@Model.Tel}
+                    else if (string.IsNullOrEmpty(Model.Tel))
+                    { @Model.Mobile}
+                    else if (string.IsNullOrEmpty(Model.Mobile))
+                    { @Model.Tel}
+                </label>
+            </td>
+            <td class="title">
+                <label>邮箱：</label>
+            </td>
+            <td class="info">
+                <label id="Email">@Model.Email</label>
+            </td>
+        </tr>
+
+        <tr>
+            <td>会员等级：</td>
+            <td id="memberLevel">@Model.MemberLevelValue</td>
+            <td>积分：</td>
+            <td>@Model.Integral</td>
+        </tr>
+        <tr>
+            <td>现金消费：</td>
+            <td id="cashPay">@Model.TotalActualRMBPay</td>
+            <td>成长值：</td>
+            <td>@Model.GrowthValue</td>
+            
+        </tr>
+        <tr>
+            <td class="title">
+                <label>地址：</label>
+            </td>
+            <td class="info" colspan="3">
+                <label id="Address">@ViewBag.Province @ViewBag.City @ViewBag.Area @ViewBag.Address</label>
+            </td>
+        </tr>
+    </table>
+</div>
+<script>
+    $(function () {
+        //现金消费保留2位小数
+        $("#cashPay").text(Number('@Model.TotalActualRMBPay').toFixed(2));
+        //显示等级对应中文
+        $.ajax({
+            url: '@Url.Action("GetAllMemberLevelBindCombobox", "MemberLevel")',
+            type: 'POST',
+            dataType: 'JSON',
+            data: { isAddAll: false },
+            success: function (data) {
+                $.each(data, function (index, item) {
+                    if (item.MemberLevelValue == '@Model.MemberLevelValue') {
+                        $("#memberLevel").text(item.Title);
+                        return false;
+                    }
+                })
+            }
+        })
+    })
+</script>

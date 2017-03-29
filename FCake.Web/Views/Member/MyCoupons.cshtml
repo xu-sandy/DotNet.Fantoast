@@ -1,0 +1,104 @@
+﻿@model dynamic
+@using FCake.Domain.Entities;
+@using FCake.Bll.Helper;
+@{
+    ViewBag.Title = "我的优惠券";
+
+}
+<style type="text/css">
+    td a { color: #4a2118; }
+</style>
+
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top; width:165px">
+            @Html.Partial("_PartialMenu")
+        </td>
+        <td style="text-align:left; vertical-align:top">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "我的优惠券")
+
+                <div class="panelcontent">
+                    <div style="text-align:right;margin-top:10px;">
+                        <span class="font-color-brown">优惠券号：</span>
+                        <input id="couponSN" name="couponSN" class="control">
+                        <a style="padding:5px 18px; background-color:#734912;color:#fff" class="btn-order-favorable" href="javascript:bindCouponByCouponSN()">添加绑定</a>
+                    </div>
+                    <table cellspacing="0" cellpadding="0" border="0" class="orderlist orderlist-coupon" style="margin-top:0px;">
+                        <tr class="rowhead">
+                            <th>优惠券号码</th>
+                            <th>名称</th>
+                            <th>面额</th>
+                            <th>使用条件</th>
+                            <th>有效期</th>
+                            <th>状态</th>
+                        </tr>
+                        @if (Model != null)
+                        {
+                            foreach (var coupon in Model.EntityList)
+                            {
+                                <tr class="rowdata rowheight">
+                                    <td>@coupon.CouponSN</td>
+                                    <td>@(coupon.Title)券</td>
+                                    <td>@coupon.Denomination.ToString("N2")</td>
+                                    <td>@(coupon.ConditionMoney > 0 ? string.Format("满{0}元使用", coupon.ConditionMoney.ToString("N2")) : "无条件使用")</td>
+                                    <td>@coupon.BeginValidDate.ToString("yyyy.MM.dd")-@coupon.EndValidDate.ToString("yyyy.MM.dd")</td>
+                                    @if (coupon.UseState == 0 && coupon.BeginValidDate <= DateTime.Now && coupon.EndValidDate >= DateTime.Now)
+                                    {
+                                        <td>可用</td>
+                                    }
+                                    else
+                                    {
+                                        if (coupon.UseState == 1)
+                                        {
+                                            <td>不可用（已使用）</td>
+                                        }
+                                        else
+                                        {
+                                            <td>不可用（不在有效期内）</td>
+                                        }
+                                    }
+                                </tr>
+
+                            }
+                        }
+                        @*<tr class="rowdata"><td>fc109238347</td><td>hehe</td><td>453</td><td>满100元xxxx</td><td>2015.12.11</td><td>可使用</td></tr>
+                        <tr class="rowdata"></tr>
+                        <tr class="rowdata"></tr>
+                        <tr class="rowdata"></tr>
+                        <tr class="rowdata"></tr>*@
+                    </table>
+                    <div class="paginator">
+                        <span>
+                            @Html.ShowPageNavigate((int)Model.Pager.CurrentPageIndex, (int)Model.Pager.PageSize, (int)Model.Pager.RecordCount)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<script type="text/javascript">
+    //输入优惠号绑定优惠券号
+    function bindCouponByCouponSN() {
+        var couponSN = $("#couponSN").val();
+        if (couponSN == '') {
+            alert('请输入优惠券号');
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("BindCouponDetailByCouponSN", "CommonOrder")?couponSN=' + couponSN,
+            type: 'post',
+            success: function (result) {
+                if (result.successed == false) {
+                    alert(result.message);
+                } else {
+                    alert(result.message);
+                    window.location.reload();
+                }
+
+            }
+        })
+    }
+</script>

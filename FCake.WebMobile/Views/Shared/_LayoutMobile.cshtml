@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.User = FCake.Bll.CurrentMember.MemberSession;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, user-scalable=no" />
+    <title>@ViewBag.Title</title>
+    <link rel="fancake icon" type="image/x-icon" href="~/Content/images/fancake.ico" />
+    <link href="~/Content/reset.css" rel="stylesheet" />
+    <link href="~/Content/global.css" rel="stylesheet" />
+    <link href="~/Content/fcake.css" rel="stylesheet" />
+
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/Scripts/global.js")
+    @Scripts.Render("~/Scripts/business.js")
+    <script src="~/Scripts/fcake/global.js"></script>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-theme.min.css" rel="stylesheet" />
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/common.js"></script>
+    <script src="~/Scripts/jquery-ex.js"></script>
+    <script src="~/Scripts/pharos.jquery-ex.js"></script>
+</head>
+<body>
+    <div style="min-height:568px;">
+        @RenderBody()
+    </div>
+    @RenderSection("scripts", required: false)
+
+    @*统计网站流量*@
+    <div style="display:none;">
+        @*统计网站流量*@
+        <img src="@(new FCake.WebMobile.WebMobileTrackPage(1254947967).TrackPageView())" width="0" height="0" />
+    </div>
+</body>
+</html>

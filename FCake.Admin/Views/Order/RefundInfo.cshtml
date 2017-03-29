@@ -1,0 +1,33 @@
+﻿@model FCake.Admin.Models.RefundOrderVm
+@{
+    ViewBag.Title = "RefundInfo";
+}
+<form id="infoform" method="post">
+    <table style="margin:0 auto;">
+        <tr>
+            <td><label>退款订单:</label></td>
+            <td><input type="text" readonly="readonly" value="@Model.OrderNo" name="OrderNo" /></td>
+        </tr>
+        <tr>
+            <td><label>退款金额:</label></td>
+            <td><input type="text" value="@Model.RefundAmount" name="RefundAmount" /></td>
+        </tr>
+        <tr>
+            <td><label>买家收款帐号:</label></td>
+            <td><input type="text" name="CustomerAccount" /></td>
+        </tr>
+    </table>
+    <input id="submit" type="button" value="提交" class="easyui-linkbutton cus2" style="text-align:center;margin-left:40%;width:90px;margin-top:20px;" />
+</form>
+<script>
+    $("#submit").click(function () {
+        $.post("@Url.Action("RefundInfo")", $("#infoform").serialize(), function (data) {
+            alert(data.message);
+            if (data.successed) {
+                //var pwin = window.top.$("body").data("win_update");
+                //$("#win_update").parent().find(".panel-tool-close").click();
+                window.top.$("body").data("win_update").window("close");
+            }
+        }, "json")
+    })
+</script>

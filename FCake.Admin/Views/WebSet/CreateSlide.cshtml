@@ -1,0 +1,123 @@
+﻿@model FCake.Domain.Entities.Slide
+@{
+    ViewBag.Title = "CreateSlide";
+}
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+
+<input type="hidden" name="id" value="@(Model==null?"":Model.Id)" />
+
+<div style="padding:10px;">
+    <div class="clearfix">
+        <div style="width:200px;height:100px;background-color:#eaeaea;float:left;" id="img">
+            @if (Model != null)
+            {
+                <img src="@(Model.Url)_middle.jpg" />
+            }
+        </div>
+    </div>
+    <p>
+        <input type="file" name="pic" id="pic" onchange="uploadslide()" />
+        <label style="color:red;">上传图片要求:1600px宽*500px高</label>
+    </p>
+    <p>
+        链接地址 <input type="text" name="linkurl" class="easyui-validatebox datacontrol" data-options="required:true" style="width:300px;" value="@(Model==null?"":Model.LinkUrl)" />
+    </p>
+    <p>
+        状&nbsp;态&nbsp;
+        <select name="status" class="easyui-combobox datacontrol" data-options="panelHeight: 'auto',editable: false">
+            <option value="禁用">禁用</option>
+            <option value="启用" @(Model != null && Model.Status == FCake.Domain.Enums.SlideStatus.Active ? "selected" : "")>启用</option>
+        </select>
+    </p>
+    <p>
+        显示在&nbsp;
+        <select name="apply" class="easyui-combobox datacontrol" data-options="panelHeight: 'auto',editable: false">
+            <option value="电脑端" @((Model == null || Model.Apply == 2 || Model.Apply == null) ? "selected" : "")>电脑端</option>
+            <option value="移动端" @((Model != null && Model.Apply == 1) ? "selected" : "")>移动端</option>
+        </select>
+    </p>
+    <p>
+        排&nbsp;序&nbsp; <input type="text" name="SortOrder" class="easyui-numberbox datacontrol" data-options="required:true" style="width:180px;" value="@(Model ==null ?0:Model.SortOrder)" />
+    </p>
+    <p style="text-align:center;">
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-save'" onclick="saveSlide()">提交</a>
+    </p>
+</div>
+
+<script>
+    function saveSlide() {
+        var id = $("input[name=id]").val();
+        var url = $.trim($("input[name=linkurl]").val());
+        var status = $("input[name=status]").val() == "禁用" ? "1" : "0";
+        var apply = $("input[name=apply]").val() == "移动端" ? "1" : "2";
+        var sortOrder = $("input[name=SortOrder]").val();
+        if (id == "") {
+            alert("请上传图片");
+            return;
+        }
+
+        if (url == "") {
+            alert("请输入链接地址");
+            return;
+        }
+        if (sortOrder == "")
+        {
+            alert("请输入排序号");
+            return;
+        }
+
+        $.ajax({
+            url: '/webset/createslide/' + id,
+            type: 'post',
+            dataType: 'json',
+            data: { Id: id, Url: url, Status: status, Apply: apply, SortOrder: sortOrder },
+            success: function (data, status) {
+                if (data.validate) {
+                    $.messager.alert("操作提示", "操作成功！", "info");
+                    window.top.$("body").data("slide")("#dg").datagrid("reload");
+                    window.top.$("body").data("win_add").window("close");
+                }
+                else {
+                    //alert(data.msg);
+                    $.messager.alert("操作提示", data.msg, "error");
+                }
+            },
+            error: function () {
+                //alert("出现异常，请刷新后重试");
+                $.messager.alert("操作提示", "出现异常，请刷新后重试！", "error");
+            }
+        });
+    }
+
+    function uploadslide() {
+        var id = $("input[name=id]").val();
+        $.ajaxFileUpload({
+            url: '/webset/uploadslide/' + id,
+            fileElementId: 'pic',
+            type: 'post',
+            success: function () {
+                $.ajax({
+                    url: '/webset/getslidemsg',
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (data, status) {
+                        if (data.validate) {
+                            $("input[name=id]").val(data.id);
+                            $("#img").html("<img src=\"" + data.url + "_middle.jpg\"/>");
+                        }
+                        else {
+                            //alert(data.msg);
+                            $.messager.alert("操作提示", data.msg, "error");
+                        }
+                    }
+                });
+            },
+            error: function () {
+                //alert("上传失败，请刷新后重试");
+                $.messager.alert("操作提示", "上传失败，请刷新后重试！", "error");
+            }
+
+        });
+    }
+</script>

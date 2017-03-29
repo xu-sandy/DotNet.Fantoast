@@ -1,0 +1,24 @@
+﻿@using FCake.Bll
+@using FCake.Domain.Entities;
+@{
+    var shortcutSubProductList = ViewBag.shortcutSubProductList as List<SubProduct>;//可快捷添加的子产品列表
+}
+<!--另购餐具-->
+<div class="cutlery">
+    <h1>快速添加</h1>
+    <ul class="clearfix">
+        @if (shortcutSubProductList != null)
+        {
+            foreach (var shortcutSubProduct in shortcutSubProductList)
+            {
+                if (shortcutSubProduct.Product != null && shortcutSubProduct.Product.BaseFile != null)
+                {
+                    <li style="cursor:pointer" onclick="addCart('@shortcutSubProduct.Id',1,true)">
+                        <img src="@(Html.GetSysManageUrl() + shortcutSubProduct.Product.BaseFile.Url)_min.jpg" />
+                        <a>@shortcutSubProduct.Product.ShortcutButtonTitle</a>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</div>

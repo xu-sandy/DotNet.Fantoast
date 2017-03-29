@@ -1,0 +1,38 @@
+﻿@{
+    
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="keywords" content="枫客,枫客官网,蛋糕,fancake,fancake官网,枫客Fancake,枫多士,枫客蛋糕,fancake蛋糕,cake,枫客cake,生日蛋糕，巧克力蛋糕，芝士，乳酪蛋糕，乳脂奶油,慕斯蛋糕，鲜奶蛋糕，慕斯蛋糕,商务蛋糕，布朗尼,婚庆蛋糕，芝士蛋糕,拿破仑蛋糕,提供健康、高品质蛋糕产品,在线预订，配送到家,蛋糕24小时在线预定，支持货到付款，电话:4000569565," />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>@ViewBag.Title</title>
+    <link rel="fancake icon" type="image/x-icon" href="~/Content/images/fancake.ico" />
+    <link href="~/Content/reset.css" rel="stylesheet" />
+    <link href="~/Content/global.css" rel="stylesheet" />
+    <link href="~/Content/fcake.css" rel="stylesheet" />
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/Scripts/global.js")
+    @Scripts.Render("~/Scripts/business.js")
+    @Scripts.Render("~/Scripts/pharos.jquery-ex.js")
+    <script src="~/Scripts/fcake/global.js"></script>
+    <script src="~/Scripts/jquery-ex.js"></script>
+</head>
+<body>
+    @Html.Partial("_PartialHead")
+    <div style="min-height:568px;">
+        @RenderBody()
+    </div>
+    @RenderSection("scripts", required: false)
+    @Html.Partial("_PartialBottom")
+
+    <div style="display:none;">
+        @*统计网站流量*@
+        <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://"); document.write(unescape("%3Cspan id='cnzz_stat_icon_1254947967'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s4.cnzz.com/z_stat.php%3Fid%3D1254947967' type='text/javascript'%3E%3C/script%3E"));</script>
+    </div>
+</body>
+</html>

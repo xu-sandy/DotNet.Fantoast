@@ -1,0 +1,238 @@
+﻿@{
+    ViewBag.Title = "ReportOrderTime";
+}
+<script src="~/Scripts/datagrid-groupview.js"></script>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['category'] = [];
+    window.drpdata['cake'] = [];
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", false))
+    {
+        @:window.drpdata['category'].push({ value: '@item.Value', text: '@item.Text' });
+                                    }
+    @foreach (var item in DropDownHelper.GetCakeFromProduct())
+    {
+        @:window.drpdata['cake'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+</script>
+<div id="toobal">
+    <label>查询时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; height: 32px;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" id="beginTime" name="beginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;height:32px;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" id="endTime" name="endTime" readonly="readonly" />
+    选择类型：<select id="Type" style="width:120px;height:34px; border-radius: 5px; border: 1px solid #cbc9c9;">
+        <option value="1">全部</option>
+        <option value="2">品种</option>
+        <option value="3">磅数</option>
+        <option value="4">蛋糕</option>
+    </select>
+    <span id="category" style="display:none;">
+        选择品种<input id="Themes" class="easyui-combobox"
+       data-options="valueField:'value',textField:'text',height:12,width:150,data:window.drpdata['category'], editable: false" />
+    </span>
+    <span id="cake" style="display:none;">
+        选择蛋糕<input id="selcake" class="easyui-combobox"
+       data-options="valueField:'value',textField:'text',height:12,width:150,data:window.drpdata['cake'], editable: false"/>
+    </span>
+    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>
+
+</div>
+
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<table id="dg"></table>
+<script>
+    $(function () {
+        $(function () {
+            $('#dlg').dialog('close');
+        })
+        $("#Type").change(function () {
+            var value = $(this).val();
+            if (value == 2)
+            {
+                $("#category").show();
+                $("#cake").hide();
+            }
+            else if (value == 4) {
+                $("#category").hide();
+                $("#cake").show();
+            }
+            else {
+                $("#category").hide();
+                $("#cake").hide();
+            }
+        })
+    })
+</script>
+<script type="text/javascript">
+    $grid = $("#dg");
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobal",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            //url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=&endTime=&type=",
+            columns: [[
+            { field: 'dicName', title: '时间段', width: 100 },
+            { field: 'Num', title: '数量', width: 50 },
+            { field: 'TotalPrice', title: '金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+            ]]
+        })
+        var typed = 1;
+        var parma = "";
+        //查询点击事件
+        $("#search").click(function () {
+            parma = "";
+            var begintime = $("#beginTime").val();
+            var endtime = $("#endTime").val();
+            var type = $("#Type").val();
+            
+            if(type==2)
+            {
+                parma = $("#Themes").combobox('getValue');
+                if (parma == "")
+                {
+                    alert("请选择品种！");
+                    return false;
+                }
+                
+            }
+            if(type==4)
+            {
+                parma = $("#selcake").combobox('getValue');
+                if (parma == "") {
+                    alert("请选择蛋糕！");
+                    return false;
+                }
+            }
+            if (type == typed) {
+                $("#dg").datagrid({
+                    url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type + "&parma=" + parma,
+                })
+            } else {
+                typed = type;
+
+                if (type == 1) {//全部
+                    $("#dg").datagrid({
+                        view: $.fn.datagrid.defaults.view,
+                        url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type + "&parma=" + parma,
+                        columns: [[
+                        { field: 'dicName', title: '时间段', width: 100 },
+                        { field: 'Num', title: '数量', width: 50 },
+                        { field: 'TotalPrice', title: '金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+                        ]]
+                    })
+                }
+                if (type == 2) {//品种
+                    $("#dg").datagrid({
+                        view: $.fn.datagrid.defaults.view,
+                        url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type + "&parma=" + parma,
+                        columns: [[
+                        { field: 'dicName', title: '时间段', width: 100 },
+                        { field: 'GroupName', title: '品种', width: 50 },
+                        { field: 'Num', title: '数量', width: 50 },
+                        { field: 'TotalPrice', title: '金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+                        ]]
+                    })
+                }
+                if (type == 3) {//磅数
+                    $("#dg").datagrid({
+                        view: groupview,
+                        url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type + "&parma=" + parma,
+                        columns: [[
+                        { field: 'dicName', title: '时间段', width: 100 },
+                        //{
+                        //    field: 'Name', title: '蛋糕', width: 100, formatter: function (value, row, index) {
+                        //        if (value != "全部总计") return value + " 磅"
+                        //        else return value;
+                        //    }
+                        //},
+                        { field: 'Num', title: '数量', width: 50 },
+                        { field: 'TotalPrice', title: '金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+                        ]],
+                        groupField: 'Size',
+                        groupFormatter: function (value, rows) {
+                            if (value != null) {
+                                return value + '磅 - ' + rows.length + ' 条数据';
+                            }
+                            else {
+                                return '总计-' + rows.length + ' 条数据';
+                            }
+                        }
+                    })
+                }
+                if (type == 4) {//蛋糕
+                    $("#dg").datagrid({
+                        view: $.fn.datagrid.defaults.view,
+                        url: "@Url.Action("ReportOrderTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime + "&type=" + type + "&parma=" + parma,
+                        columns: [[
+                        { field: 'dicName', title: '时间段', width: 100 },
+                        { field: 'Name', title: '蛋糕', width: 100 },
+                        { field: 'Num', title: '数量', width: 50 },
+                        { field: 'TotalPrice', title: '金额', width: 50, formatter: function (value, row, index) { return value + " 元" } }
+                        ]]
+                    })
+                }
+            }
+        })
+    })
+
+    //导出到excel
+    function Save_Excel() {
+        var begintime = $("#beginTime").val();
+        var endtime = $("#endTime").val();
+        var type = $("#Type").val();
+        var typed = 1;
+        var param = "";
+       // var parma = "";
+        if (type == 2) {
+            param = $("#Themes").combobox('getValue');
+            if (param == "") {
+                alert("请选择品种！");
+                return false;
+            }
+
+        }
+        if (type == 4) {
+            param = $("#selcake").combobox('getValue');
+            if (param == "") {
+                alert("请选择蛋糕！");
+                return false;
+            }
+        }
+        $grid.datagrid("loading", "正在生成Excel，请稍后");
+        $.ajax({
+            url: '@Url.Action("ExportOrderTime")',
+            type: 'post',
+            data: { beginTime: begintime, endTime: endtime, type: type, param: param },
+            success: function (data) {
+                $grid.datagrid("loaded");
+                if (data.successed) {
+
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                } else {
+                    alert(data.message)
+                }
+            }
+        });
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

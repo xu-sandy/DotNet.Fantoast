@@ -1,0 +1,71 @@
+﻿<select name="ddlProvince" style="border: 1px solid #dbc6aa;"></select>
+<select name="ddlCity" style="border: 1px solid #dbc6aa;"></select>
+<select name="ddlArea" id="ddlArea" style="border: 1px solid #dbc6aa;"></select>
+
+
+<script type="text/javascript">
+    $(function () {
+        $province = $("select[name=ddlProvince]");
+        $city = $("select[name=ddlCity]");
+        $area = $("select[name=ddlArea]");
+
+
+        var provicnes = loadPosition("country", "");
+        $province.html(loadPositionSelect(provicnes));
+         
+        $province.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $city.html("");
+                $area.html("");
+            }
+            else {
+                if ($city.data(value) != null) {
+                    $city.html($city.data(value));
+                }
+                else {
+                    $city.data(value,loadPositionSelect(loadPosition("province", value)));
+                    $city.html($city.data(value));
+                }
+            }
+        });
+        $city.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $area.html("");
+            }
+            else {
+                if ($area.data(value) != null) {
+                    $area.html($area.data(value));
+                }
+                else {
+                    $area.data(value, loadPositionSelect(loadPosition("city", value)));
+                    $area.html($area.data(value));
+                }
+            }
+        });
+    })
+
+    function loadPosition(position, value) {
+        var _data = [];
+
+        $.ajax({
+            url: '@Url.Action("getposition", "common")?position=' + escape(position) + "&value=" + escape(value),
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            success: function (data,status) {
+                _data = data;
+            }
+        });
+
+        return _data;
+    }
+    function loadPositionSelect(data) {
+        var html = "<option value=''>请选择</option>";
+        $.each(data, function (index, value) {
+            html += ("<option value='" + value.t + "'>" + value.t + "</option>");
+        });
+        return html;
+    }
+</script>

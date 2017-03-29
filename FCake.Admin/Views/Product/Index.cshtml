@@ -1,0 +1,300 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "产品管理";
+
+    string dicName = ViewBag.dicName;
+}
+@Styles.Render("~/Content/themes/default/product.css")
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['status'] = [];
+    window.drpdata['themes'] = [];
+    window.drpdata['category'] = [];
+    window.drpdata['salestatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.ProductStatus>(true))
+    {
+        @:window.drpdata['status'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Themes", true))
+    {
+        @:window.drpdata['themes'].push({ value: '@item.Value', text: '@item.Text' });
+                            }
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", true))
+    {
+        @:window.drpdata['category'].push({ value: '@item.Value', text: '@item.Text' });
+                                    }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.SaleStatus>(true))
+    {
+        @:window.drpdata['salestatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+</script>
+
+<div id="toolbar">
+    <div class="dc-searchbar">
+        <form id="search">
+            名称：<input id="Name" name="Name" class="datacontrol" style="width:170px" />
+            主题：<input id="Themes" name="Themes" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text',data:window.drpdata['themes'], panelHeight: 'auto', editable: false,width:100" />
+            类型：<input id="Type" name="Type" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['category'], panelHeight: 'auto', editable: false,width:100,height:30" />
+            状态：<input id="Status" name="Status" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['status'], panelHeight: 'auto', editable: false,width:100,height:30" />
+            <a href="#" id="searchBtn" class="easyui-linkbutton cus4 linkbtn" data-options="iconCls:'custom-search'">查询</a>
+        </form>
+    </div>
+    <div class="dc-toolbar">
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'custom-add'" data-check="add" onclick="create()">添加</a>
+        <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'custom-edit'" data-check="add" onclick="resetSaleOn()">选中已下架产品重新提交</a>
+    </div>
+</div>
+
+<table id="dg"></table>
+
+@Html.Partial("../Common/PartialReview")
+
+<script type="text/javascript">
+    pharos.permission.loadpermissions();
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+    function formatColumnMultilpe(values, list) {
+        if (!String.isNE(values)) {
+            var texts = "";
+            $(values.split(",")).each(function (i, value) {
+                $(list).each(function (j, node) {
+                    if (node.value != "") {
+                        if (node.value == value) {
+                            texts += node.text+",";
+                            return;
+                        }
+                    }
+                });
+            });
+            if (texts.length > 0) {
+                texts = texts.substring(0,texts.length-1);
+            }
+            return texts;
+        }
+        return "";
+    }
+    function formatData(value) {
+        if (!String.isNE(value)) {
+            //value = value.replace('-', '/');
+            value = value.toString().replace(/-/g, "/");
+            var newData = new Date(value);
+            return newData.format('yyyy-MM-dd hh:mm');
+        }
+    }
+    var isReview = false;
+    var tmpReviewHtml = "";
+    changeStatusHtml();
+    function changeStatusHtml() {
+        window.permission = pharos.permission.getpermissions();
+        var indexReview = $.inArray("review", window.permission);
+        if (indexReview > -1) {
+            isReview = true;
+            //tmpReviewHtml = "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:50px;' onclick=\"StatusItem('{0}',{1})\">{2}</a>";
+        }
+        tmpReviewHtml = "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:50px;' onclick=\"StatusItem('{0}','{1}')\">{2}</a>";
+
+    }
+
+    //format 状态
+    function formatColumnHtml(value, row, listdata) {
+        var text = formatColumn(value, listdata);
+        if (value == "0") {
+            var html = String.format(tmpReviewHtml, [row.Id, row.Status, text]);
+            return html;
+        }
+
+        if (isReview) {
+            if (row.Status == 4)//已下架
+                return text;
+            var html = String.format(tmpReviewHtml, [row.Id, row.Status, text]);
+            return html;
+        }
+        else {
+            return text;
+        }
+    }
+    $(function () {
+        var pemisArr = pharos.permission.getpermissions();
+        $('#dg').datagrid({
+            title: '',
+            toolbar:"#toolbar",
+            url: '/product/querydata?' + $("#search").serialize(),
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: true,
+            pagination: true,
+            pageSize: 30,
+            //fitColumns: true,
+            fit: true,
+            onLoadSuccess: function () {
+                $.parser.parse($('.cus2').parent());
+            },
+            columns: [[
+                { field: 'Id', title: '主键', hidden: true },
+                { field: 'Name', title: '产品名称', width: 150, align: 'center' },
+                { field: 'EnglishName', title: '英文名', width: 150, align: 'center' },
+                {
+                    field: 'Type', title: '品种', align: 'center', formatter: function (value, row, index) {
+                        return formatColumnMultilpe(value, window.drpdata['category']);
+                    }, width: 150
+                },
+                //{
+                //    field: 'Themes', title: '主题', width: 100, formatter: function (value, row, index) {
+                //        return formatColumnMultilpe(value, window.drpdata['themes']);
+                //    }
+                //},
+                {
+                    field: 'SaleOn', title: '上架时间', width: 130, align: 'center', formatter: function (value, row, index) {
+                        return formatData(value);
+                    }
+                },
+                {
+                    field: 'SaleOff', title: '下架时间', width: 130, align: 'center', formatter: function (value, row, index) {
+                        return formatData(value);
+                    }
+                },
+                {
+                    field: 'IsRecommend', title: '是否推荐', formatter: function (value, row, index) {
+                        if (value == 1) return '推荐'; else return '';
+                    }, width: 70, align: 'center'
+                },
+                {
+                    field: 'SaleStatus', title: '上架状态', align: 'center', formatter: function (value, row, index) {
+                        return formatColumn(value, window.drpdata['salestatus']);
+                    }, width: 60, align: 'center'
+                },
+                { field: 'SortNo', title: '排序号', width: 60, align: 'center' },
+                {
+                    field: 'Status', title: '状态', align: 'center', formatter: function (value, row, index) {
+                        return formatColumnHtml(value, row, window.drpdata['status']);
+                    }, width: 60
+                },
+                { field: 'Brief', title: '描述', width: 150, hidden: true },
+                { field: 'OpState', title: '操作', align: 'center', formatter: opFormat, width: 140 }
+            ]],
+            view: detailview,
+            detailFormatter: function (rowIndex, rowData) {
+                return '<div class="ddv"></div>';
+            },
+            onExpandRow: function (rowIndex, rowData) {
+                var ddv = $(this).datagrid('getRowDetail', rowIndex).find('div.ddv');
+                ddv.panel({
+                    border: false,
+                    cache: false,
+                    href: '@Url.Action("DetailView", "Product")' + '?Id=' + rowData.Id,
+                    onLoad: function () {
+                        $('#dg').datagrid('fixDetailRowHeight', rowIndex);
+                    }
+                });
+                $('#dg').datagrid('fixDetailRowHeight', rowIndex);
+            }
+        });
+
+        $('#searchBtn').click(function () {
+            $("#dg").datagrid({
+                url: '/product/querydata?' + $("#search").serialize()
+            })
+        });
+    })
+
+    function opFormat(value, row, index) {
+        var html = "";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" data-options=\"iconCls:'custom-edit'\" onclick=\"edititem('" + row.Id + "')\">编辑</a>&nbsp;&nbsp;";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus3\" data-options=\"iconCls:'custom-del'\" onclick=\"DeleteItem()\" >删除</a>";
+        return html;
+    }
+
+    //添加
+    function create() {
+        openForm("添加产品", "@Url.Action("ProductEdit")" + "?a=" + Math.random());
+    }
+    function resetSaleOn() {
+        setTimeout(function () {
+            var row = $("#dg").datagrid("getSelected");
+            if (row) {
+                if (row.Status == "4")
+                {
+                    commMsgBox("@Url.Action("ReChangeSaleStatus")" + "?id=" + row.Id + "&status=" + row.Status, "确定重新提交该产品?");
+                }
+                else {
+                    alert("数据已锁定不可编辑");
+                }
+            }
+        }, 10);
+    }
+    //编辑
+    function edititem(rowid) {
+        setTimeout(function () {
+            var row = $("#dg").datagrid("getSelected");
+            if (row) {
+                if (row.Status == "0" || row.Status == "1" || row.Status == "4")
+                    openForm("编辑产品", "@Url.Action("ProductEdit")" + "?id=" + rowid + "&a=" + Math.random());
+                else {
+                    alert("数据已锁定不可编辑");
+                }
+            }
+        }, 10);
+    }
+    function openForm(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 960,
+            height: 600,
+            id: "add",
+            url: url
+        });
+    }
+    //删除
+    function DeleteItem() {
+        setTimeout(function () {
+            var row = checkSelected();
+            if (row != null) {
+                if (String.isNE(row.Status) || row.Status == "0") {
+                    CommonGridDeleteSelectd($('#dg'), '/common/deletedata?type=@(DataHelper.GetTypeName<Product>())&&permissionmenuid=' + pharos.permission.getmenuid(), "确定删除该产品吗?", { Id: row.Id });
+                } else {
+                    alert("该产品已经是" + formatColumn(row.Status, window.drpdata['status']) + "状态,不可删除");
+                }
+            }
+        }, 10);
+    }
+    function StatusItem(id, status, text) {
+        if (status == "0") {//提交审批
+            commMsgBox("@Url.Action("SubmitStatus")" + "?id=" + id + "&status=" + status, "确定提交产品?");
+            return true;
+        }
+        if (status == "1") {//审批产品
+            commMsgBox("@Url.Action("ReviewStatus")" + "?id=" + id + "&status=" + status, "确定审批通过?");
+            return true;
+        }
+        if (status == "2") {//待上架
+            commMsgBox("@Url.Action("ChangeSaleStatus")" + "?id=" + id + "&status=" + status, "确定上架该产品?");
+            return true;
+        }
+        if (status == "3") {//待下架
+            commMsgBox("@Url.Action("ChangeSaleStatus")" + "?id=" + id + "&status=" + status, "确定下架该产品?");
+            return true;
+        }
+    }
+    function commMsgBox(url, info) {
+        $.messager.confirm('系统提示!', info, function (r) {
+            if (r) {
+                $.post(url, {},
+                    function (result) {
+                        alert(result.message);
+                        if (result.successed)
+                            $("#dg").datagrid("reload");
+                    }, "json");
+            }
+        });
+    }
+</script>

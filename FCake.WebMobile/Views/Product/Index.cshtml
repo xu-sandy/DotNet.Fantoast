@@ -1,0 +1,153 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Bll;
+@model FCake.Domain.WebModels.ProductListModel
+@{
+    ViewBag.Title = "产品列表";
+}
+<link rel="stylesheet" href="~/Content/product.css">
+<style type="text/css">
+    #productlist { text-align: center; }
+    #productlist ul { padding: inherit; margin: 0 auto; overflow: auto; text-align: center; }
+    #productlist ul li { display: inline; padding: 0; }
+    a:visited {
+    color:#bd9661;
+    }
+</style>
+<div class="container">
+    @Html.Partial("_condition")
+    <div class="sell row" style="margin:0 auto; margin-top:10px;">
+        <div id="productlist">
+            <ul class="clearfix">
+                @foreach (var item in Model.VProductModels)
+                {
+                    <li class="col-xs-12 col-sm-4" style="margin-top:5px;">
+                        <a href="@Url.Action("Index", "Detail", new {id= item.ProductId})"><img class="hotflag" src="../Content/images/Recommend.png" width="35" height="35" style="display: @(item.IsRecommend == 1 ? "block":"none") " /><img class="itemconent" style="margin-bottom:10px;" src="@(Html.GetSysManageUrl() + item.ImgUrl + "_middle.jpg")" /></a>
+                        <div class="sell_text itemconent">
+                            <a href="@Url.Action("Index", "Detail", new { id = item.ProductId })" class="clearfix">
+                                <p class="f0" style="padding-top:20px;margin-top:0">
+                                    @Html.Raw(item.Brief)
+                                </p>
+                                <div class="sell_hr"></div>
+                                <span style="margin:0;" class="f0">
+                                    @if (item.Material != null)
+                                    {
+                                        <b class="bold">材料：</b>@item.Material
+                                    }
+                                </span>
+                            </a>
+                            <div class="btn" style="text-align:center;">
+                                <a id="@item.ProductId" class="addcart" style="float:right;"></a>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Index", "Detail", new { id = item.ProductId })" class="f1">
+                            @item.Name
+                        </a>
+                        @if (item.isHasActivity == 1)
+                        {
+                            <p class="price f0 highlight" style="margin-bottom:0px;line-height:15px;">
+                                @{
+                                    <span style="text-decoration:line-through">@Html.Raw(string.Format("{0:C}", item.Price))</span> @:/
+                                    @item.SizeTitle
+
+                                }
+                            </p>
+                            <p class="price f0 highlight" style="line-height:15px;">
+                                活动价：@Html.Raw(string.Format("{0:C}", item.ActivityPrice))
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="price f0 highlight" style="line-height:15px;">
+                                @{
+                                    @Html.Raw(string.Format("{0:C}", item.Price)) @:/
+                                    @item.SizeTitle
+
+                                }
+                            </p>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+<div id="bg"></div>
+<div id="tips" class="corner5" style="display:none;margin:0 auto;">
+    <div>
+        <h3 class="tl-c f4">添加成功</h3><a href="Javascript:void()"><img class="closed" src="~/Content/images/x.png" /></a>
+        <div class="btn">
+
+            <a href="javascript:void()" onclick="keepShpping()" class="corner5">继续购物</a>
+            <a href="@Url.Action("Index","Cart")" class="corner5">去购物车结算</a>
+        </div>
+    </div>
+</div>
+
+
+@Html.Partial("_goShopCart", new Product { })
+<script type="text/javascript">
+
+    $(function () {
+        $(".addcart").each(function (i, item) {
+            $(item).click(function () {
+                //get data
+                var url = "@Url.Action("GetShopCartHtml")";
+                var data = { productId: $(item).attr("id") };
+                $.post(url, data, function (result) {
+                    $('.dialogbox').remove();
+                    $(document.body).append($(result));
+
+                    //show dialog
+                    $("#bg").css({
+                        display: "block", height: $(document).height()
+                    });
+                    var $box = $('.dialogbox');
+                    $box.css({
+                        //设置弹出层距离左边的位置
+                        left: ($("body").width() - $box.width()) / 2 - 20 + "px",
+                        //设置弹出层距离上面的位置
+                        top: ($(window).height() - $box.height()) / 2 + "px",
+                        // top: ($(window).height() - $box.height()) / 2 + $(window).scrollTop() + "px",
+
+                        display: "block"
+                    });
+
+                    //bind close event
+                    //点击关闭按钮的时候，遮罩层关闭
+                    $(".close").click(function () {
+                        $("#bg,.dialogbox").css("display", "none");
+                    });
+                });
+            });
+        });
+    });
+    function keepShpping() {
+        window.location = "@Url.Action("Index", "Product")";
+        $("#tips").css("display", "none");
+        $("#bg,.dialogbox").css("display", "none");
+    }
+
+    @*$(function () {
+        var range = 50;//距离下边界长度/单位px
+        var pageIndex = 2;
+        $(window).scroll(function () {//滚动事件绑定
+            var srollPos = $(window).scrollTop(); //滚动条距顶部距离
+            totalheight = parseFloat($(window).height()) + parseFloat(srollPos);
+            if ($(document).height() - range <= totalheight) {
+                $.ajax({
+                    url: '@Url.Action("GetOrdersByScroll", "Member")',
+                    async: false,
+                    type: "POST",
+                    dataType: 'html',
+                    data: { pageIndex: pageIndex, backendUrl: backendUrl },
+                    success: function (data) {
+                        $(".container").append(data);
+                        pageIndex++;
+                    }
+                })
+            }
+        })
+    });*@
+</script>

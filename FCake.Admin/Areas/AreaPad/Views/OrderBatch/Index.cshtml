@@ -1,0 +1,74 @@
+﻿@model List<FCake.Domain.Entities.OrderBatch>
+@{
+    ViewBag.Title = "Index";
+}
+<style type="text/css">
+    .table > tbody > tr > td {
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+</style>
+
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['status'] = [];
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.OrderBatchMakeStatus>(true))
+    {
+        @:window.drpdata['status'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+</script>
+
+<div class="container-fluid">
+    <h3 class="text-center">生产批次查看</h3>
+    <div class="row">
+        <label class="text-center col-xs-3 col-md-2 col-lg-1" style="line-height:34px">状态</label>
+        @*<select class="selectpicker col-xs-6 col-md-4 col-lg-2" id="KitchenMakeStatus" onchange="queryByMakeStatus()">
+        @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.OrderBatchMakeStatus>(true))
+        {
+            <option value="@item.Value">@item.Text</option>
+        }
+    </select>*@
+        @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.OrderBatchMakeStatus>(false))
+        {
+            <a class="btn btn-default querybtn" style="margin:0 10px 0 0" @(item.Value == "0" ? "disabled" : "") data-options="{value:@item.Value}" onclick="queryByMakeStatus1('@item.Value',this)">@item.Text</a>
+        }
+        @*<a class="btn btn-default columns_1" href="javascript:void(0);" onclick="window.location.reload()">刷新</a>*@
+    </div>
+    <br />
+    <div class="table-responsive control-databox" style="border: 1px solid #ddd;">
+        @Html.Partial("_PartialOrderBatch", Model)
+    </div>
+</div>
+<script type="text/javascript">
+    function queryByMakeStatus() {
+        $.post("@Url.Action("_PartialOrderBatch", "OrderBatch")" + "?page=1&MakeStatus=" + $("#KitchenMakeStatus").val(), function (data) {
+            $(".control-databox").html(data).trigger("create");
+            triggerMoreButton();
+        });
+    }
+    var thisMakeStatus = "0";
+    function queryByMakeStatus1(makeStatus,obj) {
+        $(".querybtn").attr({ disabled: false });
+        $(obj).attr({ disabled: true });
+        thisMakeStatus = makeStatus;
+        $.post("@Url.Action("_PartialOrderBatch", "OrderBatch")" + "?page=1&MakeStatus=" + makeStatus, function (data) {
+            $(".control-databox").html(data).trigger("create");
+            triggerMoreButton();
+        });
+    }
+</script>
+@section Scripts{
+    <script type="text/javascript">
+        $(function () {
+            triggerMoreButton();
+        });
+        function triggerMoreButton() {
+            $(".control-morebutton").each(function () {
+                $(this).mypage({
+                    url: "@Url.Action("_PartialOrderBatchView", "OrderBatch")",
+                    querystring: { MakeStatus: thisMakeStatus }
+                });
+            });
+        }
+    </script>
+}

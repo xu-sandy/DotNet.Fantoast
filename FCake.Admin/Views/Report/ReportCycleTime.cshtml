@@ -1,0 +1,103 @@
+﻿@{
+    ViewBag.Title = "ReportCycleTime";
+}
+<script src="~/Scripts/datagrid-groupview.js"></script>
+<div id="toobal">
+    <label>查询时间从</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" id="beginTime" name="beginTime" readonly="readonly" />
+    <label>到</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8;" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm' })" id="endTime" name="endTime" readonly="readonly" />
+    <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<table id="dg"></table>
+<script type="text/javascript">
+    $grid = $("#dg");
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobal",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            view: groupview,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            url: "@Url.Action("ReportCycleTime", "Report")" + "?beginTime=&endTime=",
+            columns: [[
+            { field: 'ProductName', title: '产品名称', width: 100 },
+            {
+                field: 'Size', title: '磅数', width: 50, formatter: function (value, row, index) {
+                    if (value != null)
+                        return value;
+                    else
+                        return "所有磅数";
+                }
+            },
+            { field: 'Num', title: '数量', width: 50 },
+            {
+                field: 'MakeTimeDiff', title: '平均生产时间', width: 50
+                //formatter: function (value, row, index) {
+                //    return (value / row.Num / 60).toFixed(2) + " 小时"
+                //}
+            }
+            ]],
+            groupField: 'Gernre',
+            groupFormatter: function (value, rows) {
+                if (value != null) {
+                    return value + ' - ' + rows.length + ' 条数据';
+                }
+                else { return "总计" }
+            }
+        })
+        //查询点击事件
+        $("#search").click(function () {
+            var begintime = $("#beginTime").val();
+            var endtime = $("#endTime").val();
+            $("#dg").datagrid({
+                url: "@Url.Action("ReportCycleTime", "Report")" + "?beginTime=" + begintime + "&endTime=" + endtime
+            })
+        })
+    })
+
+    //导出到excel
+    function Save_Excel() {
+        var begintime = $("#beginTime").val();
+        var endtime = $("#endTime").val();
+        $grid.datagrid("loading", "正在生成Excel，请稍后");
+        $.ajax({
+            url: '@Url.Action("ExportCycTime")',
+            type: 'post',
+            data: { beginTime: begintime, endTime: endtime },
+            success: function (data) {
+                $grid.datagrid("loaded");
+                if (data.successed) {
+
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                } else {
+                    alert(data.message)
+                }
+            }
+        });
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

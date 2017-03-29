@@ -1,0 +1,84 @@
+﻿html {
+    font-size:12px;
+}
+
+body {
+    font-size:12px;
+}
+
+.datacontrol {
+    width: 180px;
+    padding: 6px 2px;
+    border: 1px solid #D3D3D3;
+    border-radius: 5px;
+    height: 18px;
+    vertical-align: middle;
+    outline-style: none;
+}
+
+    .datacontrol:focus {
+        -moz-box-shadow: 0 0 3px 0 #D3D3D3;
+        -webkit-box-shadow: 0 0 3px 0 #D3D3D3;
+        box-shadow: 0 0 3px 0 #D3D3D3;
+    }
+
+.Wdate {
+    border: 1px solid #D3D3D3;
+    width: 180px;
+    border-radius: 5px;
+    height: 34px;
+}
+
+    .Wdate:focus {
+        -moz-box-shadow: 0 0 3px 0 #D3D3D3;
+        -webkit-box-shadow: 0 0 3px 0 #D3D3D3;
+        box-shadow: 0 0 3px 0 #D3D3D3;
+    }
+
+.dc-searchbar {
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.dc-toolbar {
+    padding-left: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.clearfix:after {
+visibility: hidden;
+display: block;
+font-size: 0;
+content: " ";
+clear: both;
+height: 0;
+}
+.clearfix { display: inline-table; }
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* End hide from IE-mac */
+
+.txtalign-l{ 
+    text-align:left;
+}
+.txtalign-r{ 
+    text-align:right;
+}
+/*统计分析页面布局*/
+
+.analysis-container table{
+    min-width:100%;
+
+}
+.half-td{
+    width:50%;
+}
+#pie1, #pie2, #pie3{
+    min-height:350px;
+}
+#__echarts_download_wrap__ > a > img{
+    padding-top:100px;
+}

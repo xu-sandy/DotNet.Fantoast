@@ -1,0 +1,56 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "数据字典网格";
+    string dicCode = ViewBag.dicCode as string;
+}
+
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['state'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.ActiveState>(false))
+    {
+        @:window.drpdata['state'].push({ value: '@item.Value', text: '@item.Text' });
+                        }
+</script>
+
+<table id="dg" data-options="pageSize: 30"></table>
+
+<script>
+    var gridHelper = pharos.gridHelper;
+    $(function () {
+        $("#dg").easyui_datagrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<DictionaryData>())',
+            url: '/Setting/GetDictionaryDataGrid?dicCode=@dicCode',
+            columns_title: ['字典值名称 (最多200个字符)', '字典值编码', '字典值描述', '字典值分组', '排序号', '状态'],
+            columns_width: ['200', '200', '200', '100', '100', '50', '80'],
+            columns_show: ['Name', 'Value', 'Description', 'GroupName', 'Sorting', 'State'],
+            columns_notitle: [],
+            addDefault: { DicCode: '@dicCode', Name: '' },
+            columns_editor: [
+                '', '', '', '', '', {
+                    type: 'combobox',
+                    options: {
+                        valueField: 'value',
+                        textField: 'text',
+                        data: window.drpdata['state'],
+                        panelHeight: 'auto',
+                        editable: false
+                    }
+                }
+            ],
+            columns_formatter: ['-', '-', '-', '-','-',
+                    function (value, row, index) {
+                        return gridHelper.formatColumn(value, window.drpdata['state']);
+                    }
+            ],
+            onEditCallBack:function(index,el){
+                var valueEdit = $('#dg').datagrid('getEditor', { index: index, field: 'Value' });
+                var $input = valueEdit.target; // 得到文本框对象
+                $input.prop('readonly', true); // 设值只读
+                $input.css("background", "#D3D3D3");
+            }
+        });
+    })
+</script>

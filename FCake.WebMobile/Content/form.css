@@ -1,0 +1,131 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+/* 设置提示文字颜色 */  
+::-webkit-input-placeholder {  
+color: #838383;  
+}  
+:-moz-placeholder {  
+color: #838383;  
+}  
+.placeholder {  
+color: #ccc;  
+}  
+
+/*.control {
+    margin-top:10px;
+    margin-bottom:10px;
+    border: 1px solid #c1c1c1;
+    font-size: 14px;
+    line-height: 20px;
+    height: 26px;
+    width: 250px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    padding: 10px;
+    padding-left: 4px;
+    color:#666;
+    display:block;
+    position:relative;
+}*/
+
+.input_public {
+   display: block;
+    width: 67%;
+    height: 35px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    /*margin-left:40px;*/
+}
+ .input_public:focus {
+        border-color: #66afe9;
+        outline: 0;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
+    }
+
+    .input_public::-moz-placeholder {
+        color: #999;
+        opacity: 1;
+    }
+
+    .input_public:-ms-input-placeholder {
+        color: #999;
+    }
+
+    .input_public::-webkit-input-placeholder {
+        color: #999;
+    }
+
+    .input_public[disabled], .input_public[readonly], fieldset[disabled] .input_public {
+        cursor: not-allowed;
+        background-color: #eee;
+        opacity: 1;
+    }
+
+.input-text {
+}
+.input-check {
+    width:16px;
+	height:32px;
+    font-size: 100%;
+    vertical-align: middle;
+}
+
+.color-value {
+    color: #000;
+}
+
+.color-placeholder {
+    color: red;
+}
+/*我的优惠券，代金卡*/
+.table-list{
+    border: 1px solid #dbc6aa;
+    border-bottom:none;
+}
+.coupon-info{
+    color: #b6823f;
+    font-size:12px;
+    margin-top:5px;
+    border-bottom: 1px solid #dbc6aa
+}
+
+.coupon-info > ul{
+    display:inline-block;
+}
+.coupon-info > ul >li{
+    line-height:24px;
+}
+.couponinfo-title{
+    font-size:18px;
+}
+.couponinfo-money{
+    font-size:28px;
+}
+.couponinfo-right{
+    text-align:right;
+    float:right;
+    margin-right:5px;
+}
+.couponinfo-left{
+    margin-left:5px;
+}
+.adjust-lineheight{
+    margin-top:5px;
+}
+.coupon-color{
+    color:#411502; 
+}

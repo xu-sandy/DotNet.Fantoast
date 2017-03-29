@@ -1,0 +1,161 @@
+﻿@{
+    ViewBag.Title = "Cooperation";
+}
+<script src="~/Scripts/fcake/Province_City_DropDown.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script type="text/javascript">
+    window.onload = function where_b() { init() }
+</script>
+
+<link href="~/Content/form.css" rel="stylesheet" />
+<style type="text/css">
+    * {
+        color: #673100;
+    }
+    
+    .form_hr {
+        width: 900px;
+    }
+
+    .item_select1 {
+        float: left;
+        border: 1px solid #ccd1d9;
+        width: 100px;
+        padding: 10px;
+        margin: 10px;
+        /*height: 15px;*/
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        margin-left: 20px;
+    }
+</style>
+
+<div class="">
+    <div class="form_text">企业合作<img src="../Content/Images/form/slash.png"></div>
+    <div class="form_hr"></div>
+    <div class="item">
+        <form method="post" id="cooperationForm" name="creator">
+
+            <div class="item_stab">
+                <div class="item_text">公司全称</div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="CompanyName" name="CompanyName" />
+                </div>
+            </div>
+
+            <div class="item_stab">
+                <div class="item_text">公司地址</div>
+                <div class="item_tab">
+                    <select class="item_select1" id="province" name="province" onchange="select()"></select>
+                    <select class="item_select1" id="city" name="city" onchange="select()"></select>
+                </div>
+            </div>
+            <div class="item_stab">
+                <div class="item_text"></div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="CompanyAddr" name="CompanyAddr" />
+                </div>
+            </div>
+
+            <div class="item_stab">
+                <div class="item_text">公司人数</div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="CompanyPopulation" name="CompanyPopulation" />
+                </div>
+            </div>
+
+            <div class="item_stab">
+                <div class="item_text">您的名字</div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="Name" name="Name" />
+                </div>
+            </div>
+
+            <div class="item_stab">
+                <div class="item_text">您的电话</div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="Phone" name="Phone" />
+                </div>
+            </div>
+
+            <div class="item_stab">
+                <div class="item_text">您的电邮</div>
+                <div class="item_tab">
+                    <input type="text" class="item_tab1" id="Email" name="Email" />
+                </div>
+            </div>
+
+            <div class="confirm"><a href="#" id="submitBtn">确认</a></div>
+
+            @*<table>
+                    <tr>
+                        <td><label for="CompanyName">公司全称</label></td>
+                        <td colspan="2"><input class="item_tab1" id="CompanyName" name="CompanyName" /></td>
+                    </tr>
+                    <tr>
+                        <td><label>公司地址</label></td>
+                        <td><select class="item_tab1" id="province" name="province" onchange="select()"></select></td>
+                        <td><select class="item_tab1" id="city" name="city" onchange="select()"></select></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td colspan="2"><input class="item_tab1" id="CompanyAddr" name="CompanyAddr" /></td>
+                    </tr>
+                    <tr>
+                        <td><label for="CompanyPopulation">公司人数</label></td>
+                        <td colspan="2"><input class="item_tab1" id="CompanyPopulation" name="CompanyPopulation" /></td>
+                    </tr>
+                    <tr>
+                        <td><label for="Name">您的名字</label></td>
+                        <td colspan="2"><input class="item_tab1" id="Name" name="Name" /></td>
+                    </tr>
+                    <tr>
+                        <td><label for="Phone">您的电话</label></td>
+                        <td colspan="2"><input class="item_tab1" id="Phone" name="Phone" /></td>
+                    </tr>
+                    <tr>
+                        <td><label for="Email">您的电邮</label></td>
+                        <td colspan="2"><input class="item_tab1" id="Email" name="Email" /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align:center"><div class="confirm"><a href="#" id="submitBtn">确认</a></div></td>
+                    </tr>
+                </table>*@
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    //$("#submitBtn").click(function () {
+    //    $("#cooperationForm").submit(function () {
+    //        $.post("/Cooperation/SubmitCooperation?", $("#cooperationForm").serialize(),
+    //            function (result) {
+    //                alert(result.Message);
+    //            }, "json");
+    //    });
+    //})
+
+    $("#submitBtn").click(function () {
+        $.ajax({
+            type: "POST",
+            url: "/Cooperation/SubmitCooperation?" + $("#cooperationForm").serialize() + "&CompanyAddress=" + $("#province").val() + $("#city").val() + $("#CompanyAddr").val(),
+            success: function (result) {
+                alert(result.Message);
+            },
+            dataType: "json"
+        })
+    })
+
+    //验证（无效）
+    $(function () {
+        $("#cooperationForm").validate({
+            rules: {
+                CompanyName: { required: true },
+                province: { required: true },
+                city: { required: true },
+                CompanyAddr: { required: true },
+                Name: { required: true },
+                Phone: { required: true }
+            }
+        });
+    })
+</script>

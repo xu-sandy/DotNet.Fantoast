@@ -1,0 +1,34 @@
+﻿@charset "utf-8";
+/* CSS Document */
+
+
+.aboutus{width:700px;position:relative;left:50%;margin-left:-350px;}
+.title{
+	margin-top:30px;
+	margin-left:auto;
+	margin-right:auto;
+	width:700px;
+	color:#673100;
+	font-family:"微软雅黑";
+	font-size:20px;
+	line-height:50px;
+    border-bottom:solid 1px #b9bcc1;
+    _padding-bottom:10px;
+	}
+
+.con_text{
+	width:700px;
+	margin-left:auto;
+	margin-right:auto;
+	font-family:"微软雅黑";
+	font-size:12px;
+	color:#351f21;
+	}
+.con_text p{
+    text-indent: 2em;
+}
+.line_yellow{
+	width:700px;
+	margin-left:auto;
+	margin-right:auto;
+	}

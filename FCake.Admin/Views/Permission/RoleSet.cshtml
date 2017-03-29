@@ -1,0 +1,69 @@
+﻿@using FCake.Admin.Models;
+@{
+    ViewBag.Title = "角色设置";
+}
+
+<table id="dg" data-options="pageSize: 30"></table>
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['activestate'] = [];
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.ActiveState>(false))
+    {
+        @:window.drpdata['activestate'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+    $(function () {
+        $("#dg").easyui_datagrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<FCake.Domain.Entities.Role>())',
+            title: '角色设置',
+            columns_width: [150, 150, 100, 300],
+            toolbar: ['add', 'del', 'edit', 'save', 'reload', {
+                text: '目录权限分配', iconCls: 'icon-add', handler: function () {
+                    var row = $("#dg").datagrid("getSelected");
+                    if (row) {
+                        openset(row.Id);
+                    }
+                }
+            }],
+            columns_title: ['角色名称', '角色代码', '角色状态', '角色描述'],
+            columns_notitle: ['Id', 'CreatedBy', 'CreatedOn', 'ModifiedBy', 'ModifiedOn', 'IsDeleted'],
+            columns_editor: ['', '',
+                {
+                    type: 'combobox',
+                    options: {
+                        valueField: 'value',
+                        textField: 'text',
+                        data: window.drpdata['activestate'],
+                        panelHeight: 'auto',
+                        editable: false
+                    }
+                }, ''
+            ],
+            columns_formatter: ['-', '-',
+                function (value, row, index) {
+                    var drp = window.drpdata['activestate'];
+                    for (var i = 0; i < drp.length; i++) {
+                        if (drp[i].value == value) {
+                            return drp[i].text;
+                        }
+                    }
+                    return "";
+                },''
+            ],
+            onEditCallBack: function (index, el) {
+                var valueEdit = $('#dg').datagrid('getEditor', { index: index, field: 'Code' });
+                var $input = valueEdit.target; // 得到文本框对象
+                $input.prop('readonly', true); // 设值只读
+                $input.css("background", "#D3D3D3");
+            }
+        });
+    })
+
+    function openset(id) {
+        pharos.g.openDialog({
+            title: "目录权限分配",
+            width: 850,
+            height: 600,
+            url: '/permission/RolePermission/' + id
+        });
+    }
+</script>

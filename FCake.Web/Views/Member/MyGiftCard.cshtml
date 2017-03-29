@@ -1,0 +1,51 @@
+﻿@model dynamic
+@using FCake.Domain.Entities;
+@using FCake.Bll.Helper;
+@{
+    ViewBag.Title = "我的代金卡";
+
+}
+<style type="text/css">
+    td a { color: #4a2118; }
+</style>
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top; width:165px">
+            @Html.Partial("_PartialMenu")
+        </td>
+        <td style="text-align:left; vertical-align:top">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "我的代金卡")
+
+                <div class="panelcontent">
+                    <table cellspacing="0" cellpadding="0" border="0" class="orderlist orderlist-coupon">
+                        <tr class="rowhead">
+                            <th>代金卡卡号</th>
+                            <th>代金卡使用时间</th>
+                            <th>代金卡面额</th>
+                            <th>使用订单号</th>
+                        </tr>
+                        @if (Model != null)
+                        {
+                            foreach (var giftCard in Model.EntityList)
+                            {
+                                <tr class="rowdata rowheight">
+                                    <td>@giftCard.GiftCardSN</td>
+                                    <td>@giftCard.UseDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@giftCard.Denomination.ToString("N2")</td>
+                                    <td>@giftCard.UseOrderSN</td>
+                                </tr>
+                            }
+                        }
+
+                    </table>
+                    <div class="paginator">
+                        <span>
+                            @Html.ShowPageNavigate((int)Model.Pager.CurrentPageIndex, (int)Model.Pager.PageSize, (int)Model.Pager.RecordCount)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>

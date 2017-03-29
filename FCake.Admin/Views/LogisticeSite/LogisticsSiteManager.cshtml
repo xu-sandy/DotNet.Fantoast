@@ -1,0 +1,161 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "配送站点管理";
+}
+@Styles.Render("~/Content/themes/default/product.css")
+
+<div id="toolbar">
+    <div class="dc-searchbar">
+        <form id="search">
+            关键字：<input id="SiteName" name="SiteName" class="datacontrol" style="width:170px" />
+            @*所在省：<input class="easyui-combobox" name="province" id="province" data-options="hidden:true,editable:false,valueField:'t',textField:'t',panelHeight:'auto',width:120" />
+            所在市：<input class="easyui-combobox" name="city" id="city" data-options="editable:false,valueField:'t',textField:'t',panelHeight:'auto',width:120" />
+            所在地区：<input class="easyui-combobox" name="area" id="area" data-options="editable:false,valueField:'t',textField:'t',panelHeight:'auto',width:120" />*@
+            <a href="#" id="searchBtn" class="easyui-linkbutton cus4 linkbtn" data-options="iconCls:'icon-search'" data-check="view">查询</a>
+        </form>
+    </div>
+    <div class="dc-toolbar">
+        <a id="addsite" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add">添加</a>
+    </div>
+</div>
+
+<table id="dg"></table>
+
+<script type="text/javascript">
+    $(function () {
+        $('#dg').datagrid({
+            toolbar: '#toolbar',
+            title: '',
+            url: '/LogisticeSite/GetAllLogisticsSite?' + $("#search").serialize(),
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: true,
+            pagination: true,
+            pageSize: 30,
+            //fitColumns: true,
+            fit: true,
+            striped: true,
+            onLoadSuccess: function () {
+                $.parser.parse($('.easyui-linkbutton').parent());
+            },
+            columns: [[
+                { field: 'Id', title: '主键', hidden: true },
+                { field: 'SiteCode', title: '站点编码', width: 100 },
+                { field: 'SiteName', title: '站点名称', width: 200 },
+                { field: 'SiteProvince', title: '省', width: 100 },
+                { field: 'SiteCity', title: '市', width: 100 },
+                { field: 'SiteArea', title: '县/区', width: 100 },
+                {
+                    field: 'Status', title: '状态', align: 'center', width: 60, formatter: function (value, row, index) {
+                        return value == "0" ? "正常" : "关闭";
+                    }
+                },
+                { field: 'SiteAddress', title: '详细地址', width: 200 },
+                {
+                    field: 'IsDef', title: '是否市区默认自提地址', width: 130, formatter: function (value, row, index) {
+                        return value == 1 ? "是" : "否";
+                    }
+                },
+                //{ field: 'SiteVicinity', title: '附近名建筑', width: 120 },
+                { field: 'OpState', title: '操作', align: 'center', formatter: opFormat, width: 150 }
+            ]],
+        });
+
+        $('#searchBtn').click(function () {
+            $("#dg").datagrid({
+                url: '/LogisticeSite/GetAllLogisticsSite?' + $("#search").serialize()
+            })
+        });
+    })
+
+    function opFormat(value, row, index) {
+        var html = "";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" data-options=\"iconCls:'icon-edit'\" data-check=\'edit\' onclick=\"edititem('" + row.Id + "')\">编辑</a>&nbsp;&nbsp;";
+        html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus3\" data-options=\"iconCls:'icon-cancel'\" data-check=\'delete\' onclick=\"DeleteItem()\" >删除</a>";
+        return html;
+    }
+
+    $(function () {
+        $("#addsite").click(function () {
+            create();
+        })
+    })
+    //添加
+    function create() {
+        openForm("新增自提站点", "@Url.Action("LogisticsSiteFrom", "LogisticeSite")" + "?id=&a=" + Math.random());
+    }
+    //编辑
+    function edititem(rowid) {
+        var row = $("#dg").datagrid("getSelected");
+        if (row) {
+                openForm("自提站点信息编辑", "@Url.Action("LogisticsSiteFrom", "LogisticeSite")" + "?id=" + rowid + "&a=" + Math.random());
+        }
+    }
+    function openForm(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 600,
+            height: 400,
+            id: "add",
+            url: url
+        });
+    }
+    //删除
+    function DeleteItem() {//DeleteLogisSiteById
+        setTimeout(function () {
+            var row = checkSelected();
+            if (row != null) {
+                CommonGridDeleteSelectd($('#dg'), '/LogisticeSite/DeleteLogisSiteById', "确定删除?", { Id: row.Id });
+                $("#dg").datagrid("reload");
+            }
+        }, 10);
+    }
+    function commMsgBox(url, info) {
+        $.messager.confirm('系统提示!', info, function (r) {
+            if (r) {
+                $.post(url, {},
+                    function (result) {
+                        alert(result.Message);
+                        if (result.Successed)
+                            $("#dg").datagrid("reload");
+                    }, "json");
+            }
+        });
+    }
+    //$("#province").combobox({
+    //    url: '/common/getposition?position=country&value=',
+    //    onSelect: function (record) {
+    //        $("#city").combobox({
+    //            url: '/common/getposition?position=province&value=' + record.t,
+    //        });
+    //        $("#area").combobox({
+    //            url: '',
+    //        });
+    //        getaddress();
+    //    },
+    //    onLoadSuccess: function () {
+    //        $("#province").combobox("select", '福建省');
+    //    }
+
+    //});
+    //$("#city").combobox({
+    //    onSelect: function (record) {
+    //        $("#area").combobox({
+    //            url: '/common/getposition?position=city&value=' + record.t,
+    //        });
+    //        getaddress();
+    //    },
+    //    onLoadSuccess: function () {
+    //        $("#city").combobox("select", '厦门市');
+    //    }
+    //});
+
+    //$("#area").combobox({
+    //    onSelect: function (record) {
+    //        getaddress();
+    //    },
+    //});
+</script>
+

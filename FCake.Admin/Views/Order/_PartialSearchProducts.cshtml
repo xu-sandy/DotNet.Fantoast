@@ -1,0 +1,135 @@
+﻿<div id="sp">
+    <script src="~/Scripts/datagrid-detailview.js"></script>
+    <script>
+        var _themes = [];
+        var _type = [];
+        @foreach (var item in DropDownHelper.GetDictionaryByCode("Themes", true))
+        {
+            @:_themes.push({t:'@item.Text',v:'@item.Value'});
+        }
+        @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", true))
+    {
+        @:_type.push({ t: '@item.Text', v: '@item.Value' });
+    }
+    </script>
+    <table id="searchproducts"></table>
+
+    <a href="javascript:;" class="easyui-linkbutton cus1" data-options="iconCls:'icon-search'" id="opensearch" onclick="setproducttable()">展开查找产品</a>
+
+    <div id="toolbar1">
+        产品名称 <input type="text" name="ProductName" class="datacontrol" />
+
+        主题 <input id="Themes" name="Themes" class="easyui-combobox datacontrol" style="width:120px;"/>        
+        类型 <input id="Type" name="Type" class="easyui-combobox datacontrol" style="width:120px;" />
+            
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="searchproduct()">查找</a>
+    </div>
+
+    <script type="text/javascript">
+        var productname = "";
+        var themes = "";
+        var type = "";
+
+        $(function () {
+
+            $("#Themes").combobox({
+                data: _themes,
+                valueField: 'v',
+                textField: 't',
+                panelHeight: 'auto',
+                editable:false
+            });
+            $("#Type").combobox({
+                data: _type,
+                valueField: 'v',
+                textField: 't',
+                panelHeight: 'auto',
+                editable: false
+            });
+
+            //新增
+            if (orderid == "" && status == "") {
+                setproducttable();
+            }
+            if (status != "") {
+                $("#wrap>h1").eq(0).remove();
+                $("#sp").remove();
+            }
+
+            
+        })
+
+
+
+        function searchproduct() {
+            productname = $.trim($("input[name=ProductName]").val());
+            themes = $.trim($("input[name=Themes]").val());
+            type = $.trim($("input[name=Type]").val()); 
+
+            $("#searchproducts").datagrid(
+            //    {
+            //    url: '/order/SearchProducts?name=' + escape(productname) +
+            //        "&themes=" + escape(themes) + "&type=" + escape(type)
+            //}
+
+            {
+            url: '/order/SearchProducts?name=' + escape(productname) +"&themes=" + escape(themes) + "&type=" + escape(type),
+            pagination: true,
+            toolbar: '#toolbar1',
+            rownumbers: true,
+            singleSelect: true,
+            idField: 'Id',
+            columns: [[
+                {
+                    field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        var v = "";
+                        if (value != null && value != undefined && $.trim(value) != "") {
+                            v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                        }
+                        return v;
+                    }
+                },
+                { field: 'Name', title: '产品名称', width: 325, align: 'left' },
+                {
+                    field: 'Themes', title: '主题', width: 150, align: 'center',
+                    formatter: function (value, row, index) {
+                        if (value != null && value != undefined && $.trim(value) != "") {
+                            var temp = "";
+                            $.each(_themes, function (i, v) {
+                                if (v.v == value)
+                                    temp = v.t;
+                            });
+                            return temp;
+                        }
+                    }
+                },
+                {
+                    field: 'Type', title: '品种', width: 150, align: 'center',
+                    formatter: function (value, row, index) {
+                        return formatColumnMultilpe(value, window.drpdata['category']);
+                    }
+                }
+            ]],
+            view: detailview,
+            detailFormatter: function (index, row) {
+                return '<div class="ddv" style="padding:5px 0"></div>';
+            },
+            onExpandRow: function (index, row) {
+                var url = '/order/GetSubProducts/' + $("#searchproducts").datagrid("getRows")[index].Id;
+                var ddv = $("#searchproducts").datagrid('getRowDetail', index).find('div.ddv');
+                ddv.panel({
+                    height: 150,
+                    border: false,
+                    cache: false,
+                    content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:99%;"></iframe>',
+                    onLoad: function () {
+                        $("#searchproducts").datagrid('fixDetailRowHeight', index);
+                    }
+                });
+                $("#searchproducts").datagrid('fixDetailRowHeight', index);
+            }
+        });
+        }
+    </script>
+</div>

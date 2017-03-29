@@ -1,0 +1,326 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@using FCake.Admin.Models;
+@{
+    ViewBag.Title = "Index";
+}
+<style type="text/css">
+    .payinfo-table { width: 100%; border: none; }
+        .payinfo-table tr { border: none; }
+            .payinfo-table tr td { border: none; text-align: left; width: 50%; }
+    .unstyle-list{list-style-type:none; padding-left:0; margin-top:3px;margin-bottom:0;}
+    #search > li{padding:2px;}
+    #ExportDialog {
+        padding: 10px;
+    }
+
+        #ExportDialog div {
+            margin: 10px;
+        }
+</style>
+<div id="toolbar">
+    <ul id="search" class="unstyle-list">
+        <li>
+            @*客户名：<input id="customerName" name="customerName" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+            客户电话：<input id="customerMobile" name="customerMobile" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+            <br/>*@
+            &nbsp;关键字：<input id="keyWord" name="keyWord" class="easyui-textbox datacontrol" style="width:140px;height:30px" data-options="prompt:'会员手机号/会员名称'">
+            订单号：<input id="no" name="no" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+            下单时间：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" id="beginTime" name="beginTime" />
+            到：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" id="endTime" name="endTime" />
+        </li>
+        <li>
+            要求送达：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" id="reqBeginTime" name="reqBeginTime" />
+            到：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" id="reqEndTime" name="reqEndTime" />
+            <a href="#" id="searchBtn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+            <a href="javascript:openExportDialog()" class="easyui-linkbutton">导出Excel</a>
+        </li>
+    </ul>
+</div>
+
+<table id="dg"></table>
+
+
+<div id="ExportDialog" class="easyui-dialog" title="导出订单数据" style="width:500px;height:200px;padding:10px;">
+    <div>
+        <input type="radio" id="createOn" name="time" checked value="1" /><label for="createOn">下单时间</label>
+        <input type="radio" id="requrenOn" name="time" value="2" /><label for="requrenOn">送货时间</label>
+    </div>
+    <div>
+        开始时间：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" id="ep_beginTime" name="ep_beginTime" />
+        结束时间：<input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd' })" id="ep_endTime" name="ep_endTime" />
+    </div>
+    <div id="buttonbar" style="text-align:center;margin-top:10px;">
+        <a id="Exportbtn" href="#" onclick="exportOrderData()" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">导出</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['orderstatus'] = [];
+    window.drpdata['viewstatus'] = [];
+    window.drpdata['freetype'] = [];
+    window.drpdata['times'] = [];
+    window.drpdata['tradestatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderStatus>(true))
+    {
+        @:window.drpdata['orderstatus'].push({ value: '@item.Value', text: '@item.Text' });
+
+                                        }
+
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.ReviewStatus>(true))
+    {
+            @:window.drpdata['viewstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                                                                }
+
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.FeeType>(false))
+    {
+        @:window.drpdata['freetype'].push({ value: '@item.Value', text: '@item.Text' });
+                                                                }
+    @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("DistributionTime", false))
+    {
+        @:window.drpdata['times'].push({ value: '@item.Value', text: '@item.Text' });
+                                                }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.TradeStatus>(true))
+    {
+        @:window.drpdata['tradestatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+
+</script>
+<script type="text/javascript">
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+    $('#dg').datagrid({
+        title: '待审核订单',
+        url: "@Url.Action("GetReviewPendingOrderList", "Order")",
+        rownumbers: true,
+        singleSelect: true,
+        toolbar: "#toolbar",
+        fit: true,
+        pageSize: 30,
+        //fitColumns: true, //自适应
+        pagination: true,//开启分页
+        striped: true, //True 奇偶行使用不同背景色
+        nowrap: false,//自动换行
+        onLoadSuccess: function () {
+            //$.parser.parse($('td .easyui-linkbutton').parent());
+            $.parser.parse($('.cus2').parent());
+        },
+        columns: [[
+            { field: 'Id', title: 'Id', hidden: true },
+            { field: 'No', title: '订单号', width: 100, align: 'center' },
+            { field: 'CreatedOn', title: '下单时间', width: 120, align: 'center' },
+            {
+                field: 'state', title: '订单状态', width: 50, align: 'center',
+                formatter: function (value, row, index) {
+                    return formatColumn(value, window.drpdata['orderstatus'])
+                }
+            },
+            { field: 'Mobile', title: '手机', width: 80, align: 'center' },
+            { field: 'Customer', title: '会员名', width: 80, align: 'center' },
+            {
+                field: 'RequiredTimeBucket', title: '要求送达时间', width: 140, align: 'center'
+            },
+            {
+                field: 'PayInfo', title: '支付信息', width: 280, align: 'center', formatter: function (value, row, index) {
+                    var htmlStr = '';
+                    htmlStr += $.format('<table class="payinfo-table">' +
+                                        '<tr>' +
+                                        '<td>{0}：<span style="color:red">{1}</span></td>' +
+                                        '<td>订单总价：{3}</td>' +
+                                        '</tr>' +
+                                        '<tr>' +
+                                        '<td>优惠券抵扣：{2}</td>' +
+                                        '<td>总抵扣：{5}</td>' +
+                                        '</tr>' +
+                                        '<tr>' +
+                                        '<td>代金卡抵扣：{4}</td>' +
+                                        '<td>需支付：{7}</td>' +
+                                        '</tr>' +
+                                        '<tr>' +
+                                        '<td>积分抵扣：{6}</td>' +
+                                        '<td>实际支付：<span style="color:red">{8}</span></td>' +
+                                        '</table>', formatColumn(row.FreeType, window.drpdata['freetype']), formatColumn(row.TradeStatus, window.drpdata['tradestatus']),
+                                        Number(row.CouponPay) > 0 ? '-' + row.CouponPay.formatMoney() : Number(0).formatMoney(),
+                                        row.TotalPrice.formatMoney(),
+                                        Number(row.GiftCardPay) > 0 ? '-' + row.GiftCardPay.formatMoney() : Number(0).formatMoney(),
+                                        Number(row.CouponPay + row.GiftCardPay + row.IntegralPay) > 0 ? '-' + (row.CouponPay + row.GiftCardPay + row.IntegralPay).formatMoney() : Number(0).formatMoney(),
+                                        Number(row.IntegralPay) > 0 ? '-' + row.IntegralPay.formatMoney() : Number(0).formatMoney(),
+                                        row.NeedPay.formatMoney(), row.ActualPay.formatMoney());
+                    return htmlStr;
+                }
+            },
+            {
+                field: 'reviewstate', title: '订单审核', width: 100, align: 'center', formatter: function (value, row, index) {
+                    return formatColumnHtml(value, row, window.drpdata['viewstatus']);
+                }
+            },
+            {
+                field: 'a', title: '打印订单', width: 60, align: 'center', formatter: function (value, row, index) {
+                    var orderno = row.No;
+                    if (row.state != 7) {
+                        return "<a class=\"easyui-linkbutton cus2\" style=\"width:60px;\" href='@Url.Action("Acknowledgedreceipt", "Order")?OrderNo=" + orderno + "' target= _blank>打印</a>";
+                    }
+
+                }
+            },
+            {
+                field: 'OrderClient', title: '订单来源', width: 80, align: 'center', formatter: function (value, row, index) {
+                    if (value == 1) {
+                        return "移动端";
+                    } else if (value == 0) {
+                        return "PC端";
+                    } else if (value == 2) {
+                        return "电话端";
+                    } else {
+                        return "未知";
+                    }
+                }
+            },
+            {
+                field: 'Address', title: '地址', width: 200, align: 'center', formatter: function (value, row, index) {
+                    var addr = row.ReceiverArea + row.ReceiverAddr;
+                    return "<span title='" + addr + "'  >" + addr + "</span>";
+                }
+            },
+            { field: 'DeliverMsg', title: '留言', width: 150, align: 'center' }
+
+        ]]
+    })
+
+    $('#searchBtn').click(function () {
+        var keyWord = encodeURI($("#keyWord").val());
+        var no = $("#no").val();
+        var beginTime = $("#beginTime").val();
+        var endTime = $("#endTime").val();
+        var reqBeginTime = $("#reqBeginTime").val();
+        var reqEndTime = $("#reqEndTime").val();
+        $("#dg").datagrid({
+            pageNumber: 1,
+            url: "@Url.Action("GetReviewPendingOrderList", "Order")" + "?&orderid=" + no + "&keyWord=" + keyWord + "&beginTime=" + beginTime + "&endTime=" + endTime + "&reqBeginTime=" + reqBeginTime + "&reqEndTime=" + reqEndTime,
+        })
+        $("#dg").datagrid("reload");
+    });
+
+    function formatColumnHtml(value, row, list) {
+        if (row.state == "7") {
+            return "会员已取消";
+        }
+        if (value != 0) {
+            var remark = "";
+            if (row.Remark != null) {
+                remark = row.Remark;
+            }
+            else {
+                remark = "正常";
+            }
+            return "<a href=\"javascript:void(0)\" title=" + remark + " onclick=\"viewit('" + row.No + "')\">" + formatColumn(value, list) + "</a>";
+        }
+        else {
+            return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:80px;' onclick=\"StatusItem('" + row.No + "','" + row.Id + "')\">待审核</a>";
+        }
+    }
+
+    var orderNo;
+    var orderId;
+
+    //待审核点击
+    function StatusItem(No, Id) {
+        orderNo = No;
+        orderId = Id;
+        //$("#dialog").dialog("open");  //old
+        checkit(No);
+    }
+
+    //取枚举对应值
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    //审核对话框
+    function checkit(orderNo) {
+        window.top.$('body').data("grid", $);
+
+        pharos.g.openDialog({
+            title: "订单审核 - 详情",
+            width: 900,
+            height: 700,
+            id: "checkDlg",
+            url: "@Url.Action("OrderDetailCheck")?orderNo=" + orderNo,
+            onClose: function () {
+                $('#dg').datagrid('reload');
+            }
+        })
+    }
+    //详情对话框
+    function viewit(orderNo) {
+
+        pharos.g.openDialog({
+            title: "订单详情",
+            width: 900,
+            height: 700,
+            id: "checkDlg",
+            url: "@Url.Action("_PartialOrderDetail")?orderid=" + orderNo,
+            onClose: function () {
+                $('#dg').datagrid('reload');
+            }
+        })
+    }
+    //导出
+    function exportOrderData() {
+        var choose = $("input[name=time]:checked").val();
+        var ep_beginTime = $("#ep_beginTime").val();
+        var ep_endTime = $("#ep_endTime").val();
+        if (ep_beginTime == "" || ep_endTime == "") {
+            $.messager.alert("操作提示", "请选择完整时间段！", "info", function () {
+                return false;
+            })
+        }
+        $.ajax({
+            url: '@Url.Action("exportOrders", "Order")',
+            type: "POST",
+            dataType: "JSON",
+            data: { type: choose, isReview: 2, beginTime: ep_beginTime, endTime: ep_endTime },
+            success: function (data) {
+                if (data.successed) {
+                    $('#ExportDialog').dialog('close');
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+                } else {
+                    $.messager.alert("操作提示", data.message, "info");
+                }
+            }
+        })
+    }
+
+</script>
+<!--导出订单数据-->
+<script type="text/javascript">
+    $(function () {
+        $('#ExportDialog').dialog('close');
+    });
+    function openExportDialog() {
+        $('#ExportDialog').dialog('open');
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+</script>

@@ -1,0 +1,99 @@
+﻿@model FCake.Domain.Entities.Orders
+@{
+    ViewBag.Title = "确认订单";
+    var payUrl = Url.Action(Model.FeeType == FCake.Domain.Enums.FeeType.ALiPay ? "AliPay" : "Index", Model.FeeType == FCake.Domain.Enums.FeeType.ALiPay ? "Cart" : "Tenpay", new { id = Model.No });
+}
+
+
+<style type="text/css">
+    .text {
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 70px;
+        width: 540px;
+        height: 50px;
+        text-align: center;
+        color: #734912;
+        font-size: 18px;
+        line-height: 50px;
+        font-family: "微软雅黑";
+    }
+
+    .type {
+        float: left;
+        text-align: center;
+        margin-left: 9px;
+    }
+    .span-price-color { color:#aa6915;}
+</style>
+
+<div class="clearfix wallbox orderdetail">
+    @Html.Partial("_PartialCartNav", "确认订单")
+
+    <!--页面内容-->
+    <div class="text">
+        <img class="type" src="~/Content/images/right.png" />
+        <div class="type">
+            您的订单已经提交成功
+            @if (Model.FeeType != FCake.Domain.Enums.FeeType.POS && Model.FeeType != FCake.Domain.Enums.FeeType.Cash)
+                {
+                    @:，如果您还未付款请尽快支付！
+                }
+        </div>
+    </div>
+
+    <div class="connent clearfix" style="clear:both;">
+        <div class="distribution">配送及付款</div>
+        <div class="inf_line"></div>
+        <div class="information">
+            <table>
+                <tr>
+                    <td>订单编号：</td>
+                    <td class="inf_normal">@Model.No</td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>客服电话：</td>
+                    <td class="inf_normal">4000-569-565</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="information">
+            <table>
+                <tr>
+                    <td>需要支付：</td>
+                    <td class="inf_normal span-price-color">￥@Model.NeedPay.ToString("N2")</td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>支付方式：</td>
+                    <td class="inf_normal">@(FCake.Core.Common.EnumHelper.GetDescription(Model.FeeType))</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="icon">
+        @if (Model.FeeType != FCake.Domain.Enums.FeeType.POS && Model.FeeType != FCake.Domain.Enums.FeeType.Cash && Model.TradeStatus == FCake.Domain.Enums.TradeStatus.NotPay)
+        {
+            <div class="iconall">
+                <a target="_blank" href="@ViewBag.hrefUrl">
+                    <div class="icon_bank">
+                        <img style="margin-bottom:10px;" src="~/Content/images/pay.png" />
+                    </div><div class="icon_tex">去支付</div>
+                </a>
+            </div>
+        }
+        <div class="icon_text"><a href="@Url.Action("Index","Member")">&lt;&lt;查看订单</a></div>
+
+    </div>
+
+
+</div>
+<script>
+    $(function () {
+        $(".icon_tex").click();
+    })
+</script>

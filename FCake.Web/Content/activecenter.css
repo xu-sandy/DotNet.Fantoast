@@ -1,0 +1,11 @@
+﻿@charset "utf-8";
+/* CSS Document */
+.connent{
+	margin-left:auto;
+	margin-right:auto;
+    margin-bottom:-20px;
+	background-image:url(Images/activecenter/photo.jpg);
+    background-position:center;
+    background-repeat:no-repeat;
+	height:2311px;
+	}

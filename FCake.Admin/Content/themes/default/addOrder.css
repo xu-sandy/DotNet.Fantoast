@@ -1,0 +1,237 @@
+﻿body {
+    padding: 0;
+    margin: 0;
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+}
+
+input {
+    font-family: "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+}
+
+#wrap, .wrap {
+    width: 820px;
+    position: relative;
+    margin: 20px auto;
+    _margin-left: 50%;
+    _left: -410px;
+}
+
+h1 {
+    font-size: 14px;
+}
+
+#toolbar1, #toolbar2 {
+    padding: 10px;
+}
+
+    #toolbar1 input, #toolbar1 select, #toolbar2 input {
+        margin-right: 10px;
+        vertical-align: middle;
+    }
+
+.customermsg {
+    position: relative;
+}
+
+.hide {
+    display: none;
+}
+
+#customermsg .hide {
+    display: table;
+}
+
+    #customermsg .hide td {
+        padding: 5px;
+    }
+
+#receive td {
+    padding: 5px;
+}
+
+#receive input {
+    vertical-align: middle;
+}
+
+#submit {
+    padding: 20px 0;
+    text-align: right;
+}
+
+.hover {
+    cursor: pointer;
+}
+
+#customermsg.hover {
+    line-height: 250px;
+    text-align: center;
+    font-size: 2em;
+}
+
+#delivery input {
+    vertical-align: middle;
+}
+
+.dgedit {
+    position: relative;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+}
+
+/*UserDetail*/
+.userPanel {
+    overflow: auto;
+    border: 1px solid #ccc;
+    padding-top: 5px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.userDetail {
+    width: auto;
+    height: 100%;
+    padding-left: 50px;
+}
+
+    .userDetail tr {
+    }
+
+        .userDetail tr td {
+            height: 25px;
+        }
+
+            .userDetail tr td.title {
+                text-align: right;
+            }
+
+            .userDetail tr td.info {
+                text-align: left;
+            }
+/*优惠信息*/
+.select-box {
+    width: 167px;
+    height: 70px;
+    border: 1px solid #dbc6aa;
+    cursor: pointer;
+    box-sizing: border-box;
+    padding: 3px;
+    display: inline-block;
+    margin: 3px;
+    position:relative;
+}
+
+
+
+    .select-box ul {
+        padding: 0;
+    }
+
+.checked {
+    border: 3px solid #bd9663 !important;
+    padding: 1px;
+    background:url("images/coupon-bg1.png") no-repeat;
+    background-position:-1px -1px;
+}
+
+.first-line {
+    text-align: center;
+}
+
+.box-cash {
+    font-size: 20px;
+    color: #bd9663;
+    display: inline-block;
+}
+
+.box-tip {
+    color: #6b5b5e;
+    float: right;
+    display: inline-block;
+    margin-top: 8px;
+    margin-right: 10px;
+}
+
+.second-line {
+    color: #9c9c9c;
+    margin-left: 14px !important;
+}
+
+.box-content {
+    vertical-align: middle;
+}
+
+.card-information {
+    color: #bd9663;
+}
+
+.card-total {
+    color: #734912;
+    font-size: 15px;
+}
+
+.box-cash-disabled {
+    font-size: 20px;
+    color: #fff;
+    display: inline-block;
+}
+
+.box-tip-disabled {
+    color: #9f9f9f;
+    float: right;
+    display: inline-block;
+    margin-top: 8px;
+    margin-right: 10px;
+}
+
+.disabled {
+    border-color: #CAC8C8;
+    color: #9F9F9F !important;
+    pointer-events: none;
+    background-color: #C4C4C4;
+}
+
+.div-margin {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/*使用优惠券外框*/
+.favorable-box {
+    width: 100%;
+    border: 1px solid #ccc;
+    margin: 10px auto;
+    padding: 10px;
+    display: none;
+}
+
+    .favorable-box li {
+        margin-top: 7px;
+        list-style: none;
+    }
+
+        .favorable-box li:first-child {
+            margin-left: 0px;
+        }
+/*.favorable-box span { margin-left: 10px; }*/
+
+.hide-controller {
+    border: 1px solid #cccccc;
+    padding: 5px 8px;
+}
+
+    .hide-controller a {
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: bold;
+        color: black;
+    }
+
+.giftCard {
+    margin-left: 40px;
+}
+/*.font-color-brown {
+    margin-left:10px;
+}*/

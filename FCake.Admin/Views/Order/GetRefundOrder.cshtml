@@ -1,0 +1,122 @@
+﻿@using FCake.Core.Common;
+@{
+    ViewBag.Title = "选择退款订单";
+}
+<div id="toolbar">
+    <form id="search">
+        订单号：<input id="no" name="no" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+
+        <a href="#" id="searchBtn" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+    </form>
+</div>
+
+<table id="dg"></table>
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['orderstatus'] = [];
+    window.drpdata['tradeStatus'] = [];
+    window.drpdata['feetype'] = [];
+
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderStatus>(true))
+    {
+        @:window.drpdata['orderstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                                                            }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.TradeStatus>(true))
+    {
+        @:window.drpdata['tradeStatus'].push({ value: '@item.Value', text: '@item.Text' });
+                    }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.FeeType>(true))
+    {
+        @:window.drpdata['feetype'].push({ value: '@item.Value', text: '@item.Text' });
+                }
+</script>
+<script>
+
+    $("#dg").datagrid({
+        // title: '选择退款订单',
+        url: '@Url.Action("GetRefundOrderForm")' + "?orderNo=",
+        rownumbers: true,
+        singleSelect: true,
+        toolbar: "#toolbar",
+        fit: true,
+        pageSize: 30,
+        fitColumns: true, //自适应
+        pagination: true,//开启分页
+        striped: true, //True 奇偶行使用不同背景色
+        onLoadSuccess: function () {
+            //$.parser.parse($('td .easyui-linkbutton').parent());
+            $.parser.parse($('.cus2').parent());
+        },
+        columns: [[
+           { field: 'Id', title: 'Id', hidden: true },
+           { field: 'No', title: '订单号', width: 150, align: 'center' },
+           { field: 'CreatedOn', title: '下单时间', width: 150, align: 'center' },
+           {
+               field: 'FeeType', title: '支付方式', width: 150, align: 'center',
+               formatter: function (value, row, index) {
+                   return formatColumn(value, window.drpdata['feetype'])
+               }
+           },
+           {
+               field: 'Status', title: '订单状态', width: 100, align: 'center',
+               formatter: function (value, row, index) {
+                   return formatColumn(value, window.drpdata['orderstatus'])
+               }
+           },
+           {
+               field: 'TradeStatus', title: '支付状态', width: 100, align: 'center',
+               formatter: function (value, row, index) {
+                   return formatColumn(value, window.drpdata['tradeStatus'])
+               }
+           },
+           { field: 'ActualPay', title: '支付金额', width: 100, align: 'center' },
+           { field: 'CouponPay', title: '优惠券支付', width: 100, align: 'center' },
+           { field: 'TotalPrice', title: '总金额', width: 100, align: 'center' },
+           {
+               field: 's', title: '操作', width: 150, align: 'center', formatter: function (value, rows, index) {
+                   return "<a class=\"easyui-linkbutton cus2\" style=\"width:60px;\" onclick=\"AddItem('" + rows.No + "')\" target= _blank>退款</a>";
+               }
+           }
+        ]]
+    })
+
+    $("#searchBtn").click(function () {
+        $("#dg").datagrid({
+            url: '@Url.Action("GetRefundOrderForm")' + "?orderNo=" + $("#no").val()
+        })
+    })
+
+
+    //取枚举对应值
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+    function reload() {
+        $("#dg").datagrid("reload");
+    }
+
+    //新增
+    function AddItem(orderno) {
+        openDialog("订单退款", '@Url.Action("RefundInfo")' + "?orderNo=" + orderno);
+    }
+    //打开添加页
+    function openDialog(title, url) {
+        window.top.$("body").data("window1", window);
+        pharos.g.openDialog({
+            title: title,
+            width: 600,
+            height: 400,
+            id: "update",
+            url: url,
+            onClose: function () {
+                reload();
+        }
+        });
+    }
+</script>

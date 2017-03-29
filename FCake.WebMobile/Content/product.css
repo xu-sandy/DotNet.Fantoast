@@ -1,0 +1,85 @@
+﻿@charset "utf-8";
+/* CSS Document */
+@media  (max-width: 321px) {
+    /*在小于768像素的屏幕里,这里的样式才生效*/
+     .sell ul{
+        width:300px;
+    }
+    .sell ul li {
+        width:130px;
+        height:210px;
+        margin-left:3%;
+        margin-right:1%;
+    }
+    .itemconent{
+        width:130px;
+        height:130px;
+    }
+}
+@media  (min-width: 322px) and (max-width: 767px) {
+    /*在小于768像素的屏幕里,这里的样式才生效*/
+     .sell ul{
+        width:345px;
+    }
+    .sell ul li {
+        width:150px;
+        height:230px;
+        margin-left:3%;
+        margin-right:1%;
+    }
+    .itemconent{
+        width:150px;
+        height:150px;
+    }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+    /*在768和991像素之间的屏幕里,这里的样式才生效*/
+     .sell ul{
+        width:710px;
+    }
+     .sell ul li {
+        width:190px;
+        height:260px;
+        margin-left:4%;
+        margin-right:1%;
+    }
+     .itemconent{
+        width:190px;
+        height:200px;
+    }
+
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+    /*在992和1199像素之间的屏幕里,这里的样式才生效*/
+    .sell ul{
+        width:880px;
+    }
+     .sell ul li {
+        width:245px;
+        height:330px;
+        margin-left:4%;
+        margin-right:1%;
+    }
+     .itemconent{
+        width:245px;
+        height:270px;
+    }
+
+}
+@media (min-width: 1200px) {
+    /*在大于1200像素的屏幕里,这里的样式才生效*/
+      .sell ul{
+          width:1140px;
+      }
+      .sell ul li{
+        width:280px;
+        height:330px;
+        margin-left:6%;
+        margin-right:2%;
+    }
+    .itemconent{
+        width:280px;
+        height:270px;
+    }
+
+}

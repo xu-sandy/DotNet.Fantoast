@@ -1,0 +1,95 @@
+﻿@{
+    ViewBag.Title = "修改密码";
+}
+
+<link href="~/Content/form.css" rel="stylesheet" />
+<link href="~/Content/password.css" rel="stylesheet" />
+<link href="~/Content/login.css" rel="stylesheet" />
+@Scripts.Render(
+    "~/Scripts/formValidator/formValidator-4.1.3.js",
+    "~/Scripts/formValidator/formValidatorRegex.js"
+)
+
+<table class="wallbox content">
+    <tr>
+        <td style="vertical-align:top;">
+            @Html.Partial("_PartialMenu")
+        </td>
+        @*内容信息*@
+        <td style="text-align: left; vertical-align: top;">
+            <div class="datapanel">
+                @Html.Partial("_PartialMapTitle", "修改密码")
+
+                <div class="panelcontent" style="width:773px">
+                    <form id="form1" name="form1" method="post">
+                        <table class="table_all" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td class="table_text">旧密码</td>
+                                <td><input id="oldPwd" name="oldPwd" type="password" class="control" />&nbsp;</td>
+                                <td><div id="oldPwdTip" style="width:250px"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="table_text">新密码</td>
+                                <td><input id="newPwd" name="newPwd" type="password" class="control" />&nbsp;</td>
+                                <td><div id="newPwdTip" style="width:250px"></div></td>
+                            </tr>
+                            <tr>
+                                <td class="table_text">确认新密码</td>
+                                <td><input id="newPwd_confirm" name="newPwd_confirm" type="password" class="control" />&nbsp;</td>
+                                <td><div id="newPwd_confirmTip" style="width:250px"></div></td>
+                            </tr>
+                        </table>
+                    </form>
+                    <div class="yes">
+                        <a style="display:block; cursor:pointer;" id="confirmBtn">确认</a>
+                    </div>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+<script type="text/javascript">
+    $(function () {
+        $.formValidator.initConfig({
+            formID: "form1", theme: "ArrowSolidBox", submitOnce: true,
+            onSuccess: function () {
+                if ($("#confirmBtn").attr("disabled") == true)
+                    return;
+                $("#confirmBtn").attr("disabled", true);
+                var oldPwd, newPwd;
+                oldPwd = $("input[name=oldPwd]").val();
+                newPwd = $("input[name=newPwd]").val();
+                if (oldPwd == newPwd) {
+                    alert("新密码与旧密码相同");
+                    $("input[name=newPwd]").val("");
+                    $("input[name=newPwd_confirm]").val("");
+                    return;
+                }
+                $.post("/Member/ModifyPassword", { oldPwd: oldPwd, newPwd: newPwd }, function (result) {
+                    alert(result);
+                    $("#confirmBtn").attr("disabled", false);
+                }, "json");
+            },
+            onError: function (msg, obj, errorlist) {
+                $("#errorlist").empty();
+                $.map(errorlist, function (msg) {
+                    $("#errorlist").append("<li>" + msg + "</li>")
+                });
+                alert(msg);
+            }
+        });
+
+        $("#newPwd").formValidator({ onShow: "请输入密码", onFocus: "至少6个长度", onCorrect: "密码合法" })
+                .regexValidator({ regExp: "^[^\\s+]{6,20}$", onError: "6至20位任意字符，不能包含任意空白符，空格，制表符(Tab)，换行符，中文全角空格等" })
+                .inputValidator({ min: 6, max: 20, empty: { leftEmpty: false, rightEmpty: false, emptyError: "密码两边不能有空符号" }, onError: "密码不能为空,请确认" });
+        $("#newPwd_confirm").formValidator({ onShow: "输再次输入密码", onFocus: "至少6个长度", onCorrect: "密码一致" })
+            .regexValidator({ regExp: "^[^\\s+]{6,20}$", onError: "6至20位任意字符，不能包含任意空白符，空格，制表符(Tab)，换行符，中文全角空格等" })
+            .inputValidator({ min: 6, max: 20, empty: { leftEmpty: false, rightEmpty: false, emptyError: "重复密码两边不能有空符号" }, onError: "重复密码不能为空,请确认" })
+            .compareValidator({ desID: "newPwd", operateor: "=", onError: "2次密码不一致,请确认" });
+
+        $("#confirmBtn").click(function () {
+            $("#form1").submit();
+        });
+    });
+
+</script>

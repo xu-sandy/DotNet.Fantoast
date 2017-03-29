@@ -1,0 +1,223 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "GiftCards";
+    string dicName = ViewBag.dicName;
+}
+<style>
+    .datagrid-header-row, .datagrid-row {
+        height: 40px;
+    }
+</style>
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['reviewStatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.GiftCardReviewStatus>(true))
+    {
+        @:window.drpdata['reviewStatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+</script>
+
+<div id="toobar" style="padding:5px">
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" data-check="add" onclick="addGiftCard()">添加批次请求</a>
+    批次状态：<input id="reviewStatus" name="reviewStatus" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text',onChange:QueryByAuditStatus, data:window.drpdata['reviewStatus'], panelHeight: 'auto', editable: false,width:100" />
+</div>
+<table id="dg"></table>
+<div id="loading" class="easyui-dialog" title="" data-options="iconCls:'icon-save'" style="width: 180px; height: 130px; padding: 10px; margin: 0 auto;">
+    <div><img src="~/Content/images/loading.gif" style="width: 30px; height: 30px; margin-left: 35%" /></div>
+    <div>代金卡生成中，请勿关闭页面，生成张数越多等待时长越长，请您耐心等待...</div>
+</div>
+<div class="window-mask"></div>
+<script type="text/javascript">
+    $(function () {
+        $("#loading").dialog("close");
+        $(".window-mask").hide();
+    })
+    //采用jquery easyui loading css效果   
+    function ajaxLoading() {
+        $(".window-mask").show();
+        $("#loading").dialog("open");
+    }
+    function ajaxLoadEnd() {
+        $(".window-mask").hide();
+        $("#loading").dialog("close");
+    }
+</script>
+<script type="text/javascript">
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobar",
+            url: '/GiftCard/GetGiftCards',
+            rownumbers: true,
+            singleSelect: true,
+            fitColumns: true,
+            pagination: true,
+            pageSize: 30,
+            autoRowHeight: true,
+            fit: true,
+            onLoadSuccess: function () {
+                $.parser.parse($('td .easyui-linkbutton').parent());
+            },
+            columns: [[
+                { field: 'Id', title: '批次号', width: 120, align: 'center', hidden: true },
+                { field: 'GiftBatch', title: '批次号', width: 80, align: 'center' },
+                { field: 'Denomination', title: '面值', width: 50, align: 'center', formatter: function (value) { return "￥ " + value } },
+                {
+                    field: 'SalesMoney', title: '销售价', width: 50, align: 'center', formatter: function (value) {
+                        if (value == 0) return "赠送"
+                        else return "￥ " + value
+                    }
+                },
+                { field: 'Quantity', title: '生成数量', width: 50, align: 'center' },
+                {
+                    field: 'TotalCost', title: '总成本', width: 50, align: 'center', formatter: function (value, row) {
+                        return "￥ " + row.Denomination * row.Quantity
+                    }
+                },
+                {
+                    field: 'BeginValidDate', title: '有效期始于', width: 100, align: 'center', formatter: function (value, row, index) {
+                        return formatData(value);
+                    }
+                },
+                {
+                    field: 'EndValidDate', title: '有效期终于', width: 100, align: 'center', formatter: function (value, row, index) {
+                        return formatData(value);
+                    }
+                },
+                {
+                    field: 'CreatedOn', title: '批次请求时间', width: 100, align: 'center', formatter: function (value, row, index) {
+                        return formatData(value);
+                    }
+                },
+                { field: 'CreatedBy', title: '批次请求人员', width: 100, align: 'center' },
+                {
+                    field: 'ReviewStatus', title: '审核状态', width: 50, align: 'center', formatter: function (value, row, index) {
+                        return formatColumnHtml(value, row, window.drpdata['reviewStatus'])
+                    }
+                },
+                { field: 'opState', title: '操作', width: 50, align: 'center', formatter: opFormat }
+            ]]
+        })
+    })
+
+    pharos.permission.loadpermissions();
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                return list[i].text;
+            }
+        }
+        return value;
+    }
+    var isReview = false;
+    var tmpReviewHtml = "";
+    changeStatusHtml();
+    function changeStatusHtml() {
+        window.permission = pharos.permission.getpermissions();
+        var indexReview = $.inArray("review", window.permission);
+        if (indexReview > -1) {
+            isReview = true;
+            tmpReviewHtml = "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:50px;' onclick=\"statusItem('{0}',{1})\">{2}</a>";
+        }
+    }
+
+    //format 状态
+    function formatColumnHtml(value, row, listdata) {
+        var text = formatColumn(value, listdata);
+        if (isReview && value == "1") {//
+            var html = String.format(tmpReviewHtml, [row.Id, row.ReviewStatus, text]);
+            return html;
+        } else {
+            return text;
+        }
+    }
+    function statusItem(id, status) {
+        if (status == "1") {//审批产品
+            commMsgBox(id, "审批通过将直接生成代金卡，可进入代金卡查看页面进行查看，确定审批通过？");
+            return true;
+        }
+    }
+    function commMsgBox(id, info) {
+        $.messager.defaults = { ok: "通过", cancel: "不通过" };
+        $.messager.confirm('系统提示!', info, function (r) {
+            var url = "@Url.Action("AuditGiftCards")" + "?giftCardId=" + id + "&isPass=" + r;
+            $.ajax({
+                url:url, 
+                type:'post',
+                beforeSend:ajaxLoading,
+                dataType: "Json",
+                success: function (data) {
+                    ajaxLoadEnd();
+                    if (data.successed) {
+                        $.messager.alert("提示", "成功生成 " + data.data + " 张代金卡！可进入代金卡查看页面进行查看", "info", function () {
+                            $("#dg").datagrid("reload");
+                        });
+                    } else {
+                        $("#dg").datagrid("reload");
+                    }
+                   
+                }
+                })
+        });
+        $.messager.defaults = { ok: "确认", cancel: "取消" };
+    }
+
+    function opFormat(value, row) {
+        var html = "";
+        if (row.ReviewStatus == 2) {
+            return null;
+        } else {
+            html += "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus3\" data-options=\"iconCls:'icon-cancel'\" onclick=\"DeleteItem()\" >删除</a>";
+            return html;
+        }
+    }
+
+    //时间日期格式化
+    function formatData(value) {
+        if (!String.isNE(value)) {
+            //value = value.replace('-', '/');
+            value = value.toString().replace(/-/g, "/");
+            var newData = new Date(value);
+            return newData.format('yyyy-MM-dd hh:mm');
+        }
+    }
+
+    //添加批次按钮
+    function addGiftCard() {
+        openForm("添加批次请求", "@Url.Action("GiftCardEdit")" + "?a=" + Math.random());
+    }
+    function openForm(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: 480,
+            height: 350,
+            id: "add",
+            url: url
+        });
+    }
+
+    //删除
+    function DeleteItem() {
+        setTimeout(function () {
+            var row = checkSelected();
+            if (row != null) {
+                CommonGridDeleteSelectd($('#dg'), '/common/deletedata?type=@(DataHelper.GetTypeName<GiftCards>())&&permissionmenuid=' + pharos.permission.getmenuid(), "确定删除?", { Id: row.Id });
+            }
+        }, 10);
+    }
+
+    //状态查询
+    function QueryByAuditStatus(newValue, oldValue) {
+        if (newValue != "") {
+            $("#dg").datagrid({
+                url: '/GiftCard/QueryByAuditStatus?ReviewStatus=' + newValue
+            })
+        }
+        else {
+            $("#dg").datagrid({
+                url: '/GiftCard/GetGiftCards'
+            })
+        }
+    }
+</script>

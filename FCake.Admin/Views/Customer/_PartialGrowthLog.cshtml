@@ -1,0 +1,25 @@
+﻿<h2>成长值记录</h2>
+<table id="growthLog"></table>
+<script>
+    $("#growthLog").datagrid({
+        url: '@Url.Action("GetMemberGrowthValueLogById", "Customer")' + "?memberId=" + '@ViewBag.Id',
+        rownumbers: true,
+        singleSelect: true,
+        fitColumns: true,
+        pagination: true,
+        pageSize: 10,
+        height:300,
+        autoRowHeight: true,
+        onLoadSuccess: function () {
+            $.parser.parse($('td .easyui-linkbutton').parent());
+        },
+        columns: [[
+            { field: 'OrderSN', title: '交易单号', width: 70, align: 'center' },
+            { field: 'ChangeGrowthValue', title: '成长值变动', width: 40, align: 'center' },
+            { field: 'TotalGrowthValue', title: '总成长值', width: 40, align: 'center' },
+            { field: 'Multiple', title: '积分比例', width: 40, align: 'center' },
+            { field: 'Remark', title: '备注', width: 250, align: 'center' }
+
+        ]]
+    })
+</script>

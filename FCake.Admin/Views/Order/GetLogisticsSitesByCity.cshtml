@@ -1,0 +1,14 @@
+﻿@{
+    Layout = null;
+}
+
+<td></td>
+<td>
+    @foreach (var x in new FCake.Bll.LogisticsSiteService().GetLogisticsSitesByCity(Request.Params["city"]))
+    {
+        <p>
+            <input type="radio" name="fixedsite" value="@x.Id" @(x.Id.Equals(Request.Params["id"]) ? "checked" : (x.IsDef == 0 ? "checked" : "")) />
+            @x.SiteName   @x.SiteProvince@x.SiteCity@x.SiteArea@x.SiteAddress
+        </p>
+    }
+</td>

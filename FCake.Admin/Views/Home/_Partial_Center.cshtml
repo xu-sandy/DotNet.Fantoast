@@ -1,0 +1,534 @@
+﻿@using FCake.Domain.Entities
+@{
+    ViewBag.Title = "_Partial_Center";
+    var lastDayReviewPassOrderList = ViewBag.lastDayReviewPassOrderList as List<Orders>;
+    var lastDayCompletedOrderList = ViewBag.lastDayCompletedOrderList as List<Orders>;
+    var todayReviewPassOrderList = ViewBag.todayReviewPassOrderList as List<Orders>;
+    var todayCompletedOrderList = ViewBag.todayCompletedOrderList as List<Orders>;
+    var curMonthReviewPassOrderList = ViewBag.curMonthReviewPassOrderList as List<Orders>;
+    var curMonthCompletedOrderList = ViewBag.curMonthCompletedOrderList as List<Orders>;
+}
+<style type="text/css">
+    .home-container .echart-box { border: 1px solid rgb(211, 211, 211); padding: 10px; border-radius: 10px; height:210px;}
+</style>
+
+<div class="home-container">
+    <ul class="ul-unstyle left-side">
+        <li>
+            <p class="member-text">今日新增会员：</p>
+            <span class="member-number">@ViewBag.curDayMemberQuantity</span>
+            <p class="member-text">本月新增会员：</p>
+            <span class="member-number">@ViewBag.curMonthMemberQuantity</span>
+        </li>
+        <li class="order-state order-yesterday">
+            <div class="order-title">
+                <img class="img-ver-align" src="~/Content/images/icon_yesterday.png" />
+                <ul class="title-inline ul-unstyle title-inline-right">
+                    <li>昨日下单</li>
+                    <li class="order-date">@DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")</li>
+                </ul>
+            </div>
+            <div class="audit-passed">
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(审核通过)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@lastDayReviewPassOrderList.Count()</li>
+                    <li>@lastDayReviewPassOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@lastDayReviewPassOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+            <div class="delivered" >
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(已配送)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@lastDayCompletedOrderList.Count()</li>
+                    <li>@lastDayCompletedOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@lastDayCompletedOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+        </li>
+        <li class="order-state order-today">
+            <div class="order-title">
+                <img class="img-ver-align" src="~/Content/images/icon_today.png" />
+                <ul class="title-inline ul-unstyle title-inline-right">
+                    <li>今日下单</li>
+                    <li class="order-date">@DateTime.Now.ToString("yyyy-MM-dd")</li>
+                </ul>
+            </div>
+            <div class="audit-passed">
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(审核通过)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@todayReviewPassOrderList.Count()</li>
+                    <li>@todayReviewPassOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@todayReviewPassOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+            <div class="delivered">
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(已配送)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@todayCompletedOrderList.Count()</li>
+                    <li>@todayCompletedOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@todayCompletedOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+        </li>
+        <li class="order-state order-month">
+            <div class="order-title">
+                <img class="img-ver-align" src="~/Content/images/icon_month.png" />
+                <ul class="title-inline ul-unstyle title-inline-right">
+                    <li>本月下单</li>
+                    <li class="order-date">@DateTime.Now.ToString("yyyy-MM-dd")</li>
+                </ul>
+            </div>
+            <div class="audit-passed">
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(审核通过)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@curMonthReviewPassOrderList.Count()</li>
+                    <li>@curMonthReviewPassOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@curMonthReviewPassOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+            <div class="delivered">
+                <ul class="ul-unstyle leftside-order leftside-textalign">
+                    <li class="order-firstline">(已配送)</li>
+                    </br>
+                    <li>订单量：</li>
+                    <li>销售总额：</li>
+                    <li>现金支付：</li>
+                </ul>
+                <ul class="ul-unstyle rightside-order rightside-textalign">
+                    <li>@curMonthCompletedOrderList.Count()</li>
+                    <li>@curMonthCompletedOrderList.Sum(o => o.TotalPrice).ToString("N2")</li>
+                    <li>@curMonthCompletedOrderList.Sum(o => o.ActualPay).ToString("N2")</li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+    <ul class="ul-unstyle right-side">
+        <li>
+            <input class="Wdate Wdate-position" type="text" value="@DateTime.Now.ToString("yyyy-MM")" style="border-radius: 5px; border: 1px solid #f8f8f8; width: 140px; height: 30px" onclick="WdatePicker({ dateFmt: 'yyyy-MM', minDate:'2015-01-01', maxDate:'@DateTime.Now.ToString("yyyy-MM-dd")'  })" id="searchMonth" name="searchMonth" />
+            <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" onclick="searchMonthSalesData()" style="width:90px" value="查询" />
+            （只统计下单时间在该月且已经完成的订单）
+            
+        </li>
+        <li>
+            <div id="main-sales"></div>
+        </li>
+        <li class="chart-bot">
+            <div class="echart-box">
+                <div>注：统计对应时间段下单成功且审核通过的数据，包括未完成、已完成的订单</div>
+                <div id="week-order"></div>
+                <div id="top-items"></div>
+            </div>
+        </li>
+    </ul>
+</div>
+<script src="~/Scripts/echarts.js"></script>
+<script type="text/javascript">
+    // 路径配置
+    require.config({
+        paths: {
+            echarts: '../Scripts/echarts'
+        }
+    });
+
+    require(
+           [
+               'echarts',
+               'echarts/chart/line', // 使用柱状图就加载bar模块，按需加载
+               'echarts/chart/bar',
+               'echarts/chart/macarons'
+           ],
+           DrawCharts
+           );
+
+    function DrawCharts(ec) {
+        FunDraw1(ec);
+        FunDraw2(ec);
+        FunDraw3(ec);
+    }
+    var myChart1 ;
+    function FunDraw1(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        myChart1 = ec.init(document.getElementById('main-sales'),'macarons');
+
+        var option = {
+            title: {
+                text: '@DateTime.Now.ToString("yyyy年MM月")' + '销售额',
+                x: 'center',
+                y: 10,
+                textStyle: {
+                    fontSize: '14',
+                    color: '#696969',
+                    fontWeight: 'normal',
+                    fontFamily: 'Microsoft YaHei'
+                }
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            calculable: false,
+            grid: {
+                show: true,
+                width: '88%',
+                height: 270,
+                x: 60,
+                y: 50,
+                borderWidth: 1,
+                borderColor: '#efefef',
+                lineStyle: { color: ['#efefef'], }
+
+
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: @Html.Raw(ViewBag.monthDayTitleList),
+                    axisLine: {
+                        lineStyle: {
+                            color: '#efefef',
+                            width: 0,
+                            type: 'solid'
+                        }
+                    },
+                    axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                        show: true,
+                        textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                            color: '#808080'
+                        }
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#efefef',
+                            width: 0,
+                            type: 'solid'
+                        }
+                    },
+                    axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                        show: true,
+                        textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                            color: '#808080'
+                        }
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '销售额',
+                    type: 'line',
+                    data: @Html.Raw(ViewBag.monthDayTotalPriceList),
+                },
+                {
+                    name: '现金支付',
+                    type: 'line',
+                    data: @Html.Raw(ViewBag.monthDayActualPayList),
+                },
+            ]
+        };
+        // 为echarts对象加载数据
+        myChart1.setOption(option);
+    }
+    function FunDraw2(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        var myChart = ec.init(document.getElementById('week-order'),'macarons');
+
+        var option = {
+            title: {
+                text: '近7天订单量',
+                x: 'center',
+                y: 5,
+                textStyle: {
+                    fontSize: '10',
+                    color: '#696969',
+                    fontWeight: 'normal',
+                    fontFamily: 'Microsoft YaHei'
+                }
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            toolbox: {
+                show: false,
+            },
+            calculable: false,
+            grid: {
+                show: true,
+                width: '85%',
+                height: 125,
+                x: 40,
+                y: 35,
+                borderWidth: 1,
+                borderColor: '#efefef',
+                lineStyle: { color: ['#efefef'], }
+
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: @Html.Raw(ViewBag.day7TitleList),
+                    axisLine: {
+                        lineStyle: {
+                            color: '#efefef',
+                            width: 0,
+                            type: 'solid'
+                        }
+                    },
+                    axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                        show: true,
+                        textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                            color: '#808080'
+                        }
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    axisLine: {
+                        lineStyle: {
+                            color: '#efefef',
+                            width: 0,
+                            type: 'solid'
+                        }
+                    },
+                    axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                        show: true,
+                        textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                            color: '#808080'
+                        }
+                    }
+                }
+            ],
+            series: [
+                {
+                    name: '订单量',
+                    type: 'bar',
+                    data: @Html.Raw(ViewBag.day7SaleNumberList),
+                    itemStyle: {
+                        normal: {
+                            color: '#af96db',
+                        }
+                    },
+                },
+            ]
+        };
+
+        // 为echarts对象加载数据
+        myChart.setOption(option);
+    }
+    function FunDraw3(ec) {
+        // 基于准备好的dom，初始化echarts图表
+        var myChart = ec.init(document.getElementById('top-items'),'macarons');
+
+        var option = {
+            backgroundColor: '#7dbee8',
+            title: {
+                text: '本月销售TOP10',
+                x: 'center',
+                y: 5,
+                textStyle: {
+                    fontSize: '10',
+                    color: '#fff',
+                    fontWeight: 'normal',
+                    fontFamily: 'Microsoft YaHei'
+                }
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+            toolbox: {
+                show: false,
+            },
+            calculable: false,
+            grid: {
+                show: true,
+                width: '85%',
+                height: 125,
+                x: 25,
+                y: 35,
+                borderWidth: 0,
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: @Html.Raw(ViewBag.topProductNameList),
+                    show: false,
+                    itemStyle: {
+                        normal: {
+                            color: '#fff',
+                            label: {
+                                show: true,
+                                position: 'top',
+                            }
+                        }
+                    },
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    show: false
+                }
+            ],
+            series: [
+                {
+                    name: '销售量',
+                    type: 'bar',
+                    data: @Html.Raw(ViewBag.topProductSaleNumList),
+                    itemStyle: {
+                        normal: {
+                            color: '#fff',
+                            label: {
+                                show: true,
+                                position: 'top',
+                            }
+                        }
+                    },
+                }
+            ]
+        };
+
+        // 为echarts对象加载数据
+        myChart.setOption(option);
+    }
+</script>
+<script type="text/javascript">
+    function searchMonthSalesData(){
+        var month = $("#searchMonth").val();
+        if(month == "" || month == undefined){
+            alert("请选择查询月份");
+            return false;
+        }
+        $.ajax({
+            url:'@Url.Action("GetMonthSalesTotal", "Home")?month=' + month,
+            type:'post',
+            beforeSend:function(){
+                $("#search").attr("disabled","disabled");
+                $("#search").css("background","#d3d3d3");
+                $("#search").css("border","1px solid #d3d3d3");
+            },
+            success:function(result){
+                var option = {
+                    title: {
+                        text: result.chartTitle + '销售额',
+                        x: 'center',
+                        y: 10,
+                        textStyle: {
+                            fontSize: '14',
+                            color: '#696969',
+                            fontWeight: 'normal',
+                            fontFamily: 'Microsoft YaHei'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    calculable: false,
+                    grid: {
+                        show: true,
+                        width: '88%',
+                        height: 270,
+                        x: 60,
+                        y: 50,
+                        borderWidth: 1,
+                        borderColor: '#efefef',
+                        lineStyle: { color: ['#efefef'], }
+
+
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: result.monthDayTitleList,
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#efefef',
+                                    width: 0,
+                                    type: 'solid'
+                                }
+                            },
+                            axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                                show: true,
+                                textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                                    color: '#808080'
+                                }
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#efefef',
+                                    width: 0,
+                                    type: 'solid'
+                                }
+                            },
+                            axisLabel: {           // 坐标轴文本标签，详见axis.axisLabel
+                                show: true,
+                                textStyle: {       // 其余属性默认使用全局文本样式，详见TEXTSTYLE
+                                    color: '#808080'
+                                }
+                            }
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '销售额',
+                            type: 'line',
+                            data: result.monthDayTotalPriceList,
+                        },
+                        {
+                            name: '现金支付',
+                            type: 'line',
+                            data: result.monthDayActualPayList,
+                        },
+                    ]
+                };
+                // 为echarts对象加载数据
+                myChart1.setOption(option);
+                myChart1.restore();
+                $("#search").removeAttr("disabled");
+                $("#search").css("background","");
+                $("#search").css("border","");
+            }
+
+        })
+    }
+</script>

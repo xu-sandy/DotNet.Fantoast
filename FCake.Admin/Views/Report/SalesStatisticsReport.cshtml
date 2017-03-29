@@ -1,0 +1,150 @@
+﻿@{
+    ViewBag.Title = "销售统计报表";
+}
+
+<div id="toobal">
+    <label>年份</label>
+    <input class="Wdate" type="text" style="border-radius: 5px; border: 1px solid #f8f8f8; height: 30px" value="@DateTime.Now.ToString("yyyy")" onclick="WdatePicker({ dateFmt: 'yyyy', minDate: '2015-01-01', maxDate: '@DateTime.Now.ToString("yyyy-MM-dd")' })" id="year" name="year"  />
+        <input type="button" class="easyui-linkbutton cus1 linkbtn" id="search" style="width:90px" value="查询" />
+    @*<input type="button" id="export" style="width:90px" value="导出到Excel" />*@
+    <a href="#" class="easyui-linkbutton cus1 linkbtn" data-options="" onclick="Save_Excel()">导出Excel</a>&nbsp;（只统计下单时间在该年内且已经完成的订单）
+</div>
+<table id="dg"></table>
+
+<div id="dlg" class="easyui-dialog" title="Download Dialog" data-options="iconCls:'icon-save'" style="width:500px;height:200px;padding:10px;">
+    <div id="dlg_top"></div>
+    <div id="buttonbar" style="text-align:center;">
+        <a id="downloadbtn" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'">点击下载</a>
+    </div>
+    <div id="dlg_bottom"></div>
+</div>
+<script type="text/javascript">
+    $grid = $("#dg");
+    $(function () {
+        $('#dlg').dialog('close');
+    })
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#toobal",
+            rownumbers: true,
+            singleSelect: true,
+            nowrap: false,
+            autoRowHeight: false,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            pagination: false,
+            pageSize: 100,
+            pageList: [100],
+            onLoadSuccess: loadSuccess,
+            url: "@Url.Action("GetSalesStatisticsReportData", "Report")?year=@DateTime.Now.ToString("yyyy")",
+            columns: [[
+                { field: 'OMonth', title: '月份', width: 80, align: 'center' },
+                { field: 'OrderClient', title: '来源', width: 100, align: 'center' },
+                { field: 'OrderQuantity', title: '订单量', width: 100, align: 'center' },
+                { field: 'ActualPay', title: '现金支付', width: 100, align: 'center' },
+                { field: 'CouponPay', title: '优惠券抵扣', width: 80, align: 'center' },
+                { field: 'GiftCardPay', title: '代金卡抵扣', width: 80, align: 'center' },
+                { field: 'IntegralPay', title: '积分抵扣', width: 80, align: 'center' },
+                { field: 'TotalPrice', title: '总销售额', width: 100, align: 'center' },
+            ]]
+        })
+        //查询点击事件
+        $("#search").click(function () {
+            var year = $("#year").val();
+            if (year == "") {
+                $.messager.alert("提示", "请选择年份");
+                return false;
+            }
+            $("#dg").datagrid({
+                url: "@Url.Action("GetSalesStatisticsReportData", "Report")" + "?year=" + year 
+            })
+        })
+    })
+    //导出到excel
+    function Save_Excel() {
+        var year = $("#year").val();
+        if (year == "") {
+            $.messager.alert("提示", "请选择年份");
+            return false;
+        }
+        $grid.datagrid("loading", "正在生成Excel，请稍后");
+        $.ajax({
+            url: '@Url.Action("ExportSalesStatisticsReport")',
+            type: 'post',
+            data: { year: year},
+            success: function (data) {
+                $grid.datagrid("loaded");
+                if (data.successed) {
+
+                    DownLoad_Dialog(data.data.replace(/\"/g, ""));
+
+                } else {
+                    alert(data.message)
+                }
+            }
+        });
+    }
+    function DownLoad_Dialog(url) {
+        $("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $("#downloadbtn").attr("href", url);
+        $("#dlg_bottom").html("</br>提示：右键可以另存");
+        $('#dlg').dialog('open');
+    }
+    var merges;
+    function loadSuccess() {
+        merges = $("#dg").datagrid('getRows');
+        if (merges.length > 0) {
+            mergeCellsByField("dg", "OMonth", "0");
+        }
+
+    }
+    /**
+    * EasyUI DataGrid根据字段动态合并单元格
+    * param tableID 要合并table的id
+    * param colList 要合并的列,用逗号分隔(例如："name,department,office");
+    * param mainColIndex 要合并的列索引集（针对要合并的列）
+    例如："0,1,2" 当然也可以是"0"也可以是"0,1"或者"1,2"这样
+    */
+    function mergeCellsByField(tableID, colList, ColIndexArr) {
+        var ColArray = colList.split(",");
+        var indexArr = ColIndexArr.split(",");
+        var tTable = $('#' + tableID);
+        var TableRowCnts = tTable.datagrid("getRows").length;
+        var tmpA;
+        var tmpB;
+        var PerTxt = "";
+        var CurTxt = "";
+        var alertStr = "";
+        for (var i = 0; i <= TableRowCnts ; i++) {
+            //整理逻辑如果 几个关键列数据相等
+            var tmp = ""
+            if (i == TableRowCnts) {
+                CurTxt = "";
+            }
+            else {
+                for (var kk = 0; kk < indexArr.length; kk++) {
+                    tmp += tTable.datagrid("getRows")[i][ColArray[indexArr[kk]]];
+                }
+                CurTxt = tmp
+            }
+            if (PerTxt == CurTxt) {
+                tmpA += 1;
+            }
+            else {
+                tmpB += tmpA;
+                for (var j = 0; j < ColArray.length; j++) {
+                    tTable.datagrid('mergeCells', {
+                        index: i - tmpA,
+                        field: ColArray[j],
+                        rowspan: tmpA,
+                        colspan: null
+                    });
+                }
+                tmpA = 1;
+            }
+            PerTxt = CurTxt;
+        }
+    }
+
+</script>

@@ -1,0 +1,221 @@
+﻿@using FCake.Bll;
+@{
+    ViewBag.Title = "购物车";
+}
+@{
+    var cc = new FCake.Bll.Services.CartService().GetCartsCount();
+}
+<div class="clearfix wallbox">
+    @Html.Partial("_PartialCartNav", "我的购物车")
+    <!--购物车-->
+    <div class="cart-details">
+
+
+        @if (cc != 0)
+        {
+        <div class="control clearfix">
+            <span class="l">
+                <input id="ckball-th" type="checkbox" class="ckball" /> 全选
+            </span>
+            <span class="r">
+                <a href="/cart/clearcart">清空购物车</a>
+            </span>
+        </div>
+            
+            <table class="details">
+
+                <thead>
+                    <tr>
+                        <th width="50"></th>
+                        <th width="150">图片</th>
+                        <th width="150">蛋糕</th>
+                        <th width="">规格</th>
+                        <th width="">单价</th>
+                        <th width="120">数量</th>
+                        <th width="">小计</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+
+                    @foreach (var x in new FCake.Bll.Services.CartService().GetCarts())
+                    {
+                        <tr>
+                            <td style="text-align:left"><input type="checkbox" name="itemIDs" value="@x.CartID" /></td>
+                            <td>
+                                <a href="@Url.Action("Detail", "Product", new { id = @x.PID })" target="_blank">
+                                    <img src="@(Html.GetSysManageUrl() + x.Url)_min.jpg" width="100" height="100" />
+                                </a>
+                            </td>
+                            <td>
+                                <a style="color: #b2772b" href="@Url.Action("Detail", "Product", new { id = @x.PID })" target="_blank">@x.PName</a>
+                            </td>
+                            <td>@x.SizeTitle</td>
+                            <td class="g-money">
+                                @string.Format("{0:C}", x.Price)
+                            </td>
+                            <td style="vertical-align:middle;">
+                                <div class="clearfix num">
+                                    <a href="javascript:;" class="btn-decrease">-</a>
+                                    <input type="text" value="@x.Num" name="num" data-target="@x.CartID" data-price="@x.Price" />
+                                    <a href="javascript:;" class="btn-increase">+</a>
+                                </div>
+                            </td>
+                            <td class="allprice g-money" data-subtotal="@(x.Num * x.Price)">
+                                @string.Format("{0:C}", x.Num * x.Price)
+                            </td>
+                            <td>
+                                <a href="javascript:;" onclick="removeCart('@x.Id',true)">删除</a>
+                            </td>
+                        </tr>
+                    }
+
+
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td style="text-align:left;">
+                            <input id="ckball-tfoot" type="checkbox" class="ckball" /> 全选
+                        </td>
+                        <td colspan="7" style="padding:0;">
+                            <div class="clearfix" style="height:50px;">
+                                <div class="count">
+                                    @* 已选中<span style="color:red;">1</span>件：<span>¥ 149.00</span> 运费：<span>¥ 0.00</span>*@
+                                </div>
+                                <div class="balance">
+                                    <a href="javascript:;" onclick="tobalance(); return false;"><img src="~/Content/images/balance.png" height="50" /><span>结算</span></a>
+                                </div>
+                                <div class="all">
+                                    需支付：<span>¥ 0.00</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+        }
+        else
+        {
+            <table>
+                <tr>
+                    <td colspan="8" style="height:150px;text-align:center;width:1000px;"><span style="font-size: 18px; color: #8e6a55;">您的购物车里还没有商品~</span> <a href="/Product/Index"><img src="~/Content/images/gocart.png" /></a></td>
+                </tr>
+            </table>
+        }
+
+    </div>
+
+    <div class="more">
+        <a href="/Product/Index">继续购物 >></a>
+    </div>
+
+    @Html.Partial("_PartialCutlery")
+
+</div>
+
+<script>
+
+    function tobalance() {
+        var itemIDs = [];
+        $('input[name=itemIDs]:checked').each(function () {
+            itemIDs.push($(this).val());
+        });
+        if (itemIDs.length == 0) {
+            alert("请选择商品后再下单");
+            return;
+        }
+
+        $form = $("<form action=\"/cart\" method=\"post\"><input type='text' name='itemIDs' value='" + itemIDs + "'></form>");
+        $('body').append($form.hide());
+        $form.submit();
+    }
+
+    $(function () {
+        $("input[name=itemIDs]").each(function () {
+            var checked = $(this).is(":checked");
+            if (!checked) {
+                $(this).click();
+            }
+        });
+        //$(".ckball").click();
+        $(".ckball").prop('checked', true);
+        $(".ckball").each(function (index, elm) {
+            $(elm).click(function () {
+                var self = this;
+                //设置勾选状态
+                var isck = $(self).is(':checked');
+                $('input[name=itemIDs]').prop('checked', isck);
+                $("#ckball-tfoot").prop('checked', isck);
+                $("#ckball-th").prop('checked', isck);
+                //更改支付结算
+                getallprice();
+            });
+        });
+
+        $("input[name=itemIDs]").change(function () {
+            getallprice();
+        });
+        $("input[name=itemIDs]").click(function () {
+            $('.ckball').prop('checked', $('input[name=itemIDs]:checked').length == $('input[name=itemIDs]').length);
+
+        })
+        getallprice();
+        $("input[name=num]").keyup(function () {
+            var value = $(this).val();
+            try {
+                value = value.replace(/\D/g, '');
+                $(this).val(Number(value));
+                if (Number(value) <= 0)
+                    $(this).val(1);
+            }
+            catch (e) {
+                $(this).val(1);
+            }
+        });
+
+        $(".btn-decrease").click(function () {
+            var value = $(this).parent().find("input[name=num]").val();
+            try {
+                value = value.replace(/\D/g, '');
+                value = Number(value);
+            }
+            catch (e) {
+                value = 1;
+            }
+            if (value == 1)
+                return;
+            $(this).parent().find("input[name=num]").val(Number(value) - 1).change();
+        });
+        $(".btn-increase").click(function () {
+            var value = $(this).parent().find("input[name=num]").val();
+            try {
+                value = value.replace(/\D/g, '');
+                value = Number(value);
+            }
+            catch (e) {
+                value = 1;
+            }
+            $(this).parent().find("input[name=num]").val(Number(value) + 1).change();
+        });
+        $("input[name=num]").change(function () {
+            var subtotal = parseFloat($(this).val() * $(this).attr("data-price"));
+            $(this).parent().parent().next(".allprice").text(subtotal.formatMoney()).attr("data-subtotal", subtotal);
+            $("input[name=itemIDs]").eq(0).change();
+
+            //更改导航购物车数量值
+            savecartnum(this, $(this).val(), $(this).attr("data-target"));
+        });
+    });
+
+    function getallprice() {
+        var num = 0;
+        $("input[name=itemIDs]:checked").each(function () {
+            num += Number($(this).parent().parent().find(".allprice").attr("data-subtotal"));
+        });
+        $(".all span").text("¥ " + parseFloat(num).toFixed(2));
+    }
+
+
+</script>

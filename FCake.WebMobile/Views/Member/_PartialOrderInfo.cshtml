@@ -1,0 +1,55 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.WebMobile.Models;
+@using FCake.Bll;
+@model dynamic
+@{if (Model != null)
+{
+
+    foreach (var x in Model.EntityList)
+    {
+        var os = new OrderService();
+        List<FCake.Domain.WebModels.CartVM> ods = os.GetDetailByNo<FCake.Domain.WebModels.CartVM>(x.No);
+        var od = ods.FirstOrDefault();
+        if (od != null)
+        {
+            <div id="tablecontent" style="height:140px;" onclick="clickOrderTr('@x.No')">
+                <div>
+                    <img src="@(Html.GetSysManageUrl()+od.Url)_min.jpg" width="86" height="86" style="float:left; margin-left:3%;margin-top:7.5px;" />
+                    <div style="width:63%;margin-left:3%;float:left;">
+                        <span class="address_text" style="width:100%;height:36px; float: left;margin-top: 7.5px;font-size:0.825em;">@od.PName</span>
+                        <span class="font_color_tint" style="width:100%; font-size:0.75em;float:left;">实付款: ¥@x.TotalPrice</span>
+                        <span class="font_color_tint" style="width:100%; font-size:0.75em;float:left;">共@(ods.Count)件</span>
+                        <span class="font_color_tint" style="width:100%; font-size:0.75em;float:left;">
+                            @if (x.Status == 0)
+                            {
+                                <span style="color:#e81a1a">等待付款</span>
+                            }
+                            else
+                            {
+                                <span style="color:#1f9941">@(FCake.Core.Common.EnumHelper.GetDescription((FCake.Domain.Enums.OrderStatus)x.Status))</span>
+                            }
+                        </span>
+                        <span class="font_color_tint" style="font-size:0.75em;float:left;width:100%;">
+                            @if (x.Status == FCake.Domain.Enums.OrderStatus.NotPay)
+                            {
+                                <a class="member_button" href="javascript:void(0)" onclick="GoPay('@x.FeeType','@x.No')">去付款</a>
+                            }
+                            @if (x.Status == FCake.Domain.Enums.OrderStatus.NotPay && x.ReviewStatus != FCake.Domain.Enums.ReviewStatus.ReviewPass)
+                            {
+                                <a class="member_button_1" href="#" onclick="CancelOrder('@x.No')">取消</a>
+                            }
+                            else
+                            {
+                                <a class="member_button_1" href="@Url.Action("Index", "Product")">再次购买</a>
+                            }
+
+
+
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+}

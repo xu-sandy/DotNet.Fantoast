@@ -1,0 +1,98 @@
+﻿@using FCake.Bll;
+@{
+    var userinfo = CurrentMember.MemberSession;
+    var username = CurrentMember.DisplayName;
+    if (userinfo != null)
+    {
+        if (!string.IsNullOrEmpty(userinfo.DisplayName))
+        {
+            username = userinfo.DisplayName;
+        }
+        else
+        {
+            username = userinfo.LoginName.Substring(0, 3) + "****" + userinfo.LoginName.Substring(7, 4);
+        }
+    }
+
+    var dataactive = (ViewContext.RouteData.Values["controller"].ToString() + ViewContext.RouteData.Values["action"].ToString()).ToLower();
+
+    //购物车条数
+    var count = new FCake.Bll.Services.CartService().GetCartsCount();
+}
+
+
+<link href="~/Content/global.css" rel="stylesheet" />
+<link href="~/Content/iconfont.css" rel="stylesheet" />
+<div class="header">
+    <div class="wallbox">
+        <div class="row">
+            <a class="logo" href="/">
+                <img src="@Url.Content("~/content/images/logo_03.png")" class="img-responsive visible-sm visible-md visible-lg" />
+                <img src="@Url.Content("~/content/images/logo_03.png")" class="img-responsive visible-xs" />
+            </a>
+            <span class="CartCount">@count</span>
+            <div class="navbar visible-sm visible-md visible-lg" style="float:right; margin-right:3%;">
+                @*<a class="cart" href="@Url.Action("Index", "Cart")"><i class="iconfont">&#xe600</i></a>*@
+                <a class="cart" href="@Url.Action("Index", "Cart")">
+                    <img src="~/Content/images/shopping-04.png" />
+                </a>
+                @if (userinfo == null)
+                {
+                    <a class="user" style="margin-right:10px;" href="@Url.Action("Login", "Passport")">
+                        @*<i class="iconfont">&#xe601</i>*@
+                    <img src="~/Content/images/user-05.png" />
+                </a>
+                    @*<a class="user" href="@Url.Action("Index", "Member")"><i class="iconfont">&#xe601</i></a>*@
+                    <a href="@Url.Action("Register", "Passport")">注册</a>
+                    <a href="@Url.Action("Login", "Passport")">登录</a>
+                }
+                else
+                {
+                    <a href="@Url.Action("Logout", "Passport")">[退出]</a>
+                    <a class="highlight" href="@Url.Action("PersonalCenter", "Member")">[个人中心]</a>
+                    <a class="highlight" href="@Url.Action("Index", "Member")">@username</a>
+                    <span>欢迎您</span>
+                }
+            </div>
+            <div class="navbar visible-xs" style="margin-right:3%;margin-top:10.5px;">
+                <a class="cart" href="@Url.Action("Index", "Cart")" style="margin-top:9px;">
+                    <img src="~/Content/images/shopping-04.png" />
+                </a>
+                @*<a class=" cart" href="@Url.Action("Index", "Cart")"><i class="iconfont">&#xe600</i></a>*@
+                @if (userinfo == null)
+                {
+                    <a class="user" style="margin-right: 10px; margin-top: 9px;" href="@Url.Action("Login", "Passport")">
+                        @*<i class="iconfont">&#xe601</i>*@
+                    <img src="~/Content/images/user-05.png" />
+                </a>
+                    @*<a href="@Url.Action("Register", "Passport")">注册</a>
+                        <a href="@Url.Action("Login", "Passport")">登录</a>*@
+                }
+                else
+                {
+                    <a class="user" style="margin-right: 10px; margin-top: 9px;" href="@Url.Action("PersonalCenter", "Member")">
+                        @*<i class="iconfont">&#xe601</i>*@
+                        <img src="~/Content/images/user-05.png" />
+                </a>
+                    @*<a href="@Url.Action("Logout", "Passport")">[退出]</a>
+                        <a class="highlight" href="@Url.Action("PersonalCenter", "Member")">[个人中心]</a>
+                        <a class="highlight" href="@Url.Action("Index", "Member")">@username</a>
+                        <span>欢迎您</span>*@
+                }
+            </div>
+        </div>
+        <ul class="nav">
+            <li data-active="homeindex" class="li_2"><a href="@Url.Action("Index", "Home")">首页</a></li>
+            <li data-active="productindex" class="li_2"><a href="@Url.Action("Index", "Product")">蛋糕列表</a></li>
+            @*<li data-active="producthotsale" class="li_2"><a href="/Product/HotSale">热卖产品</a></li>*@
+            <li data-active="homeactivecenter" class="li_2"><a href="@Url.Action("ActiveCenter", "Home")?v=00001">活动中心</a></li>
+            @*<li data-active="homeaboutus" class="li_2"><a href="/Home/AboutUs">关于我们</a></li>*@
+        </ul>
+    </div>
+</div>
+<div class="clearhead"></div>
+<script type="text/javascript">
+    $(function () {
+        $("li[data-active='@dataactive']").addClass("active");
+    });
+</script>

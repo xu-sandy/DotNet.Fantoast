@@ -1,0 +1,211 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "FANCAKE管理系统";
+    var version = ViewBag.Version as string;
+    version = version.Replace("--", "");
+}
+@Styles.Render("~/Content/themes/default/home.css")
+
+<div id="layout" data-options="fit:true,border:false">
+    <div data-options="region:'north'" class="index-topheight">
+        @Html.Partial("PartialHeader")
+    </div>
+    <div data-options="region:'west',split:false,title:''" style="width: 250px;">
+        <div id="list">
+
+        </div>
+    </div>
+    <div data-options="region:'center'">
+        <div id="tabs" class="easyui-tabs" data-options="fit:true,border:true,tabHeight:38">
+            <div title="首页" style="padding: 10px;">
+                @Html.Partial("_Partial_Center")
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'south',border:false" style="height:42px;background:#ffffff;padding:5px;">
+        <div class="index-footer">
+            <div class="logo"></div>
+            <div class="info">
+                <span>版权所有 Copyright © 2014-2020</span>&nbsp;道诚(厦门)信息科技有限公司&nbsp;<span>All Rights Reserved 保留所有权利</span>
+                @{
+                    if (!string.IsNullOrEmpty(version))
+                    {
+                        <span>&nbsp;version&nbsp;<span>@version</span></span>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="eMeng" style="display:none;">
+    <div>
+        <div>
+            <a id="goto" href="#" style="color:black;">有未审核订单，请确认！</a>
+        </div>
+        <div>
+            <input type="checkbox" id="chkTip" /><label for="chkTip">不再提示</label>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script src="~/Scripts/main.js"></script>
+    <script>
+        $(function () {
+            //菜单初始化
+            getdata("/common/GetTreeData?type=@(FCake.Core.Common.DataHelper.GetTypeName<Menu>())&special=ToMenuTree&p=@((int)(FCake.Domain.Enums.MenuType.System))", true);
+
+            //绑定菜单展开收缩事件
+            $(document).on("click", "#list .title", function () {
+                $t = $(this).find(".pos");
+                if ($t.hasClass("up")) {
+                    $t.removeClass("up").addClass("down");
+                    $(this).next(".in").hide("fast");
+                }
+                else {
+                    $t.removeClass("down").addClass("up");
+                    $(this).next(".in").show("fast");
+                }
+            });
+            //绑定菜单点击弹出Tab页签事件
+            $(document).on("click", "#list .in div", function () {
+                var json = eval("({" + $(this).attr("data-v") + "})");
+                jump(json.text, json.url, json.id);
+            });
+
+            //绑定消息弹窗
+            var isCService = ('@ViewBag.isCustomerServiceRole').toLowerCase();
+            if (isCService == "true") {
+                bindMessageBox();
+            }
+        });
+
+        @*var itimer = setInterval("showTips()", 5000);
+        var tipBox = $("#eMeng");
+        var timeoutInterval = 5000;
+        //数据查询
+        function showTips() {
+            $.post("/Home/isCustomerService", "", function (data) {
+                if (data) {
+                    $.ajax({
+                        url: '@Url.Action("GetNucheckOrder", "Order")',
+                        type: "POST",
+                        timeout: timeoutInterval,
+                        success: function (result) {
+                            show();
+
+                        }
+                    })
+                } else {
+                    clearInterval(itimer);
+                    return false;
+                }
+
+            }, "json")
+
+
+        }
+        //不再提示
+        $(function () {
+            $("#chkTip").click(function () {
+                var value = $(this).is(":checked");
+                if (value) {
+                    clearInterval(itimer);
+                }
+                else {
+                    itimer = setInterval("showTips()", timeoutInterval);
+                }
+            })
+        })
+        //右下角的提示框
+        function show() {
+            $.messager.show({
+                title: '您有新的订单！',
+                msg: tipBox,
+                showType: 'show',
+                timeout: timeoutInterval,
+                width: 250,
+                height: 150
+            })
+        }*@
+        function getdata(url, ishead) {
+            $.post(url, function (data, status) {
+                var html = "";
+                $.each(data, function (index, value) {
+                    html += "<div>"
+
+                    html += "<div class='nav'><div class='title'><div class='bg'></div><span class='pos down'>&nbsp;</span><span>" + (value.text.length > 10 ? value.text.substring(0, 10) + "..." : value.text) + "</span><span class='color'></span></div>";
+                    if (value.children) {
+                        html += "<div class='in'>"
+                        $.each(value.children, function (i, v) {
+                            html += "<div class='item' id='_" + v.id + "' data-v=\"text:'" + v.text + "',url:'" + v.MenuUrl + "',id:'" + v.id + "'\">-&nbsp;&nbsp;" + (v.text.length > 10 ? v.text.substring(0, 10) + "..." : v.text) + "</div>";
+                        });
+                        html += "</div>";
+                    }
+                    html += "</div>";
+                    html += "</div>";
+                })
+                if (ishead)
+                    $("#list").prepend(html);
+                else
+                    $("#list").append(html);
+
+                setc();
+            }, "json")
+        }
+
+        function setc() {
+            $("#list>div").removeClass(function (index, c) {
+                $(this).removeClass(c);
+            });
+            $.each($("#list>div"), function (index, value) {
+                $(this).addClass("color" + (index % 4 + 1));
+            });
+        }
+
+        var tipBox = $("#eMeng");
+        function bindMessageBox() {
+            var messageBox = $(document).easyui_msgBox({
+                intervalNum: 5000,
+                intervalLoad: function () {
+                    if (messageBox.options.hasShow == false) {
+                        $.ajax({
+                            url: '@Url.Action("GetNucheckOrder", "Order")',
+                            type: "POST",
+                            success: function (result) {
+                                if (result > 0) {
+                                    messageBox.jQMessager = $.messager.show({
+                                        title: '您有新的订单！',
+                                        msg: tipBox.css("display", ""),
+                                        showType: 'show',
+                                        timeout: 0,
+                                        width: 250,
+                                        height: 150
+                                    });
+                                    messageBox.options.hasShow = true;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+            messageBox.options.intervalLoad();
+
+            $("#chkTip").click(function () {
+                var value = $(this).is(":checked");
+                if (value) {
+                    //隐藏消息框 todo:xxxx
+                    $("#eMeng").find(".panel-tool-close").trigger("click");
+                    //清除执行事件
+                    messageBox.clear();
+                    //更改显示状态
+                    messageBox.options.hasShow = false;
+                }
+            });
+            $("#goto").click(function () {
+                jump("订单查看", '@Url.Action("ReviewPendingOrder", "Order")', "32B804EE85F643C09CFCF163584505FA");
+            });
+        }
+    </script>
+}

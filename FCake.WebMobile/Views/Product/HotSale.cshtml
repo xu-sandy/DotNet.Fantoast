@@ -1,0 +1,125 @@
+﻿@using FCake.Bll;
+@model FCake.Domain.WebModels.ProductListModel
+@{
+    ViewBag.Title = "热卖产品";
+}
+
+<div class="wallbox container">
+    <div class="sell row">
+        <ul class="clearfix" style="margin-top:40px;">
+            @if (Model != null && Model.VProductModels != null)
+            {
+                foreach (var item in Model.VProductModels)
+                {
+                    <li class="col-xs-12 col-md-6">
+                        <a href="javascript:void(0)"><img class="hotflag" src="../Content/images/hot.png" /><img style="width:280px;height:270px;margin-bottom:10px;" src="@(Html.GetSysManageUrl() + item.ImgUrl)" /></a>
+                        <div class="sell_text">
+                            <a href="@Url.Action("Index", "Detail", new {id=item.ProductId })" class="clearfix" style="height:100%">
+                                <p class="f0" style="padding-top:20px;margin-top:0">
+                                    @Html.Raw(item.Brief)
+                                </p>
+                                <div class="sell_hr"></div>
+                                <span style="margin:0;" class="f0">
+                                    @if (item.Material != null)
+                                    {
+                                        <b class="bold">材料：</b>@item.Material
+                                    }
+                                </span>
+                            </a>
+                            <div class="btn">
+                                <a id="@item.ProductId" class="addcart"></a>
+                            </div>
+                        </div>
+                        <a href="@Url.Action("Index", "Detail", new { id = item.ProductId })" class="f1">
+                            @item.Name
+                        </a>
+                        <p class="price f0 highlight">
+                            @{
+                                @Html.Raw(string.Format("{0:C}", item.OriginalPrice)) @:/
+                                @Html.Raw(string.Format("{0:f1}", item.Size)) @:磅
+                            }
+                        </p>
+                    </li>
+                }
+            }
+
+        </ul>
+    </div>
+</div>
+
+<div id="bg"></div>
+<div id="tips" class="corner5" style="display:none;margin:0 auto;">
+    <div>
+        <h3 class="tl-c f4">添加成功</h3><a href="Javascript:void()"><img class="closed" src="~/Content/images/x.png" /></a>
+        <div class="btn">
+
+            <a href="javascript:void()" onclick="keepShpping()" class="corner5">继续购物</a>
+            <a href="@Url.Action("index","cart")" class="corner5">去购物车结算</a>
+        </div>
+    </div>
+</div>
+
+@*@Html.Partial("_goShopCart", new Product { })*@
+<script type="text/javascript">
+    ////鼠标经过出现透明层
+    $(function () {
+
+        $(".sell li").hover(function () {
+            $(this).find(".sell_text").stop().delay(50).animate({ "top": 0, opacity: 0.8 }, 300);
+        },
+        function () {
+            $(this).find(".sell_text").stop().animate({ "top": -320, opacity: 0 }, 300);
+        })
+    })
+
+    $(function () {
+        $(".addcart").each(function (i, item) {
+            $(item).click(function () {
+                //get data
+                var url = "@Url.Action("GetShopCartHtml")";
+                var data = { productId: $(item).attr("id") };
+                $.post(url, data, function (result) {
+                    $('.dialogbox').remove();
+                    $(document.body).append($(result));
+
+                    //show dialog
+                    $("#bg").css({
+                        display: "block", height: $(document).height()
+                    });
+                    var $box = $('.dialogbox');
+                    $box.css({
+                        //设置弹出层距离左边的位置
+                        left: ($("body").width() - $box.width()) / 2 - 20 + "px",
+                        //设置弹出层距离上面的位置
+                        top: ($(window).height() - $box.height()) / 2 + "px",
+                        // top: ($(window).height() - $box.height()) / 2 + $(window).scrollTop() + "px",
+
+                        display: "block"
+                    });
+
+                    //bind close event
+                    //点击关闭按钮的时候，遮罩层关闭
+                    $(".close").click(function () {
+                        $("#bg,.dialogbox").css("display", "none");
+                    });
+                });
+            });
+        });
+    });
+    function keepShpping() {
+        window.location = "@Url.Action("Index", "Product")";
+        $("#tips").css("display", "none");
+        $("#bg,.dialogbox").css("display", "none");
+    }
+    function addShopCart() {
+        //获取子产品id
+        var id = "";
+        $(".itemsize").each(function (i, item) {
+            if ($(item).hasClass("size1")) {
+                id = $(item).attr("data-target");
+            }
+        })
+        var num = $("input[name=num]").val();
+        addCart(id, num, false, "dosuccess()");
+    }
+</script>

@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "SearchOrder";
+}
+
+订单号：<input id="orderNo" name="orderNo" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+<a href="javascript:editOrder()" id="editBtn" class="easyui-linkbutton">修改</a>
+<script type="text/javascript">
+    function editOrder() {
+        var orderNo = $("#orderNo").val();
+        $.ajax({
+            url: '@Url.Action("IsExistOrder", "TempOrder")?orderNo=' + orderNo,
+            type: 'POST',
+            success: function (result) {
+                if (result.successed == false) {
+                    alert("输入的订单号不存在");
+                }
+                else {
+                    openDialog("编辑订单信息", '@Url.Action("EditOrder", "TempOrder")?orderNo=' + orderNo);
+                }
+            }
+        })
+    }
+
+    function openDialog(title, url) {
+        pharos.g.openDialog({
+            title: title,
+            width: $(window.parent).width() >= 750 ? 750 : $(window.parent).width() - 80,
+            height: $(window.parent).height() >= 450 ? 450 : $(window.parent).height() - 80,
+            id: "edit",
+            url: url,
+
+        });
+    }
+</script>

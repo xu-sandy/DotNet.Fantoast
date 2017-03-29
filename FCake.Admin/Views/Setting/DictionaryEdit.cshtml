@@ -1,0 +1,84 @@
+﻿@model FCake.Domain.Entities.DictionaryType
+@{
+    ViewBag.Title = "数据字典编辑";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+
+<form id="form" class="form" method="post" style="overflow:auto;">
+    <table class="form-tb">
+        <tr>
+            <td class="lable">
+                <label for="Name" class="datalable">字典名称</label>
+            </td>
+            <td class="control">
+                <input id="Name" name="Name" class="datacontrol" value="@Model.Name" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="lable">
+                <label for="Code" class="datalable">字典编码</label>
+            </td>
+            <td class="control">
+                <input id="Code" name="Code" class="datacontrol" value="@Model.Code" />
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <div class="dc-toolbar">
+                    <a id="add" href="#" class="easyui-linkbutton cus4 linkbtn" data-options="" style="padding-left:40px;padding-right:40px;">保存</a>
+                </div>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+    <input id="Id" name="Id" type="hidden" value="@Model.Id" />
+</form>
+<script type="text/javascript">
+    $(function () {
+        var dataId = $("#Id").val();
+        if (String.isNE(dataId)) {
+            $("#form").validate({
+                rules: {
+                    Name: { required: true },
+                    Code: {
+                        required: true,
+                        remote: {
+                            url: "@Url.Action("CheckDictionaryCode","Setting")",
+                            type: "post"
+                        }
+                    }
+                }
+            });
+        } else {
+            $("#Code").attr("readonly", "readonly");
+            $("#form").validate({
+                rules: {
+                    Name: { required: true },
+                    Code: { required: true }
+                }
+            });
+        }
+        //保存数据
+        $("#form").submit(function (e) {
+            e.preventDefault();
+            if (!$(this).valid()) {
+                alert("填写有误，请修改后重试");
+                return false;
+            }
+            var url = "/Setting/SaveDictionaryEdit" + "?a=" + Math.random();
+            $.post(url, $("#form").serialize(), function (result) {
+                alert(result.message);
+                var pwin = window.top.$("body").data("openWindow");
+                pwin.ReloadGrid();
+                window.top.$("body").data("win_add").window("close");
+            }, "json");
+        });
+        //保存事件
+        $("#add").click(function () {
+            $("#form").submit();
+        });
+    });
+</script>

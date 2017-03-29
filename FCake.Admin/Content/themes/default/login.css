@@ -1,0 +1,94 @@
+﻿ul, li {
+    text-decoration:none;
+    list-style-type:none;
+}
+
+body {
+    padding:0;margin:0;background-color:#edf0f1;
+    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+}
+
+#login-header {
+    position:relative;height:70px;background: #2d3339 url('images/login/logo.png') no-repeat;  
+}
+
+#logo {
+z-index:0;
+position:absolute;
+width:160px;
+height:80px;
+bottom:50px;
+right:90px;
+background:url('images/login/FanCake-logo80.png') no-repeat;
+}
+
+#login {
+    width:380px;
+    height:473px;
+    position:relative;
+    margin-top:30px;
+    margin-left:50%;
+    left:-190px;
+    background:url('images/login/login.png') no-repeat;
+    z-index:100;
+}
+
+#UserName {
+    position:absolute;
+    top:131px;
+    left:92px;
+    height:16px;
+    padding:18px 10px;
+    width:233px;
+    border:0;
+    outline:none;
+}
+#Password {
+    position:absolute;
+    top:226px;
+    left:92px;
+    height:16px;
+    padding:18px 10px;
+    width:233px;
+    border:0;
+    outline:none;
+}
+
+#remember {
+    position:absolute;
+    top:310px;
+    left:30px;
+    color:white;
+    font-size:14px;
+}
+    #remember input {
+        vertical-align:middle;
+        cursor:pointer;
+    }
+
+input:-webkit-autofill {
+-webkit-box-shadow: 0 0 0px 1000px white inset;
+}
+
+#submit {
+    position:absolute;
+    display:block;
+    cursor:pointer;
+    width:315px;
+    height:53px;
+    top:358px;
+    left:33px;
+}
+
+    #submit:hover {
+        background-color: white;
+        filter: alpha(opacity=10);
+        -moz-opacity: 0.1;
+        -khtml-opacity: 0.1;
+        opacity: 0.1;
+    }
+
+#msg {
+    text-align:center;
+    color:#e2315d;
+}

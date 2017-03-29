@@ -1,0 +1,26 @@
+﻿@*@model FCake.Admin.Models.ProductEditVM*@
+<link href="~/Scripts/kindeditor/themes/default/default.css" rel="stylesheet" />
+<link href="~/Scripts/kindeditor/plugins/code/prettify.css" rel="stylesheet" />
+<script src="~/Scripts/kindeditor/kindeditor.js"></script>
+<script src="~/Scripts/kindeditor/lang/zh_CN.js"></script>
+<script src="~/Scripts/kindeditor/plugins/code/prettify.js"></script>
+
+<script type="text/javascript">
+    //初始化富文本控件
+    KindEditor.ready(function (K) {
+        window.editor = K.create('#Desc', {
+            cssPath: '../Scripts/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../Scripts/kindeditor/asp.net/upload_json.ashx',
+            fileManagerJson: '../Scripts/kindeditor/asp.net/file_manager_json.ashx',
+            allowFileManager: true,
+            formatUploadUrl:false
+        });
+        window.editor2 = K.create('#MobileDesc', {
+            cssPath: '../Scripts/kindeditor/plugins/code/prettify.css',
+            uploadJson: '../Scripts/kindeditor/asp.net/upload_json.ashx',
+            fileManagerJson: '../Scripts/kindeditor/asp.net/file_manager_json.ashx',
+            allowFileManager: true,
+            formatUploadUrl:false
+    });
+    });
+</script>

@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.Title = "查找用户";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+<table id="searchcustomer"></table>
+
+<div id="toolbar2">
+    姓名<input type="text" name="customername" />
+    手机或固定电话<input type="text" name="customertel" />
+    <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="findcustomer()">查找</a>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $customer = $("#searchcustomer");
+
+        $customer.datagrid({
+            url: '/order/SearchCustomer',
+            pagination: true,
+            idField: 'Id',
+            singleSelect:true,
+            rownumbers:true,
+            fit: true,
+            toolbar: '#toolbar2',
+            columns: [[
+                { field: 'FullName', title: '名称', width: 100, align: 'center' },
+                { field: 'Tel', title: '固定电话', width: 120, align: 'center' },
+                { field: 'Mobile', title: '手机', width: 100, align: 'center' },
+                { field: 'Email', title: '邮箱', width: 120, align: 'center' },
+                { field: 'Sex', title: '性别', width: 60, align: 'center' },
+                { field: 'CustomerType', title: '会员类型', width: 80, align: 'center' }
+            ]],
+            onDblClickRow: function (rowIndex, rowData) {
+                var w = window.top.$('body').data("orderwindow");
+                w.loadCustomer(rowData);
+                window.top.$("body").data("win_customermsg").window("close");
+            }
+        });
+    })
+
+    function findcustomer() {
+        $("#searchcustomer").datagrid({
+            url: '/order/SearchCustomer?name=' + escape($.trim($("input[name=customername]").val())) + "&tel=" + escape($.trim($("input[name=customertel]").val()))
+        });
+    }
+</script>

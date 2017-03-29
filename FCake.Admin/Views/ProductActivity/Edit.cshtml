@@ -1,0 +1,185 @@
+﻿@model FCake.Domain.Entities.ProductActivity
+    @{
+        ViewBag.Title = "产品活动";
+        Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+    }
+    <style>
+        .form-tb {
+            width: 95%;
+        }
+
+            .form-tb tr {
+                line-height: 40px;
+            }
+
+            .form-tb .Wdate {
+                border-radius: 5px 5px 5px 5px;
+                border: 1px solid #CCC;
+            }
+    </style>
+    <form id="form1" method="post" style="overflow:auto;">
+        <input type="hidden" id="ids" name="ProductIds" value="" />
+        <input type="hidden" id="pIds" name="ParentProductIds" value="" />
+        <input type="hidden" id="prices" name="ActivityProPrices" value="" />
+        <input type="hidden" id="ProOrginPrice" name="ProOrginPrice" value="" />
+
+        <input type="hidden" id="PublishStatus" name="PublishStatus" value="" />
+        <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+        <table class="form-tb">
+            <tr>
+                <td class="lable" align="right"><label for="Title" class="datalable">活动名称：</label></td>
+                <td class="control"><input id="Title" name="Title" value="@Model.Title" class="datacontrol" /></td>
+            </tr>
+            <tr>
+                <td class="lable" align="right"><label for="BeginValidDate" class="datalable">有效期始于：</label></td>
+                <td class="control"><input id="BeginValidDate" name="BeginValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" value="" /></td>
+                <td class="lable" align="right"><label for="EndValidDate" class="datalable">有效期终于：</label></td>
+                <td class="control"><input id="EndValidDate" name="EndValidDate" class="Wdate datacontrol" type="text" onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd HH:mm:ss' })" value="" /></td>
+            </tr>
+            @if (Model.PublishStatus != 1)
+            {
+                <tr>
+                    <td colspan="4">
+                        <h3>选择产品</h3>
+                        <div style="margin-left:50px; text-align:center">
+                            @Html.Partial("_PartialSearchProducts")
+                        </div>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td colspan="4">
+                    <h3>产品活动</h3>
+                    @Html.Partial("_PartialSelectedProducts")
+                </td>
+            </tr>
+        </table>
+        @if (Model.PublishStatus != 1)
+        {
+            <div style="margin: 20px auto;text-align:center"><a href="#" id="submitActivity" name="submitMemberLevel" class="easyui-linkbutton cus4 linkbtn">保存</a>&nbsp;&nbsp;&nbsp;<a href="#" id="submitAndPushActivity" name="submitMemberLevel" class="easyui-linkbutton cus4 linkbtn">保存并发布活动</a></div>
+
+        }
+    </form>
+    <script type="text/javascript">
+        window.top.$('body').data("add", $);
+        window.top.$('body').data("addwindow", window);
+        $(function () {
+            //有时间的时候绑定时间
+            var beginDate = '@Model.BeginValidDate';
+            var endDate = '@Model.EndValidDate';
+            if (beginDate != "0001/1/1 0:00:00") {
+                $("#BeginValidDate").val(beginDate);
+            }
+            if (endDate != "0001/1/1 0:00:00") {
+                $("#EndValidDate").val(endDate);
+            }
+
+
+            $("#form1").validate({
+                rules: {
+                }
+            });
+            //提交数据
+            $("#form1").submit(function (e) {
+                e.preventDefault();
+                if (!$(this).valid()) {
+                    alert("填写有误，请修改后重试");
+                    return false;
+                };
+
+                $.ajax({
+                    url: '@Url.Action("CreateActivity", "ProductActivity")?' + $("#form1").serialize(),
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.successed) {
+                            var state = $("#PublishStatus").val();
+                            var msg = "";
+                            if (state == 0) {
+                                msg = "活动保存成功！";
+                            }
+                            if (state == 1) {
+                                msg = "活动创建成功！";
+                            }
+                            $.messager.alert("提示", msg, "info", function () {
+                                window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                                window.top.$("body").data("win_add").window("close");
+                            });
+                           
+                        } else {
+                            $.messager.alert("提示", result.message, "info");
+                        }
+                    }
+                })
+            });
+            //提交审核事件
+            $("#submitActivity").click(function () {
+                var isSuccess = bindFormData();
+                if (isSuccess) {
+                    $("#PublishStatus").val(0);
+                    //提交
+                    $("#form1").submit();
+                }
+
+            });
+            $("#submitAndPushActivity").click(function () {
+                var isSuccess = bindFormData();
+                if (isSuccess) {
+                    $("#PublishStatus").val(1);
+                    //提交
+                    $("#form1").submit();
+                }
+            })
+            //编辑时候取活动产品数据
+            if ('@Model.Id' != '') {
+                $("#selectedproducts").datagrid({
+                    url: '@Url.Action("GetActivityProByProId", "ProductActivity")' + "?activityId=" + '@Model.Id',
+                    onLoadSuccess: function () {
+                        //已发布的时候不显示管理行
+                        if ('@Model.PublishStatus' == '1') {
+                            $("#selectedproducts").datagrid('hideColumn', 'Id');
+                        }
+                    }
+                })
+            }
+
+
+        })
+        //绑定隐藏域数据
+        function bindFormData() {
+            //活动时间不能为空
+            var beginTime = $("#BeginValidDate").val();
+            var endTime = $("#EndValidDate").val();
+            if (beginTime == "" || endTime == "") {
+                $.messager.alert("操作提示", "活动时间不完整！", "error", function () {
+                    return false;
+                })
+            } else {
+
+
+                var datas = $("#selectedproducts").datagrid("getRows");
+                //如果存在没有保存的话结束编辑
+                $.each(datas, function (index, item) {
+                    $("#selectedproducts").datagrid("endEdit", index);
+                })
+
+
+                var ids = [];
+                var pIds = [];
+                var prices = [];
+                var oPrices = [];
+                $.each(datas, function (index, item) {
+                    ids.push(item.Id);
+                    pIds.push(item.ParentId);
+                    prices.push(item.Price);
+                    oPrices.push(item.OrigonPrice);
+                })
+                $("#ids").val(ids);
+                $("#pIds").val(pIds);
+                $("#prices").val(prices);
+                $("#ProOrginPrice").val(oPrices);
+                return true;
+            }
+        }
+
+    </script>

@@ -1,0 +1,309 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "角色权限分配";
+    string id=ViewBag.id as string;
+}
+
+<div id="layout" data-options="fit:true,border:false">
+    <div data-options="region:'north'" style="padding:10px;overflow:hidden;">
+        选择权限类型：
+        <select class="easyui-combobox" name="righttype" data-options="panelHeight:'auto',editable:false,onChange:function(newValue, oldValue){selecttype(newValue, oldValue);}">
+            <option>全部</option>
+            <option>查看</option>
+        </select>
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-search'" onclick="$('#dg').datagrid('loadData', _allData)">显示所有权限</a>
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-save'" onclick="savepermission()">保存</a>
+    </div>
+    <div data-options="region:'west',split:true" style="width: 200px;">
+        <ul id="sys" class="easyui-tree" data-options="checkbox:true,url:'/common/GetTreeData?type=@(FCake.Core.Common.DataHelper.GetTypeName<Menu>())&special=ToMenuTree&p=0',onClick:function(node){}"></ul>
+    </div>
+    <div data-options="region:'center'">
+        <table id="dg"></table>
+    </div>
+</div>
+
+
+@*拓展*@
+<script>
+    Array.prototype.indexOf = function (val) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i] == val) return i;
+        }
+        return -1;
+    };
+    Array.prototype.contains = function (val) {
+        return this.indexOf(val)>-1;
+    };
+    Array.prototype.remove = function (val) {
+        var index = this.indexOf(val);
+        if (index > -1) {
+            this.splice(index, 1);
+        }
+    };
+</script>
+@*参数*@
+<script>
+    $dg = $("#dg");
+    $sys = $("#sys");
+    var allData=null;
+    var curData;
+    var allSelectRights = [];
+    var rightTypes = [];
+    var _isFirstLoad = true; //第一次table加载
+    var _isChecking = false;
+    var _allSelectRights = [];
+    var _allData = [];
+
+
+    @foreach (var x in new FCake.Bll.PermissionService().GetPermissionsByRoleID(id))
+    {
+        @:allSelectRights.push('@x.PermissionId');
+    }
+</script>
+@*加载*@
+<script>
+    $(function () {
+        $("#layout").layout();
+        $('#list').accordion({ animate: true, fit: true, border: false, selected: 0 });
+
+
+        loadtable();
+
+        $sys.tree({
+            onCheck: function (node, checked) {
+                if (_isChecking) return;
+                checktree($sys,node, checked);
+                checkselect();
+            },
+            onSelect: function (node) {
+                selectmenus($sys, node);
+            }
+        });
+    })
+</script>
+@*事件*@
+<script>
+    function selecttype(newValue, oldValue) {
+        _isFirstLoad = true;
+        if (newValue == "全部") {
+            $('#dg').datagrid('loadData', allData)
+        }
+        else {
+            var temp = [];
+            $.each(allData, function (index,value) {
+                if (value.PermissionType == "查看")
+                    temp.push(value);
+            });
+            $('#dg').datagrid('loadData', temp);
+        }
+    }
+
+    function loadtable() {
+        $("#dg").datagrid({
+            pagination: false,
+            fit: true,
+            singleSelect: false,
+            rownumbers: true,
+            url: '/permission/GetAllPermission',
+            columns: [[
+                { field: 'Id', checkbox: true },
+                { field: 'PermissionName', title: '权限名称', width: 100 },
+                { field: 'PermissionCode', title: '权限代码', width: 100 },
+                { field: 'MenuName', title: '目录名称', width: 100 },
+                { field: 'PermissionType', title: '权限类型', width: 100 }
+            ]],
+            //第一次加载
+            onLoadSuccess: function (data) {
+                firstLoad(_isFirstLoad);
+            },
+            onCheck: function (rowIndex, rowData) {
+                if (_isChecking) return;
+                if (allSelectRights.contains(rowData.Id) == false)
+                    allSelectRights.push(rowData.Id);
+                if (_allSelectRights.contains(rowData.Id) == false)
+                    _allSelectRights.push(rowData.Id);
+                checkselect();
+            },
+            onUncheck: function (rowIndex, rowData) {
+                if (_isChecking) return;
+                if (allSelectRights.contains(rowData.Id))
+                    allSelectRights.remove(rowData.Id);
+                if (_allSelectRights.contains(rowData.Id))
+                    _allSelectRights.remove(rowData.Id);
+                checkselect();
+            },
+            onCheckAll: function (rows) {
+                if (_isChecking) return;
+                for (var i = 0; i < rows.length; i++) {
+                    if (allSelectRights.contains(rows[i].Id) == false)
+                        allSelectRights.push(rows[i].Id);
+                    if (_allSelectRights.contains(rows[i].Id) == false)
+                        _allSelectRights.push(rows[i].Id);
+                }
+                checkselect();
+            },
+            onUncheckAll: function (rows) {
+                if (_isChecking) return;
+                for (var i = 0; i < rows.length; i++) {
+                    if (allSelectRights.contains(rows[i].Id))
+                        allSelectRights.remove(rows[i].Id);
+                    if (_allSelectRights.contains(rows[i].Id))
+                        _allSelectRights.remove(rows[i].Id);
+                }
+                checkselect();
+            }
+        });
+    }
+
+    function selectmenus(e,node){
+        var temp = [];
+        temp = selectmenu(e,node,temp);
+        $dg.datagrid("loadData", temp);
+    }
+
+    function selectmenu(e,node, temp) {
+        $.each(_allData, function (index, value) {
+            if (value.MenuId == node.id) {
+                temp.push(value);
+            }
+        });
+        var children = e.tree("getChildren", node.target);
+        $.each(children, function (index,value) {
+            temp = selectmenu(e,value,temp);
+        });
+        return temp;
+    }
+
+    function checktree(e,node, checked) {
+        if (checked) {
+            //add
+            $.each(_allData, function (index, value) {
+                if (value.MenuId == node.id) {
+                    if (allSelectRights.contains(value.Id) == false)
+                        allSelectRights.push(value.Id);
+                    if (_allSelectRights.contains(value.Id) == false)
+                        _allSelectRights.push(value.Id);
+                }
+            });
+        }
+        else {
+            $.each(_allData, function (index, value) {
+                if (value.MenuId == node.id) {
+                    if (allSelectRights.contains(value.Id))
+                        allSelectRights.remove(value.Id);
+                    if (_allSelectRights.contains(value.Id))
+                        _allSelectRights.remove(value.Id);
+                }
+            });
+        }
+        var children = e.tree("getChildren", node.target);
+        $.each(children, function (index, value) {
+            checktree(e, value, checked)
+        });
+    }
+
+    function firstLoad(isfirstload) {
+
+        if (isfirstload) {
+            _isFirstLoad = false;
+            if (allData == null)
+                allData = $dg.datagrid("getRows");  //获取所有数据
+            _allData = $dg.datagrid("getRows");
+            _allSelectRights = allSelectRights;
+            //去除不包含的check
+            var rs = [];
+            for (var i = 0; i < _allData.length; i++) {
+                rs.push(_allData[i].Id);
+            }
+            var temp = [];
+            $.each(_allSelectRights, function (index,value) {
+                if (rs.contains(value)) {
+                    temp.push(value);
+                }
+            });
+            _allSelectRights = temp;
+        }
+        curData = $dg.datagrid("getRows");
+        //每次载入都要判断checked
+        checkselect();
+        setTimeout(checkselect,1000);
+    }
+
+    function checkselect() {
+        if (_isChecking)
+            return;
+        _isChecking = true;
+        //判断table
+
+        var cd = [];
+        $.each($dg.datagrid("getChecked"), function (index, value) {
+            cd.push(value.Id);
+        });
+
+        for (var i = 0; i < curData.length; i++) {
+            if (_allSelectRights.contains(curData[i].Id)) {
+                if (cd.contains(curData[i].Id) == false)
+                    $dg.datagrid("checkRow", i);
+            }
+            else {
+                if (cd.contains(curData[i].Id))
+                    $dg.datagrid("uncheckRow", i);
+            }
+        }
+
+        //判断tree
+        var y = [];
+        var n = [];
+        $.each(_allData, function (index,value) {
+            if (_allSelectRights.contains(value.Id)) {
+                if (y.contains(value.MenuId) == false)
+                    y.push(value.MenuId);
+            }
+            else {
+                if (n.contains(value.MenuId) == false) {
+                    n.push(value.MenuId);
+                }
+            }
+        });
+
+        for (var i = 0; i < n.length; i++) {
+            if (y.contains(n[i])) {
+                y.remove(n[i]);
+            }
+        }
+
+        //取消选择所有
+        var rows = $("#sys").tree("getChecked");
+        for (var i = 0; i < rows.length; i++) {
+            if (y.contains(rows[i].id) == false) {
+                $("#sys").tree("uncheck", rows[i].target);
+            }
+        }
+        for (var i = 0; i < y.length; i++) {
+            var row = $("#sys").tree("find", y[i]);
+            if (row && row.checked == false) {
+                $("#sys").tree("check", row.target);
+            }
+        }
+
+        _isChecking = false;
+    }
+
+    //保存权限
+    function savepermission() {
+        $.ajax({
+            url: '/permission/savepermission/@id',
+            async: false,
+            type: 'post',
+            data: { rightids: _allSelectRights },
+            dataType: 'json',
+            success: function (data, msg) {
+                alert("保存成功");
+            },
+            error: function () {
+                alert("保存失败");
+            }
+        });
+    }
+</script>

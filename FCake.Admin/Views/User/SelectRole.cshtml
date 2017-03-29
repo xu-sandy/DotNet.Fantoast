@@ -1,0 +1,65 @@
+﻿@using FCake.Admin.Models;
+@{
+
+}
+
+<table id="dg"></table>
+<script>
+    //取出组对应权限
+    var r= [];
+    @foreach (var x in new FCake.Bll.UserService().GetRolesByUserID(Request.Params["detailid"]))
+    {
+    @:r.push('@x.RoleId');
+    }
+
+
+    $(function () {
+        $('#dg').easyui_datagrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<FCake.Domain.Entities.Role>())',
+            toolbar: [{
+                text:'保存',
+                iconCls: 'icon-save',
+                handler: function () {
+                    var groupids = [];
+                    var rows = $("#dg").datagrid("getChecked");
+                    for (var i = 0; i < rows.length; i++) {
+                        groupids.push(rows[i].Id);
+                    }
+                    $.ajax({
+                        url: '/user/SaveRoles/@Request.Params["detailid"]',
+                        async: false,
+                        type: 'post',
+                        data: { groupids: groupids },
+                        dataType: 'json',
+                        success: function (data,msg) {
+                            alert("保存成功");
+                        },
+                        error: function () {
+                            alert("保存失败");
+                        }
+                    });
+                }
+            }, {
+                text: '刷新',
+                iconCls: 'icon-reload',
+                handler: function () {
+                    window.location.reload();
+                }
+            }],
+            pagination: false,
+            columns_title: ['','角色名','说明'],
+            columns_show: ['Id', 'Name', 'Remark'],
+            columns_notitle:[],
+            singleSelect: false,
+            columns_checkbox: [true,false],
+            onLoadSuccess: function (data) {
+                var rowData = data.rows;
+                $.each(rowData, function (idx, val) {//遍历JSON
+                    if (r.indexOf(val.Id) >-1) {
+                        $("#dg").datagrid("selectRow", idx);//如果数据行为已选中则选中改行
+                    }
+                });
+            }
+        });
+    })
+</script>

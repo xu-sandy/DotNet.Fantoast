@@ -1,0 +1,87 @@
+﻿@model FCake.Domain.Entities.MemberLevel
+@{
+    ViewBag.Title = "会员等级";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<style>
+    .form-tb { width: 95%; }
+        .form-tb tr { line-height: 40px; }
+</style>
+<form id="memberLevelForm" method="post" style="overflow:auto;">
+    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+    <table class="form-tb">
+        <tr>
+            <td class="lable" align="right"><label for="Title" class="datalable">会员等级名称：</label></td>
+            <td class="control"><input id="Title" name="Title" value="@Model.Title" class="datacontrol" /></td>
+            <td class="lable" align="right"><label for="MemberLevelValue" class="datalable">会员等级值：</label></td>
+            <td class="control">
+                @if (!string.IsNullOrEmpty(Model.Id))
+                {
+                    <input id="mlv" name="mlv" value="@Model.MemberLevelValue" class="datacontrol" disabled />
+                    <input type="hidden" id="MemberLevelValue" name="MemberLevelValue" value="@Model.MemberLevelValue"/>
+                }
+                else
+                {
+                    <input id="MemberLevelValue" name="MemberLevelValue" class="datacontrol" />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="MinGrowthValue" class="datalable">最小成长值：</label></td>
+            <td class="control"><input id="MinGrowthValue" name="MinGrowthValue" value="@(Model.MinGrowthValue == 0 ? "" : Model.MinGrowthValue.ToString())" class="datacontrol" /></td>
+            <td class="lable" align="right"><label for="MaxGrowthValue" class="datalable">最大成长值：</label></td>
+            <td class="control"><input id="MaxGrowthValue" name="MaxGrowthValue" value="@(Model.MaxGrowthValue == 0 ? "" : Model.MaxGrowthValue.ToString())" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="DiscountRate" class="datalable">折扣率：</label></td>
+            <td class="control"><input id="DiscountRate" name="DiscountRate" value="@(Model.DiscountRate == 0 ? "" :(Model.DiscountRate * 100).ToString("f2"))" class="datacontrol" />%</td>
+            <td class="lable" align="right"><label for="IntegralMultiples" class="datalable">积分倍数：</label></td>
+            <td class="control"><input id="IntegralMultiples" name="IntegralMultiples" value="@(Model.IntegralMultiples == 0 ? "" : Model.IntegralMultiples.ToString("f2"))" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td class="lable" align="right"><label for="GrowthValueMultiples" class="datalable">成长值倍数：</label></td>
+            <td class="control"><input id="GrowthValueMultiples" name="GrowthValueMultiples" value="@(Model.GrowthValueMultiples == 0 ? "" : Model.GrowthValueMultiples.ToString("f2"))" class="datacontrol" /></td>
+            <td class="lable" align="right"><label for="YearDeductGrowthValue" class="datalable">每年扣除的成长值：</label></td>
+            <td class="control"><input id="YearDeductGrowthValue" name="YearDeductGrowthValue" value="@Model.YearDeductGrowthValue" class="datacontrol" /></td>
+        </tr>
+        <tr>
+            <td align="right">描述：</td>
+            <td colspan="3"><textarea id="Remark" name="Remark" class="datacontrol" style="margin: 0px; height: 66px; width: 425px;">@Model.Remark</textarea></td>
+        </tr>
+    </table>
+    <div style="margin: 20px auto;text-align:center"><a href="#" id="submitMemberLevel" name="submitMemberLevel" class="easyui-linkbutton cus4 linkbtn">保存</a></div>
+</form>
+<script type="text/javascript">
+    $(function () {
+        $("#memberLevelForm").validate({
+            rules: {
+            }
+        });
+        //提交数据
+        $("#memberLevelForm").submit(function (e) {
+            e.preventDefault();
+            if (!$(this).valid()) {
+                alert("填写有误，请修改后重试");
+                return false;
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveOrUpdate", "MemberLevel")?' + $("#memberLevelForm").serialize(),
+                type: 'post',
+                dataType: 'json',
+                success: function (result) {
+                    if (result.successed) {
+                        window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                        window.top.$("body").data("win_add").window("close");
+                    } else {
+                        $.messager.alert("提示", data.message, "error");
+                    }
+                }
+            })
+        });
+        //提交审核事件
+        $("#submitMemberLevel").click(function () {
+            $("#memberLevelForm").submit();
+        });
+    })
+</script>

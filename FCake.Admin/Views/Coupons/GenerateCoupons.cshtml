@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "发放优惠券";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+    var name = string.IsNullOrEmpty(Request["name"]) ? "" : Request["name"];
+    var denomination = string.IsNullOrEmpty(Request["denomination"]) ? "" : Request["denomination"];
+    var beginValidDate = string.IsNullOrEmpty(Request["beginValidDate"]) ? "" : Request["beginValidDate"];
+    var endValidDate = string.IsNullOrEmpty(Request["endValidDate"]) ? "" : Request["endValidDate"];
+    var conditionMoney = string.IsNullOrEmpty(Request["conditionMoney"]) ? "" : Request["conditionMoney"];
+    var useCondition = string.IsNullOrEmpty(Request["useCondition"]) ? "" : Request["useCondition"];
+    var cardNumber = string.IsNullOrEmpty(Request["cardNumber"]) ? "" : Request["cardNumber"];
+    var givenObjectStr = string.IsNullOrEmpty(Request["givenObjectStr"]) ? "" : Request["givenObjectStr"];
+    var isSendSMS = string.IsNullOrEmpty(Request["name"]) ? 0 : int.Parse(Request["isSendSMS"]);
+    var smsContent = string.IsNullOrEmpty(Request["smsContent"]) ? "" : Request["smsContent"];
+    var giveWay = string.IsNullOrEmpty(Request["giveWay"]) ? "" : Request["giveWay"];
+    var givenObjectType = string.IsNullOrEmpty(Request["givenObjectType"]) ? "" : Request["givenObjectType"];
+    var givenObjectIds = string.IsNullOrEmpty(Request["givenObjectIds"]) ? "" : Request["givenObjectIds"];
+    var Id = string.IsNullOrEmpty(Request["Id"]) ? "" : Request["Id"];
+    var couponBatch = string.IsNullOrEmpty(Request["couponBatch"]) ? "" : Request["couponBatch"];
+
+}
+<style>
+    .content_div { margin-left: 10px; margin-top: 10px; font-size: 12px; min-height: 140px; }
+
+        .content_div p { text-indent: 2em; }
+
+    /*.loading_z {
+        width: 100%;
+        height: 100%;
+        background-color: #000000;
+        opacity: 0.5;
+        -moz-opacity: 0.5;
+        filter: alpha(opacity=50);
+    }*/
+</style>
+
+<div id="wrap">
+    <div class="content_div">
+        <p>@(name)券（￥@String.Format("{0:F}", Convert.ToDecimal(denomination))元）</p>
+        <p>@useCondition</p>
+        <p>有效期：@(beginValidDate) 至 @(endValidDate)</p>
+        <p>共计：@(cardNumber)张券@(string.IsNullOrEmpty(givenObjectStr) ? "" : "，适用于" + givenObjectStr)</p>
+        @if (isSendSMS == 1)
+        {
+            <p>短信：@smsContent</p>
+        }
+    </div>
+    <div id="submit" style="text-align:center">
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-ok'" onclick="generateCoupons()">确定发放</a>
+    </div>
+</div>
+
+<div id="loading" class="easyui-dialog" title="" data-options="iconCls:'icon-save'" style="width: 180px; height: 130px; padding: 10px; margin: 0 auto;">
+    <div><img src="~/Content/images/loading.gif" style="width: 30px; height: 30px; margin-left: 35%" /></div>
+    <div>优惠券发放中,请勿关闭页面,发放张数越多等待时间越长,请您耐心等待...</div>
+</div>
+<div class="window-mask"></div>
+
+
+
+<script type="text/javascript">
+    $(function () {
+        $("#loading").dialog("close");
+        $(".window-mask").hide();
+
+    })
+    function generateCoupons() {
+        var title = '@name';//名称
+        var denomination = '@denomination';//面额
+        //销售金额
+        var salesMoney = 0;
+        var quantity = '@cardNumber';//数量
+        var conditionMoney = '@conditionMoney';//使用条件
+        var beginValidDate = '@beginValidDate';//开始时间
+        var endValidDate = '@endValidDate';//结束时间
+        //赠送方式
+        var giveWay = '@giveWay';
+        //赠送对象类型
+        var givenObjectType = '@givenObjectType';
+        //赠送对象id
+        var givenObjectIds = '@givenObjectIds';
+        var isSendSMS = '@isSendSMS';//是否发送短信
+        var smsContent = '@smsContent';//短信发送内容
+        var status = 1;//优惠券批次状态 0=未发放 1=发放
+        var id = '@Id';
+        var couponBatch = '@couponBatch';
+        if (id == "undefined" || id == undefined) {
+            id = null;
+        }
+        //$.messager.progress({
+        //    title: '',
+        //    msg: '优惠券发放中...'
+        //})
+        $.ajax({
+            type: "post",
+            url: '@Url.Action("GenerateCoupons", "Coupons")',
+            data: {
+                Title: title, Denomination: denomination, SalesMoney: salesMoney, Quantity: quantity, ConditionMoney: conditionMoney,
+                BeginValidDate: beginValidDate, EndValidDate: endValidDate, GiveWay: giveWay, GivenObjectType: givenObjectType, GivenObjectIds: givenObjectIds,
+                IsSendSMS: isSendSMS, SMSContent: smsContent, Status: status, Id: id, CouponBatch: couponBatch
+            },
+            beforeSend: ajaxLoading,
+            dataType: "Json",
+            success: function (data) {
+                if (data.successed) {
+                    //$.messager.progress('close');
+                    ajaxLoadEnd();
+                    $.messager.alert("操作提示", "操作成功！共发放 " + data.code + " 张券，可进入优惠券查看页面查看。", "info", function () {
+                        if (isSendSMS == 1 && data.data != null && data.data != undefined) {
+                            DownLoad_Dialog(data.data.replace(/\"/g, ""));
+                        }
+                        window.top.$("body").data("jq_win_formDiv")("#dg").datagrid("reload");
+                        window.top.$("body").data("win_formDiv").window("close");
+                        window.top.$("body").data("win_generateCoupons").window("close");
+                        window.close();
+                    });
+
+                }
+                else {
+                    $.messager.alert("操作提示", "操作失败！" + data.message, "error");
+                    ajaxLoadEnd();
+                }
+            }
+        })
+
+
+    }
+    //采用jquery easyui loading css效果
+    function ajaxLoading() {
+        $(".window-mask").show();
+        $("#loading").dialog("open");
+    }
+    function ajaxLoadEnd() {
+        $(".window-mask").hide();
+        $("#loading").dialog("close");
+    }
+    function DownLoad_Dialog(url) {
+        var dlg = window.top.$("body").data("jq_win_formDiv")("#dlg");
+        $(dlg).find("#dlg_top").html("<h1>导出成功!</h1><br/>");
+        $(dlg).find("#downloadbtn").attr("href", url);
+        $(dlg).find("#dlg_bottom").html("</br>提示：右键可以另存");
+        window.top.$("body").data("jq_win_formDiv")("#dlg").dialog('open');
+    }
+
+</script>

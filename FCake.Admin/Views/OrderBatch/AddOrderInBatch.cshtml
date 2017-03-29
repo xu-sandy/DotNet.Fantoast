@@ -1,0 +1,98 @@
+﻿@using FCake.Core.Common;
+@{
+    ViewBag.Title = "AddOrderInBatch";
+}
+<div id="tb">
+    <a id="add" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-add">添加</a>
+    订单号：<input id="OrderNo" name="OrderNo" class="datacontrol" style="width:150px" />
+    联系电话：<input type="text" id="Mobile" class="easyui-numberbox" value="" data-options="min:0,height:33" />
+    <a id="search" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-search">查询</a>
+    <span id="batch" style="text-align:right"></span>
+</div>
+<table id="dg"></table>
+<script>
+    $(function () {
+        $("#batch").text("批次号：" + unescape(pharos.g.getUrlParam("batch")));
+    })
+    window.drpdata = window.drpdata || {};
+    window.drpdata['ordersStatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderStatus>(false))
+    {
+        @:window.drpdata['ordersStatus'].push({ value: '@item.Value', text: '@item.Text' });
+            }
+
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#tb",
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            singleSelect: false,
+            fit: true,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            url: "@Url.Action("GetOrders", "OrderBatch")" + "?orderNo=&mobile=",
+            columns: [[
+                { field: 'ck', checkbox: 'true' },
+            { title: '主键', field: 'Id', width: 0, hidden: true, },
+            { field: 'No', title: '订单号', width: 80 },
+            {
+                field: 'RequiredTimeBucket', title: '要求送达时间', width: 100
+            },
+            { field: 'state', title: '订单状态', width: 100, formatter: function (value, row, index) { return formatColumn(value, window.drpdata['ordersStatus']); } },
+            { field: 'Customer', title: '会员编号', width: 100 }
+            ]]
+        })
+    })
+    //formatter状态
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                return list[i].text;
+            }
+        }
+        return value;
+    }
+    $(function () {
+        
+        
+        $("#add").click(function () {
+            var rows = $('#dg').datagrid("getSelections");
+            if (rows == "") {
+                alert("请先选择数据！");
+                return false;
+            }
+            var orderNos = [];
+            $.each(rows, function (index, value) {
+                orderNos.push(value.No);
+            });
+            $.ajax({
+                url: '/OrderBatch/AddOrder',
+                type: 'post',
+                dataType: 'json',
+                data: { orderNos: orderNos, batch: pharos.g.getUrlParam("batch") },
+                success: function (result) {
+                    if (result.successed) {
+                        alert(result.message);
+                        $("#dg").datagrid('reload');
+                    } else {
+                        alert(result.message);
+                    }
+                }
+            });
+
+            //执行刷新方法
+            window.top.$("body").data("batchWin").reloadGrid();
+        })
+    })
+    $(function () {
+        $("#search").click(function () {
+            var orderNo = $("#OrderNo").val();
+            var moblie = $("#Mobile").val();
+            $("#dg").datagrid({
+                url: "@Url.Action("GetOrders", "OrderBatch")" + "?orderNo=" + orderNo + "&mobile=" + moblie,
+            })
+        })
+    })
+
+</script>

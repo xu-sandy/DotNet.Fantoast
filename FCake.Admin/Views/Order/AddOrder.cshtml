@@ -1,0 +1,957 @@
+﻿@using FCake.Admin.Models;
+@using FCake.Domain.Entities;
+@{
+    ViewBag.Title = "添加电话订单";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+
+    var productenable = ViewBag.productenableedit == null ? true : (bool)ViewBag.productenableedit;
+
+    var detailenable = (ViewBag.status == null || productenable || (int)ViewBag.status < 2);
+    var isdisabled = !detailenable;
+    var times = ViewBag.times as List<FCake.Core.Common.DropdownItem>;
+    var s_integral = ViewBag.Integral;//用户积分
+    var integralDeductionCashRate = ViewBag.integralDeductionCashRate;//积分抵现比例
+}
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+<input type="hidden" id="customerid" name="customerid" value="@ViewBag.customerid" />
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['category'] = [];
+    @foreach (var item in DropDownHelper.GetDictionaryByCode("Category", true))
+    {
+        @:window.drpdata['category'].push({ value: '@item.Value', text: '@item.Text' });
+                                                                                                                                                                    }
+    var customerid = "@ViewBag.customerid";
+    var orderid = "@ViewBag.orderid";
+    var status = "@(productenable?"":"1")";
+    var source = "@(ViewBag.source==null?"0":(int)ViewBag.source+"")";
+    var integral = Number('@s_integral');
+
+
+    window.top.$('body').data("order", $);
+    window.top.$('body').data("customerid", $);
+    window.top.$('body').data("orderwindow", window);
+    $(function () {
+        //将积分绑在页面上
+        $("#integral").text(integral);
+        //积分使用
+        $("#useIntegral").on("blur", function () {
+            //获取可用积分
+            var can_use = Number($("#integral").text());
+            var useInt = Number($("#useIntegral").val());
+            if (useInt > can_use) {
+                //alert("使用积分超出可使用积分!");
+                //return false;
+                $.messager.alert("提示", "使用积分超出可使用积分!", "error", function () {
+                    $("#useIntegral").val("");
+                    $("#integralToCash").text("");
+                });
+            } else {
+                var allRows = $("#selectedproducts").datagrid("getRows");
+                var allprice = 0;//总价
+                $.each(allRows, function (index, item) {
+                    allprice += item.Price;
+                })
+                //取优惠券使用金额
+                var couVal = $("#couponPrice").text();
+                if (Number(couVal) > 0) {//有使用优惠券
+                    if (Number(couVal) >= allprice) {
+                        $.messager.alert("提示", "该笔订单无需积分支付!", "info", function () {
+                            $("#useIntegral").val(0);
+                            $("#integralToCash").text(0);
+                        })
+                    } else {
+                        var maxInte = (allprice - Number(couVal)) * Number("@integralDeductionCashRate");
+                        if (useInt > maxInte) {
+                            $.messager.alert("提示", "该笔订单最多使用积分 " + maxInte + "!", "info", function () {
+                                $("#useIntegral").val(maxInte);
+                                $("#integralToCash").text(maxInte / Number("@integralDeductionCashRate"));
+                            })
+                        } else {
+                            $("#integralToCash").text(useInt / Number("@integralDeductionCashRate"));
+                        }
+                    }
+                } else {
+                    var giftcardVal = $("#giftCardPrice").text();
+                    if (Number(giftcardVal) > 0) {//有使用代金卡支付
+                        if (Number(giftcardVal) >= allprice) {
+                            $.messager.alert("提示", "该笔订单无需积分支付!", "info", function () {
+                                $("#useIntegral").val(0);
+                                $("#integralToCash").text(0);
+                            })
+                        } else {
+                            var maxInte = (allprice - Number(giftcardVal)) * Number("@integralDeductionCashRate");
+                            if (useInt > maxInte) {
+                                $.messager.alert("提示", "该笔订单最多使用积分 " + maxInte + "!", "info", function () {
+                                    $("#useIntegral").val(maxInte);
+                                    $("#integralToCash").text(maxInte / Number("@integralDeductionCashRate"));
+                                })
+                            } else {
+                                $("#integralToCash").text(useInt / Number("@integralDeductionCashRate"));
+                            }
+                        }
+
+                    } else {//单纯用积分抵扣
+                        var maxInte = allprice * Number("@integralDeductionCashRate");
+                        if (useInt > maxInte) {
+                            $.messager.alert("提示", "该笔订单最多使用积分 " + maxInte + "!", "info", function () {
+                                $("#useIntegral").val(maxInte);
+                                $("#integralToCash").text(maxInte / Number("@integralDeductionCashRate"));
+                            })
+                        } else {
+                            $("#integralToCash").text(useInt / Number("@integralDeductionCashRate"));
+                        }
+                    }
+
+                }
+
+            }
+        })
+
+        if (orderid != "" && customerid != "") {
+            $("#selectuser,#createuser").hide();
+            //修改订单隐藏优惠信息
+            $(".order-favorable").hide();
+        }
+        if (customerid != "")
+            getReceive('');
+    })
+
+
+    function getReceive(id) {
+        $.get("/order/getcustomeraddresbyid/" + customerid + "?orderid=" + orderid, function (data, status) {
+            $("#receive").html(data);
+            @if (isdisabled)
+            {
+            @: $("#receive input").attr("disabled", true); $("#receive a").remove();
+                                                                                                                                                                                                                                                                                                                                                }
+
+            if (id && id != "") {
+                $("#receive input[value=" + id + "]").click();
+            }
+
+            //自提与送货之间切换
+            $("input[name=receive]").change(function () {
+                showReverInfo();
+            });
+            showReverInfo();
+            $("#receive_Name").val('@ViewBag.revierName');
+            $("#receive_Phone").val('@ViewBag.revierPhone');
+
+            //显示，隐藏收货地址的区块
+            //var rval = $("input[name=reverInfo]:checked").val();
+            //$(rval).removeClass("hidblock");
+            $("input[name=reverInfo]").change(function () {
+
+                if ($(this).val() == "songhuo") {
+                    $("#songhuo").removeClass("hidblock");
+                    $("#ziti").addClass("hidblock");
+                }
+                if ($(this).val() == "ziti") {
+                    $("#songhuo").addClass("hidblock");
+                    $("#ziti").removeClass("hidblock");
+                }
+            });
+
+            var t = $("input[name=receive]:checked").data("type");
+            if (t == 1) {
+                $("input[value=ziti]").click();
+            } else {
+                $("input[value=songhuo]").click();
+            }
+
+        });
+
+    }
+</script>
+
+
+
+<div id="wrap">
+
+    @if (productenable)
+    {
+        <h1>选择产品</h1>
+        @Html.Partial("_PartialSearchProducts")
+    }
+    <h1>订单信息</h1>
+    @Html.Partial("_PartialSelectedProducts")
+
+
+    <h1>
+        用户信息
+    </h1>
+    @if (ViewBag.customerid == null || ViewBag.customerid == "")
+    {
+        <div>
+            <a id="selectuser" class="easyui-linkbutton cus1" data-options="iconCls:'icon-search'" onclick="openWinOfCustomer()">选择用户</a>
+            &nbsp;&nbsp;<a id="createuser" class="easyui-linkbutton  cus1" data-options="iconCls:'icon-add'" onclick="openWinOfCreateCustomer()">添加用户</a>
+        </div>
+    }
+    @Html.Partial("_PartialCustomerInfo")
+
+
+    @Html.Partial("_PartialReceiveInfo")
+
+    <h1>优惠信息(优惠券和代金卡不可同时使用)</h1>
+    <div class="order-favorable">
+
+        <div class="div-margin">
+            <span class="hide-controller"><a href="javascript:void()" onclick="controller('areaCoupons',this)">+</a></span><span class="font-color-brown">使用优惠券</span>
+        </div>
+        <div id="areaCoupons" class="favorable-box">
+
+            <div id="allCoupons" class="div-margin">
+
+            </div>
+            <div>
+                <span class="font-color-brown">请输入优惠券号：</span>
+                <input id="addcoupon" class="favorable-input">
+                <a href='javascript:;' class='easyui-linkbutton cus1' data-options="iconCls:'icon-add'" onclick="addCoupon()">添加</a>
+            </div>
+            <div class="font-color-brown">
+                <span>共使用<span id="couponCount"></span>张优惠券，可优惠<span id="couponPrice"></span>元</span>
+            </div>
+        </div>
+
+        <div class="div-margin">
+            <span class="hide-controller"><a href="javascript:void()" onclick="controller('areaGiftCard', this)">+</a></span><span class="font-color-brown">使用代金卡</span>
+        </div>
+        <div id="areaGiftCard" class="favorable-box">
+
+            <div>
+                <span class="font-color-brown">卡号：</span>
+                <input id="giftCardNo" class="favorable-input">
+                <span class="font-color-brown">密码：</span>
+                <input type="password" id="giftCardPwd" class="favorable-input">
+                <a href='javascript:;' class='easyui-linkbutton cus1' data-options="iconCls:'icon-add'" onclick="addGiftCard()">使用</a>
+            </div>
+            <div class="font-color-brown">
+                <div id="giftInfo">
+
+                </div>
+                <span>共使用<span id="giftCount">0</span>张代金卡，可抵扣<span id="giftCardPrice">0</span>元</span>
+            </div>
+        </div>
+        <div class="div-margin">
+            <span class="hide-controller"><a href="javascript:void()" onclick="controller('areaIntegral', this)">+</a></span><span class="font-color-brown">使用积分抵扣</span>
+        </div>
+        <div id="areaIntegral" class="favorable-box">
+
+            <div>
+                <span class="font-color-brown">使用积分抵扣：</span>
+                <input id="useIntegral" class="favorable-input-integral" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')">
+                <span class="font-color-brown">分</span>
+                <span class="font-color-gray">（你有<span id="integral"></span> 积分）</span>
+                <span class="font-color-brown">抵扣</span>
+                <span class="font-color-red">¥<span id="integralToCash"></span> 元</span>
+            </div>
+        </div>
+
+    </div>
+
+    <h1>收货时间</h1>
+    <input class="input" type="text" style="text-align: center; width: 100px;" @(isdisabled ? "disabled" : "") onclick="WdatePicker({ dateFmt: 'yyyy-MM-dd', minDate: '%y-%M-%d' })" id="receivetime" name="receivetime" value="@ViewBag.delivertime" />
+    <select name="time" style="height:24px;">
+        @foreach (var x in times.OrderBy(a => a.Value))
+        {
+            <option value="@x.Value">@x.Text</option>
+        }
+    </select>
+
+    <h1>发票</h1>
+    <div>
+        <p>
+            <input type="radio" value="Person" name="invoicetype" @(ViewBag.invoicetype == "Person" ? "checked" : "") @(isdisabled ? "disabled" : "") />个人发票
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="radio" value="Company" name="invoicetype" @(ViewBag.invoicetype == "Company" ? "checked" : "") @(isdisabled ? "disabled" : "") />公司发票
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="radio" value="" name="invoicetype" @(ViewBag.invoicetype == "" ? "checked" : "") @(isdisabled ? "disabled" : "") />不需要发票
+        </p>
+        <p id="invoicetype">
+            请输入发票抬头：<input type="text" class="datacontrol" name="invoicetitle" style="padding:5px 10px;width:200px" placeholder="请输入发票抬头" @(isdisabled ? "disabled" : "") value="@ViewBag.invoicetitle" />
+        </p>
+    </div>
+
+    <div id="submit">
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-ok'" onclick="createorder(false)" @(isdisabled ? "disabled" : "")>确认保存订单</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <a class="easyui-linkbutton cus1" data-options="iconCls:'icon-ok'" onclick="createorder(true)" @(isdisabled ? "disabled" : "")>确认保存订单并退出</a>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        //优惠信息的收缩与显示
+        function controller(domId, ctrl) {
+            $("#" + domId).toggle();
+            var text = $(ctrl).text();
+            if (text == "-") {
+                $(ctrl).text("+");
+            } else {
+                $(ctrl).text("-");
+            }
+        }
+
+
+
+        //取消代金卡使用
+        function cancelUseGiftCard() {
+            //取消原有的点击事件
+            $(".giftCard input").each(function (index, item) {
+                $(item).off("click");
+            })
+            //为所有的取消使用绑定点击事件
+            $(".giftCard input").each(function (index, item) {
+                $(item).on("click", function () {
+                    if (confirm("确认取消该代金卡？")) {
+                        //取得该卡的金额
+                        var price = $(item).data("price");
+                        //移除该卡对应的dom
+                        $(item).parent().remove();
+                        //重新计算使用代金卡的金额
+                        var useCount = Number($("#giftCount").text());
+                        var usePrice = Number($("#giftCardPrice").text());
+                        $("#giftCount").text(useCount - 1);
+                        $("#giftCardPrice").text(usePrice - price);
+                    }
+                })
+            })
+        }
+
+
+        //代金卡的使用
+        function addGiftCard() {
+            //取代金卡卡号和密码
+            var cardNo = $("#giftCardNo").val();
+            var cardPwd = $("#giftCardPwd").val();
+            if (cardNo == "" && cardPwd == "") {
+                //alert("代金卡信息不完整!");
+                //return false;
+                $.messager.alert("提示", "代金卡信息不完整!", "error", function () {
+                    return false;
+                });
+            }
+            //是否已添加过该卡
+            var hasGift = $("#giftInfo").html();
+            if (hasGift.indexOf(cardNo) != -1) {
+                //alert("不可添加重复代金卡！");
+                //return false;
+                $.messager.alert("提示", "不可添加重复代金卡！", "error", function () {
+                    return false;
+                });
+            }
+            //验证代金卡的有效性并添加到页面
+            $.ajax({
+                url: '@Url.Action("VerificationGiftCardAllowUse", "GiftCard")',
+                dataType: 'JSON',
+                type: 'POST',
+                data: { giftCardSN: cardNo, giftCardSPwd: cardPwd },
+                success: function (data) {
+                    if (data.successed) {
+                        var giftCard = data.data;
+                        var userGiftCount = $("#giftCount").text();
+                        var userGiftPrice = $("#giftCardPrice").text();
+                        $("#giftCount").text(Number(userGiftCount) + 1);
+                        var totalUserGiftCard = Number(userGiftPrice) + Number(giftCard.Denomination);
+                        var allRows = $("#selectedproducts").datagrid("getRows");
+                        var allprice = 0;
+                        $.each(allRows, function (index, item) {
+                            allprice += item.Price;
+                        })
+                        if (totalUserGiftCard > allprice) {
+                            totalUserGiftCard = allprice;
+                        }//大于订单总额
+                        $("#giftCardPrice").text(totalUserGiftCard);
+                        //界面显示信息
+                        var baseHtml = "<div class='card-information giftCard'>代金卡：{{giftNo}} <input type='button' data-id='{{giftId}}' data-price='{{price}}' value='取消使用' /></div>";
+                        var resultHtml = baseHtml.replace("{{giftNo}}", cardNo).replace("{{giftId}}", giftCard.Id).replace("{{price}}", giftCard.Denomination);
+                        $("#giftInfo").append(resultHtml);
+                        $("#giftCardNo").val("");
+                        $("#giftCardPwd").val("");
+                        //去掉选中的优惠券
+                        $(".checked").removeClass("checked");
+                        $("#couponCount").text(0); 
+                        $("#couponPrice").text(0);
+                        //添加取消事件
+                        cancelUseGiftCard();
+                    } else {
+                        //alert(data.message);
+                        $.messager.alert("提示", data.message, "error", function () {
+                            return false;
+                        });
+                    }
+                }
+            })
+
+        }
+
+
+        //添加未绑定用户优惠券
+        function addCoupon() {
+            var add_coupon = $("#addcoupon").val();
+            if (add_coupon == "") {
+                //alert("请先输入优惠券!");
+                //return false;
+                $.messager.alert("提示", "请先输入优惠券!", "error", function () {
+                    return false;
+                });
+            }
+            $.ajax({
+                url: '@Url.Action("BindCouponByCouponNo","Coupons")',
+                type: 'POST',
+                dataType: 'JSON',
+                data: { couponSN: add_coupon, customerId: customerid },
+                success: function (data) {
+                    if (data.successed) {
+                        //绑定成功
+                        var coupon = data.data;
+                        var resultHtml = "";
+                        var condition = "无条件使用";
+                        if (coupon.ConditionMoney > 0) {
+                            condition = "满 " + coupon.ConditionMoney + " 元使用";
+                        }
+
+                        var a_rows = $("#selectedproducts").datagrid("getRows");
+                        var allprice = 0;
+                        $.each(a_rows, function (index, item) {
+                            allprice += item.Price;
+                        })
+                        var css = "";
+                        var cash = "box-cash";//金额样式
+                        var tip = "box-tip";//提示样式
+                        if (coupon.ConditionMoney > allprice) {
+                            css = "disabled";
+                            cash = "box-cash-disabled";
+                            tip = "box-tip-disabled";
+                        }
+                        resultHtml += baseDom.replace("{{class}}", css)
+                                .replace("{{id}}", coupon.Id)
+                                .replace("{{money}}", coupon.Denomination)
+                                .replace("{{money}}", coupon.Denomination)
+                                .replace("{{condition}}", condition)
+                                .replace("{{cash}}", cash)
+                                .replace("{{tip}}", tip)
+                                .replace("{{date}}", coupon.BeginValidDate.split(' ')[0].replace('-', '.').replace('-', '.') + "-" + coupon.EndValidDate.split(' ')[0].replace('-', '.').replace('-', '.'));
+                        $("#allCoupons").append(resultHtml);
+                        $("#addcoupon").val("");
+
+                        //给优惠券绑上点击事件
+                        $(".select-box").each(function (index, item) {
+                            $(item).off("click");
+                        })
+                        $(".select-box").each(function (index, item) {
+                            $(item).on("click", function () {
+
+                                var giftcardInfo = $("#giftInfo").html();
+                                if (giftcardInfo.replace(/(^\s*)|(\s*$)/g, '') != "") {
+                                    if (confirm("选择优惠券将取消代金卡使用，是否确认?")) {
+
+                                        $(item).addClass("checked");
+                                        $(item).siblings().removeClass("checked");
+                                        var c_price = $(item).find(".box-cash").data("money");
+                                        if (c_price > allprice) {//优惠券金额>订单金额
+                                            c_price = allprice;
+                                        }
+                                        $("#couponCount").text(1);
+                                        $("#couponPrice").text(c_price);
+                                        $("#giftInfo").html("");
+                                        $("#giftCount").text(0);
+                                        $("#giftCardPrice").text(0);
+                                    }
+
+                                } else {
+                                    $(item).addClass("checked");
+                                    $(item).siblings().removeClass("checked");
+                                    var c_price = $(item).find(".box-cash").data("money");
+                                    if (c_price > allprice) {//优惠券金额>订单金额
+                                        c_price = allprice;
+                                    }
+                                    $("#couponCount").text(1);
+                                    $("#couponPrice").text(c_price);
+                                }
+                            })
+                        })
+                        //不可点击的优惠券去掉点击样式
+                        $(".disabled").each(function (index, item) {
+                            $(item).off("click");
+                        })
+
+                    } else {
+                        //alert(data.message);
+                        $.messager.alert("提示", data.message, "error", function () {
+                            return false;
+                        });
+                    }
+                }
+            })
+        }
+        var baseDom = "<div class='select-box {{class}}' data-id='{{id}}'>";
+        baseDom += "<ul class='box-content'>";
+        baseDom += "<li class='first-line'><div class='{{cash}}' data-money='{{money}}'>￥{{money}}</div><div class='{{tip}}'>({{condition}})</div></li>";
+        baseDom += "<li class='second-line'>{{date}}</li>";
+        baseDom += "</ul>";
+        baseDom += "</div>";
+
+        //显示可用优惠券
+        function chooseCoupons(currentMoney, memberId) {
+            if (memberId == "") {
+                customerid = $('#customerid').val();
+                if (customerid == "") {
+                    return false;
+                }
+            } else {
+                customerid = memberId;
+            }
+            if (customerid == "") {
+                return false;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetCouponsByCustomerId", "Coupons")',
+                dataType: "JSON",
+                type: 'POST',
+                data: { customerId: customerid },
+                success: function (data) {
+                    if (data.successed) {
+                        var coupons = data.data;
+                        var resultHtml = "";
+                        $.each(coupons, function (index, item) {
+                            var css = "";//主样式
+                            var cash = "box-cash";//金额样式
+                            var tip = "box-tip";//提示样式
+                            if (currentMoney < item.ConditionMoney && item.ConditionMoney != 0) {
+                                css = "disabled";
+                                cash = "box-cash-disabled";
+                                tip = "box-tip-disabled";
+                            }
+                            var condition = "无条件使用";
+                            if (item.ConditionMoney > 0) {
+                                condition = "满 " + item.ConditionMoney + " 元使用";
+                            }
+                            resultHtml += baseDom.replace("{{class}}", css)
+                                .replace("{{id}}", item.Id)
+                                .replace("{{money}}", item.Denomination)
+                                .replace("{{money}}", item.Denomination)
+                                .replace("{{condition}}", condition)
+                                .replace("{{cash}}", cash)
+                                .replace("{{tip}}", tip)
+                                .replace("{{date}}", item.BeginValidDate.split(' ')[0].replace('-', '.').replace('-', '.') + "-" + item.EndValidDate.split(' ')[0].replace('-', '.').replace('-', '.'));
+                        })
+                        $("#allCoupons").html(resultHtml);
+                        var a_rows = $("#selectedproducts").datagrid("getRows");
+                        var allprice = 0;
+                        $.each(a_rows, function (index, item) {
+                            allprice += item.Price;
+                        })
+                        //给优惠券绑上点击事件
+                        $(".select-box ").each(function (index, item) {
+                            $(item).on("click", function () {
+                                var giftcardInfo = $("#giftInfo").html();
+                                if (giftcardInfo.replace(/(^\s*)|(\s*$)/g, '') != "") {
+                                    if (confirm("选择优惠券将取消代金卡使用，是否确认?")) {
+
+                                        $(item).addClass("checked");
+                                        $(item).siblings().removeClass("checked");
+                                        var c_price = $(item).find(".box-cash").data("money");
+                                        if (c_price > allprice) {//优惠券金额>订单金额
+                                            c_price = allprice;
+                                        }
+                                        $("#couponCount").text(1);
+                                        $("#couponPrice").text(c_price);
+                                        $("#giftInfo").html("");
+                                        $("#giftCount").text(0);
+                                        $("#giftCardPrice").text(0);
+                                    }
+
+                                } else {
+                                    $(item).addClass("checked");
+                                    $(item).siblings().removeClass("checked");
+                                    var c_price = $(item).find(".box-cash").data("money");
+                                    if (c_price > allprice) {//优惠券金额>订单金额
+                                        c_price = allprice;
+                                    }
+                                    $("#couponCount").text(1);
+                                    $("#couponPrice").text(c_price);
+                                }
+                            })
+                        })
+                        //不可点击的优惠券去掉点击样式
+                        $(".disabled").each(function (index, item) {
+                            $(item).off("click");
+                        })
+                    }
+                }
+            })
+        }
+
+
+
+        function formatColumnMultilpe(values, list) {
+            if (!String.isNE(values)) {
+                var texts = "";
+                $(values.split(",")).each(function (i, value) {
+                    $(list).each(function (j, node) {
+                        if (node.value != "") {
+                            if (node.value == value) {
+                                texts += node.text + ",";
+                                return;
+                            }
+                        }
+                    });
+                });
+                if (texts.length > 0) {
+                    texts = texts.substring(0, texts.length - 1);
+                }
+                return texts;
+            }
+            return "";
+        }
+        var isupload = false;
+
+        $(function () {
+            //收货时间控制
+            //$("#receivetime").blur(function () {
+            //    var timeDay = $("#receivetime").val();//获取收货日期
+            //    if (timeDay == "") {
+            //        return "";
+            //    }
+            //    var allOption = $("select[name=time] option");//全部时间
+            //    //取当前时间
+            //    var currentDate = new Date();
+            //    currentDay = currentDate.format("yyyy-MM-dd");
+            //    if (timeDay > currentDay) {
+            //        $.each(allOption, function (index, item) {
+            //            $(item).removeAttr("disabled");
+            //        })
+            //        return;
+            //    }
+            //    //控制小时时间的选择
+
+            //    var currentTime = currentDate.getHours() + ":" + currentDate.getMinutes();//取当前时间
+            //    var isSelected = true;
+            //    $.each(allOption, function (index, item) {
+            //        if ($(item).val() < currentTime) {
+            //            $(item).attr("disabled", "disabled");
+            //            $(item).removeAttr("selected");
+            //        } else {
+            //            if (isSelected) {
+            //                $(item).attr("selected", "selected");
+            //                $(item).removeAttr("disabled");
+            //                isSelected = false;
+            //            }
+            //        }
+            //    })
+
+            //})
+
+            if (Number("@ViewBag.status") == 2) {
+                alert("该订单已进入排产,如果要修改请先从批次中移除!");
+            }
+            if (Number("@ViewBag.status") > 2) {
+                alert("该订单已制作不可修改");
+
+            }
+
+            window.top.$('body').data("backOrderNo", "");
+
+            checkInvoice();
+            $("input[name=invoicetype]").change(function () {
+                checkInvoice();
+            });
+
+
+
+            if ('@ViewBag.deliverHour' != "") {
+                $("select[name=time]").val('@ViewBag.deliverHour');
+            }
+
+            var val = $("select[name=time]").val();
+            if (val == null) {
+                $("select[name=time] option").each(function (i, item) {
+                    if ($(item).val() > '@ViewBag.deliverHour') {
+                        $("select[name=time]").val($(item).val());
+                        return false;
+                    }
+
+                })
+            }
+        })
+
+        function showReverInfo() {
+            var reverType = $("input[name=receive]:checked").data("type");
+            if (reverType == 1) {
+                $("#zitiRevierInfo").css("display", "block");
+                $("a[name=re_update]").hide();
+            } else {
+                $("#zitiRevierInfo").css("display", "none");
+                $("#receive_Name").val('');
+                $("#receive_Phone").val('');
+            };
+
+        }
+
+
+        function setproducttable() {
+            $("#opensearch").hide();
+            $("#searchproducts").css({
+                "width": "100%",
+                "height": "400px"
+            });
+            $("#searchproducts").datagrid({
+                url: '/order/SearchProducts',
+                pagination: true,
+                toolbar: '#toolbar1',
+                rownumbers: true,
+                singleSelect: true,
+                idField: 'Id',
+                columns: [[
+                    {
+                        field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                        formatter: function (value, row, index) {
+                            var v = "";
+                            if (value != null && value != undefined && $.trim(value) != "") {
+                                v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                            }
+                            return v;
+                        }
+                    },
+                    { field: 'Name', title: '产品名称', width: 325, align: 'left' },
+                    {
+                        field: 'Themes', title: '主题', width: 150, align: 'center',
+                        formatter: function (value, row, index) {
+                            if (value != null && value != undefined && $.trim(value) != "") {
+                                var temp = "";
+                                $.each(_themes, function (i, v) {
+                                    if (v.v == value)
+                                        temp = v.t;
+                                });
+                                return temp;
+                            }
+                        }
+                    },
+                    {
+                        field: 'Type', title: '品种', width: 150, align: 'center',
+                        formatter: function (value, row, index) {
+                            return formatColumnMultilpe(value, window.drpdata['category']);
+                        }
+                    }
+                ]],
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    return '<div class="ddv" style="padding:5px 0"></div>';
+                },
+                onExpandRow: function (index, row) {
+                    var url = '/order/GetSubProducts/' + $("#searchproducts").datagrid("getRows")[index].Id;
+                    var ddv = $("#searchproducts").datagrid('getRowDetail', index).find('div.ddv');
+                    ddv.panel({
+                        height: 150,
+                        border: false,
+                        cache: false,
+                        content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:99%;"></iframe>',
+                        onLoad: function () {
+                            $("#searchproducts").datagrid('fixDetailRowHeight', index);
+                        }
+                    });
+                    $("#searchproducts").datagrid('fixDetailRowHeight', index);
+                }
+            });
+        }
+        //创建订单
+        function createorder(bool) {
+
+            var receivetime = $.trim($("input[name=receivetime]").val());
+            //配送时间
+            if (receivetime == "") {
+                $.messager.alert('警告', '请选择配送时间');
+                return;
+            }
+            var time = $('select[name=time] option:checked').val();
+            var timeBucket = $('select[name=time] option:checked').text();
+            if (customerid == "") {
+                $.messager.alert('提示', '请先选择一个用户');
+                return;
+            }
+
+            if (isupload) {
+                $.messager.alert('提示', '系统正在处理，请不要重复提交');
+                return;
+            }
+
+            if ($("input[name=receive]:checked").length == 0 || $("input[name=receive]:checked").val() == "create") {
+                $.messager.alert('提示', '请选择一条收货地址');
+                return;
+            }
+
+            var rows = $("#selectedproducts").datagrid("getRows");
+            if (rows.length == 0) {
+                $.messager.alert('提示', '请先选择产品');
+                return;
+            }
+
+            var product = "";
+
+            $.each(rows, function (i, v) {
+                if (Number(v.Num) > 0) {
+                    if (product == "")
+                        product = (v.Id + "," + v.Num);
+                    else
+                        product += ("|" + v.Id + "," + v.Num);
+                }
+            });
+
+            if (product == "") {
+                $.messager.alert('提示', '请先选择产品，产品数量不能为空');
+                return;
+            }
+
+
+            var invoicetype = $("input[name=invoicetype]:checked").val();
+            var invoicetitle = $.trim($("input[name=invoicetitle]").val());
+            var iscandle = $("input[name=iscandle]:checked").val();//1=需要 0=不需要
+
+            if (invoicetitle == "" && invoicetype != "") {
+                $.messager.alert('提示', '发票抬头不能为空');
+                return;
+            }
+            var receiverType = $("input[name=receive]:checked").data("type");
+            var receiverName;
+            var receiverPhone;
+            if (receiverType == 1) {
+                receiverName = $("#receive_Name").val();
+                receiverPhone = $("#receive_Phone").val();
+                if (receiverName == "") {
+                    alert("提货人不能为空!");
+                    return false;
+                }
+                if (receiverPhone == "") {
+                    alert("提货人联系电话不能为空!");
+                    return false;
+                } else {
+                    if (/^(\d{4}-|\d{3}-)?(\d{8}|\d{7})$/i.test(receiverPhone) == false && /^1[3-8]\d{9}$/i.test(receiverPhone) == false) {
+                        alert("提货人联系号码不正确!");
+                        return false;
+                    }
+                }
+            }
+            //取优惠券、代金卡、抵用积分
+            //优惠券
+            var coupons = $("#allCoupons .checked");
+            var couponsId = "";
+            var couponsPrice = 0;
+            if (coupons != null) {
+                couponsId = coupons.data("id");
+                couponsPrice = Number($(coupons).find(".box-cash").data("money"));
+            }
+
+            //取代金卡
+            var giftCardIds = "";
+            var giftCardPrice = 0;
+            //优惠券 代金卡只取其一
+            if (couponsId == null) {
+                giftCardIds = [];
+                var giftCards = $("#giftInfo input");
+                if (giftCards != null) {
+                    $.each(giftCards, function (index, item) {
+                        //将添加的代金卡全部收集
+                        giftCardIds.push($(item).data("id"));
+                    })
+                }
+
+                giftCardPrice = Number($("#giftCardPrice").text());
+                if (giftCardIds.length > 1) {
+                    giftCardIds = giftCardIds.join(",");
+                } else {
+                    giftCardIds = giftCardIds.toString();
+                }
+
+            }
+            //取积分
+            var customer_use_integral = $("#useIntegral").val();
+            var integralToCash = Number($("#integralToCash").text());
+            //取总价
+            var priceRows = $("#selectedproducts").datagrid("getRows");
+            var allPrice = 0;
+            $.each(priceRows, function (index, item) {
+                allPrice += Number(item.Price) * Number(item.Num);
+            })
+
+
+
+            isupload = true;
+
+            //返回数据JSON
+            var backdata = {};
+            backdata['NO'] = orderid;
+            backdata['CustomerId'] = customerid;
+            backdata['AddressId'] = $("input[name=receive]:checked").val();
+            backdata['AddressType'] = receiverType;
+            if (receiverType == '1') {
+                backdata['RevierName'] = receiverName;
+                backdata['RevierPhone'] = receiverPhone;
+            }
+            //产品及数量
+            var pindex = 0;
+            $.each(rows, function (i, v) {
+                if (Number(v.Num) > 0) {
+                    backdata['Products[' + (pindex) + '].Num'] = v.Num;
+                    backdata['Products[' + (pindex) + '].BirthdayCard'] = v.BirthdayCard;
+                    backdata['Products[' + (pindex++) + '].ID'] = v.Id;
+                }
+            });
+
+            backdata['ReceiveTime'] = receivetime + " " + time + ":00";
+            backdata['InvoiceType'] = invoicetype;
+            backdata['InvoiceTitle'] = invoicetitle;
+            backdata['Candle'] = iscandle;
+            //       backdata['BirthdayCard'] = birthdaycard;
+            backdata['DeliverMsg'] = $("#deliverMsg").val();//客户留言
+            backdata['Remark'] = $("#remark").val();//订单备注
+            backdata['TimeBucket'] = receivetime + " " + timeBucket;
+            backdata['CouponDetailIds'] = couponsId;//优惠券id
+            backdata['GiftCardDetailIds'] = giftCardIds;//代金卡ids
+            backdata['IntegralPay'] = integralToCash;//使用积分抵现
+            backdata['GiftCardPay'] = giftCardPrice;//代金卡金额
+            backdata['CouponPay'] = couponsPrice;//优惠券使用金额
+            backdata['UsedIntegralVal'] = customer_use_integral;//使用积分
+            backdata["OrderTotalAmount"] = allPrice.toFixed(2);//订单总价
+
+
+            //提交订单信息
+            $.ajax({
+                url: '/order/saveorder',
+                type: 'post',
+                dataType: 'json',
+                data: backdata,
+                success: function (data, status) {
+                    if (data.validate)
+                        window.top.$('body').data("backOrderNo", data.order.No);
+                    $.messager.alert('提示', data.validate == false ? data.message : "保存成功", 'info', function () {
+                        if (bool && data.validate) {
+                            window.top.$("body").data("win_addorder").window("close");
+                            window.close();
+                        }
+                        else {
+                            if (data.validate)
+                                window.location = "/order/addorder?orderid=" + data.order.No;
+                        }
+                    });
+
+                }
+            });
+
+            isupload = false;
+        }
+        //发票
+        function checkInvoice() {
+            if ($("input[name=invoicetype]:checked").val() == "") {
+                $("#invoicetype").hide();
+                $("#invoicetype input").val("");
+            }
+            else {
+                $("#invoicetype").show();
+            }
+        }
+    </script>
+}
+

@@ -1,0 +1,166 @@
+﻿@model FCake.Domain.Entities.CustomerAddress
+@{
+    Layout = null;
+}
+
+<table style="background-color:#eff4fb;">
+    <tbody>
+        <tr>
+            <td width="80">配送区域：</td>
+            <td colspan="4">
+                <input class="easyui-combobox" name="province" id="province" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" />
+                <input class="easyui-combobox" name="city" id="city" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" />
+                <input class="easyui-combobox" name="area" id="area" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" />
+            </td>
+        </tr>
+        <tr>
+            <td>配送方式：</td>
+            <td>
+                <input type="radio" name="deliverytype" value="@((int)FCake.Domain.Enums.DeliveryType.D2D)" />送货上门
+                @*<input type="radio" name="deliverytype" value="@((int)FCake.Domain.Enums.DeliveryType.FixedSite)" />站点自提*@
+            </td>
+        </tr>
+        <tr class="deliveryaddress">
+            <td></td>
+            <td>
+                @if (Model.DeliveryType == (int)FCake.Domain.Enums.DeliveryType.FixedSite)
+                {
+                    @:街道地址：<input type="text" class="easyui-validatebox datacontrol" name="deliveryaddress" data-options="required:true" style="padding:5px;" placeholder="街道地址" value="" maxlength="50" />
+                }
+                else
+                {
+                    @:街道地址：     <input type="text" class="easyui-validatebox datacontrol" name="deliveryaddress" data-options="required:true" style="padding:5px;" placeholder="街道地址" value="@Model.Address" maxlength="50" />
+                }
+            </td>
+        </tr>
+        <tr class="deliverystatic">
+            <td></td>
+            <td>
+                @foreach (var x in new FCake.Bll.LogisticsSiteService().GetLogisticsSitesByCity(Model.City))
+                {
+                    <p>
+                        <input type="radio" name="fixedsite" value="@x.Id" @(x.Id.Equals(Model.LogisticsSiteId) ? "checked" : (x.IsDef == 0 ? "checked" : "")) />
+                        @x.SiteName   @x.SiteProvince@x.SiteCity@x.SiteArea@x.SiteAddress
+                    </p>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>收货人：</td>
+            <td>
+                <input type="text" class="easyui-validatebox datacontrol" name="receivename" data-options="required:true" style="padding:5px;" placeholder="收货人姓名" maxlength="10" value="@Model.Receiver" />
+            </td>
+        </tr>
+        <tr>
+            <td>联系方式：</td>
+            <td>
+                手机号码
+                <input type="text" class="easyui-validatebox datacontrol" name="mobile" maxlength="20" style="padding:5px;" placeholder="手机号码" value="@Model.ReceiverMobile" />
+                备选电话：
+                <input type="text" class="easyui-validatebox datacontrol" name="tel" maxlength="20" style="padding:5px;" placeholder="备选电话" value="@Model.ReceiverTel" />
+                (任选一项)
+            </td>
+        </tr>
+        <tr>
+            <td>默认地址</td>
+            <td><input type="checkbox" name="isdefault" value="true" @(Model.IsDef != null && Model.IsDef == 0 ? "checked" : "") /></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <a class="easyui-linkbutton btn cus1" data-options="iconCls:'icon-ok'" onclick="createaddress('@Model.Id')">@(Model.Id == null ? "确定添加地址" : "保存地址")</a>
+                <a class="easyui-linkbutton btn cus1" data-options="iconCls:'icon-cancel'" onclick="getReceive('@Model.Id')">取消</a>
+            </td>
+            <td>
+                <script type="text/javascript">
+                    $(function () {
+                        $("#receive .btn").linkbutton();
+                        $(".deliveryaddress,.deliverystatic").hide();
+
+                        $("input[name=deliverytype]").change(function () {
+                            var v = $(this).val();
+                            if (v == "@((int)FCake.Domain.Enums.DeliveryType.D2D)") {
+                                $(".deliverystatic").hide();
+                                $(".deliveryaddress").show();
+                            }
+                            else {
+                                $(".deliverystatic").show();
+                                $(".deliveryaddress").hide();
+                            }
+                        });
+
+
+                        @if(Model.DeliveryType!=null)
+                        {
+                            @:$("input[name=deliverytype][value='@Model.DeliveryType']").click();
+                                                                        }
+
+                        var provinceone = true;
+
+                        $("#province").combobox({
+                            url: '/common/getposition?position=country&value=',
+                            onSelect: function (record) {
+                                $("#city").combobox({
+                                    url: '/common/getposition?position=province&value=' + escape(record.t)
+                                });
+                                $("#area").combobox({
+                                    url: ''
+                                });
+
+                            }
+                            ,
+                            onLoadSuccess: function () {
+                                if (provinceone) {
+                                    $("#province").combobox("select", '福建省');
+                                    provinceone = false;
+                                }
+                            }
+
+                        });
+
+                        var cityone = true;
+
+                        $("#city").combobox({
+                            onSelect: function (record) {
+                                $("#area").combobox({
+                                    url: '/common/getposition?position=city&value=' + escape(record.t)
+                                });
+                                //变更自提站点
+                                $.get("/order/GetLogisticsSitesByCity?city=" + escape(record.t) + "&id=@Model.LogisticsSiteId", function (data, status) {
+                                    $(".deliverystatic").html(data);
+                                });
+
+                            },
+                            onLoadSuccess: function () {
+                                if (cityone) {
+                                    cityone = false;
+                                    $("#city").combobox("select", '厦门市');
+                                }
+                            }
+                        });
+
+                        var areaone = true;
+
+                        $("#area").combobox({
+                            onSelect: function (record) {
+
+                            },
+                            onLoadSuccess: function () {
+                                if (areaone) {
+                                    @if(Model.Area!=null)
+                                {
+                                @:$("#area").combobox("select", '@Model.Area');
+                                                                                                        }
+                                    areaone = false;
+                                }
+                            }
+                        });
+
+
+                    })
+
+                </script>
+            </td>
+        </tr>
+    </tbody>
+</table>

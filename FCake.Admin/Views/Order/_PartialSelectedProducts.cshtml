@@ -1,0 +1,217 @@
+﻿<style type="text/css">
+    .lbltitle {
+        width: 100px;
+        display: inline-block;
+        text-align: right;
+        margin-right: 10px;
+    }
+</style>
+<table id="selectedproducts" style="width:100%;"></table>
+<div style="display:none;">
+    <span><label class="lbltitle">是否需要生日蜡烛:</label><input type="radio" id="candleyes" name="iscandle" value="0" checked="checked" /><label for="candleyes">是</label><input type="radio" id="candleno" name="iscandle" value="1" /><label for="candleno">否</label> </span>
+</div>
+<p id="productmsg" style="font-size:14px;text-align:right;"></p>
+<div style="width:40%">
+    <label style="vertical-align:top;">会员留言:</label><textarea id="deliverMsg" maxlength="100" style="margin: 0px; width: 348px; height: 66px;"></textarea>
+</div>
+<div style="width: 40%; float: right; margin-top: -90px; margin-right: 30px;">
+    <label style="vertical-align:top;">客服备注:</label><textarea id="remark" placeholder="请输入100字以内的文字描述" maxlength="100" style="margin: 0px; width: 348px; height: 66px;"></textarea>
+</div>
+<input type="text" maxlength="8" name="birthdaycard" style="display:none" />
+
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['birthdayCard'] = [];
+    @foreach (var item in new FCake.Bll.CommonService().GetDictionaryByCode("BirthdayCard", false))
+    {
+        @:window.drpdata['birthdayCard'].push({ value: '@item.Value', text: '@item.Text' });
+                    }
+</script>
+<script type="text/javascript">
+    $(function () {
+        $product = $("#selectedproducts");
+
+        var d = [];
+        var editable = false;
+
+        if (orderid != "") {
+            $.ajax({
+                url: '/order/getordersubproducts/' + orderid,
+                dataType: 'json',
+                type: 'post',
+                async: false,
+                success: function (data, status) {
+                    d = data.result;
+                    $('input[name=iscandle]').eq(data.candle).attr("checked", "checked")
+                    editable = !data.validate;
+                    $('#deliverMsg').val(data.delivermsg);
+                    $('#remark').val(data.remark);
+                    if (d.length == 0) {
+                        setproducttable();
+                    }
+
+                }
+            });
+        }
+
+        var columns = [[]];
+        if (status == "") {
+            columns = [[
+                { field: 'SizeTitle', hidden: true },
+                //{
+                //    field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                //    formatter: function (value, row, index) {
+                //        var v = "";
+                //        if (value != null && value != undefined && $.trim(value) != "") {
+                //            v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                //        }
+                //        return v;
+                //    }
+                //},
+                { field: 'Name', title: '产品名称', width: 240, align: 'center' },
+                {
+                    field: 'Size', title: '产品单位', width: 70, align: 'center', formatter: function (value, row, index) {
+                        return row.SizeTitle;
+                    }
+                },
+                { field: 'Price', title: '价格', width: 70, align: 'center' },
+                { field: 'OrginPrice', title: '原价', width: 70, align: 'center', hidden: true },
+                { field: 'Num', title: '数量', width: 70, align: 'center', editor: { type: 'numberbox', options: { required: true, min: 1 } } },
+                {
+                    field: 'BirthdayCard', title: '生日牌', width: 120, editor: { type: 'combobox', options: { valueField: 'value', textField: 'text', data: window.drpdata['birthdayCard'], panelHeight: 'auto' } }
+                },
+                {
+                    field: 'Id', title: '管理', width: 200, align: 'center',
+                    formatter: function (value, row, index) {
+                        return "<div class='dgedit'><a href='javascript:;' class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-edit',disabled:" + editable + "\" onclick=\"editsub('" + row.Id + "')\" style=\"margin-right:10px;\">修改</a>" +
+                            "<a href='javascript:;'  class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-save',disabled:" + editable + "\" onclick=\"savesub('" + row.Id + "')\" style=\"margin-right:10px;\">保存</a>" +
+                            "<a href='javascript:;'  class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-remove',disabled:" + editable + "\"  onclick=\"deletesub('" + row.Id + "')\" style=\"margin-right:10px;\">删除</a></div>";
+                    }
+                },
+                { field: 'Type', hidden: true }
+            ]];
+        }
+        else {
+            columns = [[
+                { field: 'SizeTitle', hidden: true },
+                //{
+                //    field: 'MainImgId', title: '缩略图', width: 120, align: 'center',
+                //    formatter: function (value, row, index) {
+                //        var v = "";
+                //        if (value != null && value != undefined && $.trim(value) != "") {
+                //            v = "<div style='padding:5px 5px 0 5px;height:100px;line-height:100px;'><img src='" + value + "_min.jpg' style='max-width:100px;max-height:100px;' onerror='$(this).remove();'/></div>";
+                //        }
+                //        return v;
+                //    }
+                //},
+                { field: 'ParentId', hidden: true },
+                { field: 'Name', title: '产品名称', width: 200, align: 'center' },
+                {
+                    field: 'Size', title: '产品单位', width: 70, align: 'center', formatter: function (value, row, index) {
+                        return row.SizeTitle;
+
+                    }
+                },
+                { field: 'Price', title: '价格', width: 70, align: 'center' },
+                { field: 'Num', title: '数量', width: 70, align: 'center' },
+                {
+                    field: 'BirthdayCard', title: '生日牌', width: 100, editor: { type: 'combobox', options: { valueField: 'value', textField: 'text', data: window.drpdata['birthdayCard'], panelHeight: 'auto' } }
+
+                },
+                {
+                    field: 'Id', title: '管理', width: 200, align: 'center',
+                    formatter: function (value, row, index) {
+                        return "<div class='dgedit'><a href='javascript:;' class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-edit'\" onclick=\"editsub('" + row.Id + "')\" style=\"margin-right:10px;\">修改</a>" +
+                            "<a href='javascript:;'  class='easyui-linkbutton cus1' data-options=\"iconCls:'icon-save'\" onclick=\"savesub('" + row.Id + "')\" style=\"margin-right:10px;\">保存</a></div>";
+                    }
+                }
+            ]];
+        }
+
+
+        $product.datagrid({
+            data: d,
+            idField: 'Id',
+            rownumbers: true,
+            singleSelect: true,
+            showFooter: true,
+            columns: columns,
+            onAfterEdit: function () {
+                $(".dgedit .easyui-linkbutton").linkbutton();
+            },
+            onLoadSuccess: function () {
+                $(".easyui-linkbutton").linkbutton();
+            }
+        });
+
+
+
+    })
+
+    function editsub(id) {
+        var rows = $product.datagrid("getRows");
+        $.each(rows, function (i, v) {
+            if (v.Id == id) {
+                $product.datagrid("beginEdit", i);
+            }
+        })
+        sumProduct();
+    }
+
+    function savesub(id) {
+        var val;
+        //获取设置选中行下拉编辑的文本
+        var selectRow = $product.datagrid("getSelected");
+        var selectRowIndex = $product.datagrid("getRowIndex", selectRow);
+        //将手打的存进去
+        var bCardCombobox = $($product.datagrid('getEditor', { index: selectRowIndex, field: 'BirthdayCard' }).target);
+        val = bCardCombobox.combobox('getText');
+        if (val != null) {
+            //判断是否有重复数据
+            var istrue = window.drpdata['birthdayCard'].some(function (x) { return x == val });
+            if (!istrue)
+                window.drpdata['birthdayCard'].push({ value: val, text: val });
+            //重新绑定combobox数据原
+            bCardCombobox.combobox("setValue", val)
+
+            //$($product.datagrid('getEditor', { index: i, field: 'BirthdayCard' }).target).combobox({ data: window.drpdata['birthdayCard'] })
+        }
+
+        var rows = $product.datagrid("getRows");
+
+        //window.drpdata['birthdayCard'].push({ value: rows.birthdayCard, text: rows.birthdayCard });
+        $.each(rows, function (i, v) {
+            if (v.Id == id) {
+                $product.datagrid("endEdit", i);
+            }
+        })
+        sumProduct();
+    }
+
+    function deletesub(id) {
+        $.messager.confirm('系统提示!', '确定删除吗', function (r) {
+            if (r) {
+                var rows = $product.datagrid("getRows");
+                $.each(rows, function (i, v) {
+                    if (v.Id == id) {
+                        $product.datagrid("deleteRow", i);
+                        sumProduct();
+                    }
+                })
+            }
+        });
+
+    }
+
+    function sumProduct() {
+        var p = 0;
+        var s = 0;
+        var rows = $product.datagrid("getRows");
+        $.each(rows, function (i, v) {
+            p += Number(v.Price) * Number(v.Num);
+            s += Number(v.Num);
+        });
+        $("#productmsg").text("总价：¥" + p.toFixed(2) + " 总数：" + s);
+    }
+
+</script>

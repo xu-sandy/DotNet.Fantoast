@@ -1,0 +1,121 @@
+﻿@model FCake.Domain.Entities.Cooperation
+@{
+    ViewBag.Title = "CooperationCheck";
+}
+<style type="text/css">
+    #cooperInfo table {
+        margin: 0 auto;
+    }
+
+        #cooperInfo table tr {
+            line-height: 20px;
+        }
+
+            #cooperInfo table tr td:nth-child(2n+1) {
+                color: #bd9663;
+            }
+</style>
+<div id="cooperInfo">
+    <table>
+        <tr>
+            <td>申请会员：</td>
+            <td>@Model.CustomerId</td>
+        </tr>
+        <tr>
+            <td>公司名称：</td>
+            <td>@Model.CompanyName</td>
+            <td>公司人数：</td>
+            <td>@Model.CompanyPopulation</td>
+        </tr>
+        <tr>
+            <td>联系人：</td>
+            <td>@Model.Name</td>
+            <td>联系电话：</td>
+            <td>@Model.Phone</td>
+        </tr>
+        <tr>
+            <td>申请时间：</td>
+            <td>@Model.ApplyForTime</td>
+            <td>联系邮箱：</td>
+            <td>@Model.Email</td>
+        </tr>
+        <tr>
+            <td>公司地址：</td>
+            <td colspan="3">@Model.CompanyAddress</td>
+        </tr>
+        <tr>
+            <td>
+                <label>申请结果：</label>
+            </td>
+            <td>
+                @if (Model.Status == 0)
+                {
+                    <input id="yes" type="radio" name="result" value="1" checked /><label for="yes">同意</label>
+                    <input id="no" type="radio" name="result" value="2" /><label for="no">不同意</label>
+                }
+                else
+                {
+                    if (Model.Status == 1)
+                    {
+                        <input id="yes" type="radio" name="result" value="1" checked disabled /><label for="yes">同意</label>
+                        <input id="no" type="radio" name="result" value="2" disabled /><label for="no">不同意</label>
+                    }
+                    else
+                    {
+                        <input id="yes" type="radio" name="result" value="1" disabled /><label for="yes">同意</label>
+                        <input id="no" type="radio" name="result" value="2" checked disabled /><label for="no">不同意</label>
+                    }
+                }
+
+            </td>
+        </tr>
+        <tr>
+            <td><label>备注说明：</label></td>
+            <td><textarea id="description" style="width:280px;height:80px;">@Model.Description</textarea></td>
+        </tr>
+        @if (Model.Status == 0)
+        {
+            <tr>
+                <td></td>
+                <td><input type="button" style="width:90px" class="easyui-linkbutton cus2" onclick="submit()" value="审核" />&nbsp;<input type="button" style="width:90px" class="easyui-linkbutton cus2" onclick="Cancel()" value="取消" /></td>
+            </tr>
+        }
+    </table>
+</div>
+<script>
+    function submit() {
+        var reviewStatus = $("input[name=result]:checked").val();
+        var alertInfo = "";
+        if (reviewStatus == 1) {
+            alertInfo = "确定同意该公司试吃申请？"
+        }
+        if (reviewStatus == 2) {
+            alertInfo = "确定拒绝该公司试吃申请？"
+        }
+        if (confirm(alertInfo)) {
+            var id = pharos.g.getUrlParam("Id");
+
+            $.ajax({
+                url: '@Url.Action("UpdateCooperation")',
+                data: { result: reviewStatus, description: $("#description").val(), Id: id },
+                type: "POST",
+                dataType: 'JSON',
+                success: function (data) {
+                    if (data.successed) {
+                        $.messager.alert("操作提示", data.message, "info", function () { window.top.$('body').data('win_checkDlg').window('close'); });
+
+                    } else {
+                        $.messager.alert("操作提示", data.message, "error")
+                    }
+                },
+                error: function () {
+                    $.messager.alert("操作提示", data.message, "error")
+                }
+            })
+        }
+    }
+
+    function Cancel() {
+        window.top.$('body').data('win_checkDlg').window('close');
+    }
+</script>

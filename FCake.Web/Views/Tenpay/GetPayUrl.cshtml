@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = "扫码支付";
+}
+<style>
+    .button1 {
+        border: 1px solid #bd9663;
+        color: #bd9663;
+        width: 70px;
+        height: 20px;
+        font-size: 14px;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        background: #fefefe;
+        border-radius:2px;
+        margin-left:5px;
+        padding:0 3px;
+    }
+</style>
+@using (Html.BeginForm("GetPayUrl", "Tenpay", FormMethod.Post, new { encType = "multipart/form-data" }))
+{
+    <div style="margin-left:42%;margin-top:2%;">
+        <label style="color:#bd9663;font-size:16px;">请用手机微信扫描下方二维码完成支付</label>
+        <div id="divImage" style="margin:20px 0 20px 17px;">
+            <img src="@ViewBag.src" style="width:230px;height:230px;" />
+        </div>
+        <label style="color: #bd9663; font-size: 16px;">付款完成后请到个人中心</label><a href="@Url.Action("Index","Member")" class="button1">查看订单</a>
+    </div>
+}

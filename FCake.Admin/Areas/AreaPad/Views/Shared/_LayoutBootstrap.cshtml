@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+        @Styles.Render(
+        "~/Content/bootstrap.min.css",
+        "~/Scripts/controls/bootstrap-select/css/bootstrap-select.min.css",
+        "~/Content/areapad/areapad.css"
+    )
+        @Scripts.Render(
+        "~/Scripts/jquery-1.10.2.min.js",
+        "~/Scripts/bootstrap.min.js",
+        "~/Scripts/commonpad.js",
+        "~/Scripts/controls/bootstrap-select/js/bootstrap-select.min.js"
+    )
+</head>
+<body>
+    <div>
+        <header id="header" class="navbar navbar-default navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <button type="button" class="btn btn-default navbar-btn btn-back">返回</button>
+                    <button type="button" class="btn btn-default navbar-btn btn-index">首页</button>
+                    <span style="margin-left:50px;">
+                        <span>您好,@FCake.Admin.Helper.UserCache.CurrentUser.UserName</span>
+                        <span>&nbsp;|&nbsp;</span>
+                        <a href="/Account/loginout">[退出]</a>
+                    </span>
+                </div>
+                <nav id="menu" class="navbar-collapse collapse" role="navigation">
+                    <ul class="nav navbar-nav navbar-right">
+                        @*<li><a href="@Url.Action("Index", "OrderBatch", new { area="AreaPad"})">生产批次查看</a></li>
+                        <li><a href="@Url.Action("Index", "Distribution", new { area="AreaPad"})">物流配送管理</a></li>*@
+                    </ul>
+                </nav>
+            </div>
+        </header>
+        @RenderBody()
+    </div>
+
+    @RenderSection("scripts", required: false)
+    <script type="text/javascript">
+        $(function () {
+            $(".btn-back").each(function (j, node) {
+                $(node).bind("touchend", function () {
+                    goBack();
+                    return false;
+                });
+                $(node).bind("click", function () {
+                    goBack();
+                });
+            });
+            $(".btn-index").each(function (j, node) {
+                $(node).bind("touchend", function () {
+                    goHome();
+                    return false;
+                });
+                $(node).bind("click", function () {
+                    goHome();
+                });
+            });
+        });
+        function goBack() {
+            window.history.go(-1);
+        }
+        function goHome() {
+            window.location.href = "@Url.Action("Index", "Home", new { area="AreaPad"})";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+﻿@using FCake.Bll;
+@model FCake.Domain.Entities.Product
+@{
+    var pics = new FCake.Bll.ProductService().GetBaseFileByProductId(Model.Id);
+}
+<script src="~/Scripts/jquery.imagezoom.min.js"></script>
+
+<div class="showimg">
+    <div class="img">
+        <a>
+            <img src="" rel="" class="jqzoom"/>
+        </a>
+    </div>
+    <ul class="thumbs clearfix">
+        @foreach (var x in pics)
+        { 
+            <li>
+                <div>
+                    <a>
+                        <img src="@(Html.GetSysManageUrl()+x.Url)_min.jpg" mid="@(Html.GetSysManageUrl()+x.Url)" big="@(Html.GetSysManageUrl()+x.Url)"/>
+                    </a>
+                </div>
+            </li>
+        }
+    </ul>
+</div>
+
+<script>
+    $(function () {
+        $(".jqzoom").imagezoom();
+
+        $(".thumbs li a").click(function () {
+            $(this).parents("li").addClass("tb-selected").siblings().removeClass("tb-selected");
+            $(".jqzoom").attr('src', $(this).find("img").attr("mid"));
+            $(".jqzoom").attr('rel', $(this).find("img").attr("big"));
+        });
+
+        $(".thumbs li a").eq(0).click();
+    })
+</script>

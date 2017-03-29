@@ -1,0 +1,330 @@
+﻿@model List<FCake.Domain.Entities.CustomerAddress>
+@{
+    Layout = "~/Views/Shared/_LayoutMobile.cshtml";
+    var addressId = ViewBag.AddressId;
+    if (!string.IsNullOrEmpty(addressId))
+    {
+        ViewBag.Title = "编辑收货地址";
+    }
+    else
+    {
+        ViewBag.Title = "添加收货地址";
+    }
+}
+<link href="~/Content/information.css" rel="stylesheet" />
+<style type="text/css">
+    .message {
+        color: #e81a1a;
+        font-family: 'Microsoft YaHei';
+    }
+
+
+    div.WdateDiv {
+        width: 262px;
+    }
+
+    iframe.DRAGDIS_iframe {
+        width: 262px;
+    }
+
+    select {
+        width: 31.5%;
+        height: 37px;
+        float: left;
+        border: 1px solid #ccd1d9;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        margin-bottom: 10px;
+        font-size: 0.75em;
+    }
+
+        select[name=FavoriteCake] {
+            width: 71%;
+            margin-left: 1px;
+        }
+
+        select[name=ddlProvince] {
+            width: 27.5%;
+        }
+
+        select[name=ddlCity] {
+            margin-left: 10px;
+        }
+
+        select[name=ddlArea] {
+            margin-left: 10px;
+        }
+</style>
+<div class="container">
+    <div class="row" style="height: 5%;">
+        <div class="col-xs-12 col-sm-12  col-md-12  col-lg-12 " style="background-color: #bd9663;">
+            <img src="~/Content/images/PersonalCenter/l_arrow.png" style="height:21px; width:14px; margin-top:15px; float:left" onclick="back()" />
+            @if (!string.IsNullOrEmpty(addressId))
+            {
+                <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">编辑收货地址</span>
+                <img src="~/Content/images/PersonalCenter/delete_1.png" onclick="delAddress('@addressId')" style=" height:19px; width:20px; float:right; margin-top:15px;" />
+            }
+            else
+            {
+                <span class="col-xs-10 col-sm-11 col-md-11 col-lg-11" style="text-align:center; line-height:50px; color:#FFFFFF; font-family: 'Microsoft YaHei';font-size: 1.25em;">添加收货地址</span>
+                <img src="~/Content/images/PersonalCenter/index.png" style=" height:19px; width:20px; float:right; margin-top:15px;" onclick="backHome()" />
+            }
+        </div>
+    </div>
+
+    <table class="wallbox content">
+        <tr>
+            @*内容信息*@
+            <td style="text-align:left;">
+                <div class="datapanel">
+
+                    <form role="form" style="text-align: center; margin-top:20px; width:100%;">
+                        <input type="hidden" id="id" name="id" />
+                        <div class="form-group">
+                            <label class="item_text">收货人<span class="message">*</span></label>
+                            <input type="text" class="form-control" style="width:75%;" id="ttbReceiver" name="ttbReceiver" placeholder="请输入收货人" maxlength="4">
+                        </div>
+                        <div class="form-group" style="height:20px;">
+                            <label class="item_text">省份<span class="message">*</span></label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlProvince" id="ddlProvince"></select>
+                        </div>
+                        <div class="form-group" style="height:20px;">
+                            <label class="item_text">城市<span class="message">*</span></label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlCity" id="ddlCity"></select>
+                        </div>
+                        <div class="form-group" style="height:20px;">
+                            <label class="item_text">地区<span class="message">*</span></label>
+                            <select class="form-control" style="width:75%;margin-left:0px;" name="ddlArea" id="ddlArea"></select>
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <label class="item_text">街道地址<span class="message">*</span></label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="ttbAddress" name="ttbAddress">
+
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">邮政编码</label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="ttbCode" name="ttbCode">
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">手机<span class="message">*</span></label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="ttbMobile" name="ttbMobile" maxlength="11">
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text">备选电话<span class="message">*</span></label>
+                            <input type="text" class="form-control" style="width: 75%; color: #411502;" id="ttbTel" name="ttbTel">
+                        </div>
+                        <div class="form-group">
+                            <label class="item_text"></label>
+                            <span style="width: 75%; color: #bd9663; margin-left: 0;">（至少留一个联系电话）</span>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox" style="text-align:left;">
+                                <label class="checkbox-lable" style="width: 100%;">
+                                    <input id="default_flg" type="checkbox">设为默认地址
+                                </label>
+                            </div>
+                        </div>
+                        <a href="javascript:void(0)" onclick="saveaddress()" style="font-size:1.25em;line-height:40px;"><div class="btn-confirm" style="margin-top:30px;">确认</div></a>
+
+                    </form>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script type="text/javascript">
+    var addressId = '@addressId'
+    function delAddress(addressId) {
+        $.ajax({
+            url: '@Url.Action("DelAddress", "Member")',
+            dataType: 'json',
+            type: 'post',
+            data: { addressId: addressId },
+            success: function (data, status) {
+                if (data.validate)
+                    window.location.href = '@Url.Action("DeliverAddress", "Member")';
+                else
+                    alert(data.msg);
+            }
+        });
+    }
+    function editAddress(addrId) {
+        $.ajax({
+            url: '@Url.Action("GetOneAddress", "Member")',
+            dataType: 'json',
+            type: 'post',
+            async: true,
+            data: { addressId: addrId },
+            success: function (data) {
+                $("div.newAddr").show();
+                $("input[name=ttbReceiver]").val(data.Receiver);
+                $("select[name=ddlProvince]").val(data.Province).change();
+                $("select[name=ddlCity]").val(data.City).change();
+                $("select[name=ddlArea]").val(data.Area).change();
+                $("input[name=ttbAddress]").val(data.Address);
+                $("input[name=ttbTel]").val(data.ReceiverTel);
+                $("input[name=ttbMobile]").val(data.ReceiverMobile);
+                $("input[name=ttbCode]").val(data.ZipCode);
+                $("input#default_flg").prop("checked", data.IsDef == 0 ? 1 : 0);
+                $("input#id").val(data.Id);
+            }
+        })
+    }
+    function saveaddress() {
+        var receiver, province, city, area, address, tel, mobile, code, isDef, id;
+        receiver = $.trim($("input[name=ttbReceiver]").val());
+        if (receiver == "") {
+            alert("请输入收货人名称"); return;
+        }
+        province = $("select[name=ddlProvince] option:checked").val();
+        if (province == "") {
+            alert("请选择省份"); return;
+        }
+        city = $("select[name=ddlCity] option:checked").val();
+        if (city == "") {
+            alert("请选择城市"); return;
+        }
+        area = $("select[name=ddlArea] option:checked").val();
+        if (area == "") {
+            alert("请选择区域"); return;
+        }
+        address = $.trim($("input[name=ttbAddress]").val());
+        if (address == "") {
+            alert("请输入街道地址"); return;
+        }
+        tel = $.trim($("input[name=ttbTel]").val());
+        mobile = $.trim($("input[name=ttbMobile]").val());
+        if (tel == "" && mobile == "") {
+            alert("手机或固定电话至少填写一项"); return;
+        }
+
+        if (tel != "" && (!$("input[name=ttbTel]").controlValidate("cntel", false) && !$("input[name=ttbTel]").controlValidate("cnmobile", false))) {
+            alert("无效的联系电话");
+            return;
+        }
+        if (mobile != "" && !$("input[name=ttbMobile]").controlValidate("cnmobile", false)) {
+            alert('手机号码格式不正确');
+            return;
+        }
+
+        code = $.trim($("input[name=ttbCode]").val());
+        if (code != "" && !$("input[name=ttbCode]").controlValidate("postcode", false)) {
+            alert('邮编格式不正确');
+            return;
+        }
+
+        try {
+            code = code.replace(/\D/g, '');
+            if (code != "")
+            {
+                code = Number(code);
+            }
+            
+        }
+        catch (e) {
+            code = "";
+        }
+        $("input[name=ttbCode]").val(code);
+
+        isDef = Number($("input#default_flg").is(':checked'));
+        id = $("input#id").val();
+
+        $.ajax({
+            url: '/Member/SaveAddress',
+            dataType: 'json',
+            type: 'post',
+            data: { receiver: receiver, province: province, city: city, area: area, address: address, tel: tel, mobile: mobile, code: code, isDef: isDef, id: id },
+            success: function (data, status) {
+                if (data.validate) {
+                    //验证是从哪里来的页面
+
+                    //var page = window.localStorage.getItem("page");
+                    var page = pharos.g.getUrlParam("page");
+                    if (page == "settlement") {
+                        window.localStorage.setItem("addressId", addressId);
+                        @*window.location.href = '@Url.Action("Settlement","Cart")';*@
+                        window.location.href = "/Cart/Settlement?addressId=" + data.Data.Id;
+                    } else {
+                        window.location.href = '@Url.Action("DeliverAddress", "Member")';
+                    }
+                    //window.location.reload();
+                    
+                }
+                else
+                    alert(data.msg);
+            }
+        });
+
+    }
+
+</script>
+<script type="text/javascript">
+    $(function () {
+        editAddress(addressId);
+        $province = $("select[name=ddlProvince]");
+        $city = $("select[name=ddlCity]");
+        $area = $("select[name=ddlArea]");
+
+
+        var provicnes = loadPosition("country", "");
+        $province.html(loadPositionSelect(provicnes));
+
+        $province.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $city.html("");
+                $area.html("");
+            }
+            else {
+                if ($city.data(value) != null) {
+                    $city.html($city.data(value));
+                }
+                else {
+                    $city.data(value, loadPositionSelect(loadPosition("province", value)));
+                    $city.html($city.data(value));
+                }
+            }
+        });
+        $city.change(function () {
+            var value = $(this).find(":checked").val();
+            if (value == "") {
+                $area.html("");
+            }
+            else {
+                if ($area.data(value) != null) {
+                    $area.html($area.data(value));
+                }
+                else {
+                    $area.data(value, loadPositionSelect(loadPosition("city", value)));
+                    $area.html($area.data(value));
+                }
+            }
+        });
+    })
+
+    function loadPosition(position, value) {
+        var _data = [];
+
+        $.ajax({
+            url: '@Url.Action("getposition", "common")?position=' + escape(position) + "&value=" + escape(value),
+            type: 'post',
+            dataType: 'json',
+            async: false,
+            success: function (data, status) {
+                _data = data;
+            }
+        });
+
+        return _data;
+    }
+    function loadPositionSelect(data) {
+        var html = "<option value=''>请选择</option>";
+        $.each(data, function (index, value) {
+            html += ("<option value='" + value.t + "'>" + value.t + "</option>");
+        });
+        return html;
+    }
+
+</script>

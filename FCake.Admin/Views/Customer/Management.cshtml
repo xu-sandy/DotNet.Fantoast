@@ -1,0 +1,106 @@
+﻿@using FCake.Admin.Models;
+@{
+    ViewBag.Title = "会员管理";
+}
+<style type="text/css">
+    div.panel.datagrid {
+        margin:0 auto;
+    }
+    #msg {
+        margin: 15px auto;
+        text-align: center;
+    }
+</style>
+
+<div style="width:800px;position:relative;padding:50px 0;margin:auto;">
+    <p style="text-align:center;">
+        <input type="radio" name="s" value="mobile" checked /> 手机号码 
+        <input type="radio" name="s" value="customername" /> 会员姓名
+        <input type="radio" name="s" value="orderno" /> 订单号
+    </p>
+    <p style="text-align:center">
+        <input type="text" id="condition" name="condition" class="datacontrol" style="width:350px" onchange="searchkey()" />
+        <a href="#" class="easyui-linkbutton cus4 linkbtn" data-options="iconCls:'icon-search'" onclick="searchkey()">搜索</a>
+        <a class="easyui-linkbutton cus1 linkbtn" href="#" onclick="addOrder(); return false;" data-options="iconCls:'icon-add'">添加订单</a>
+    </p>
+</div>
+
+<div id="msg"></div>
+<table id="dg"></table>
+
+<script type="text/javascript">
+    $key = $("input[name=key]");
+    $s = $("input[name=s]");
+
+    function searchkey() {
+        var condition = encodeURI($("#condition").val());
+        var status = $("input:radio[name='s']:checked").val();
+        
+        if (condition == "" || condition.trim() == "") {
+            $("#msg").html("<h3>请输入查询条件！</h3>");
+        }
+        else {
+            var url = '/customer/customerlocate?status=' + status + '&condition=' + condition;
+            //$("#msg").html("<table id=\"dg\"></table>");
+            $("#dg").datagrid({
+                url: url,
+                width: 800,
+                height: 400,
+                border:false,
+                singleSelect: true,
+                autoRowHeight: false,
+                pagination: true,
+                rownumbers:true,
+                pageNumber: 1,
+                pageSize:30,
+                fitColumns: true, //自适应
+                scrollbarSize:0,
+                columns: [[
+                    { field: 'id', title: '客户Id', hidden:true },
+                    { field: 'name', title: '姓名', width: '15%' },
+                    { field: 'mobile', title: '手机', width: '15%' },
+                    { field: 'address', title: '地址', width: '45%' },
+                    { field: 'order', title: '订单', width: '20%' }
+                ]],
+                onLoadSuccess: function (data) {
+                    $("#msg").html("<h3> </h3>");
+                    var rows = $(this).datagrid("getRows");
+                    if (rows.length <= 0) {
+                        $("#msg").html("<h3>查无数据！</h3>");
+                    }
+                    if (rows.length == 1) {
+                        //alert(rows[0].id);
+                    }
+                },
+                onDblClickRow: function (rowIndex, rowData) {
+                    openForm("详细信息", "@Url.Action("CustomerDetails", "Customer")" + "?customerId=" + rowData.id + "&orderNo=" + rowData.order, "addorder", 950, 600);
+                }
+            });
+        }
+    }
+
+    function addOrder() {
+        pharos.g.openDialog({
+            title: "添加订单",
+            width: 900,
+            height: 600,
+            id: "addorder",
+            url: '/order/addorder'
+        });
+    }
+
+    function openForm(title, url, winId, width, height) {
+        pharos.g.openDialog({
+            title: title,
+            width: width,
+            height: height,
+            id: winId,
+            url: url
+        });
+    }
+
+    //兼容性代码：解决ie 7/8不支持trim属性或方法
+    String.prototype.trim = function () {
+        return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+    }
+</script>

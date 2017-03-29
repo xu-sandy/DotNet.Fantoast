@@ -1,0 +1,74 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Bll;
+@model FCake.Domain.WebModels.ProductListModel
+@if (Model != null)
+{
+    if (Model.VProductModels != null)
+    {
+        foreach (var item in Model.VProductModels)
+        {
+            <li id="@item.ProductId">
+                <a href="javascript:void(0)"><img class="hotflag" src="../Content/images/@(Model.ImgFlag).png" style="display: @(Model.ImgFlag == "hot" ? "block" : (item.IsRecommend == 1 ? "block" : "none")) " /><img style="width:280px;height:280px;margin-bottom:10px;" src="@(Html.GetSysManageUrl() + item.ImgUrl+"_middle.jpg")" /></a>
+                <div class="sell_text">
+                    <a href="@Url.Action("Detail", new { id = item.ProductId })" class="clearfix" style="height:100%">
+                        <p class="f0" style="padding-top:20px;margin-top:0;font-size:14px;">
+                            @if (item.Brief != null && item.Brief.Length > 130)
+                            {
+                                item.Brief = item.Brief.Substring(0, 130) + "...";
+                            }
+                            @Html.Raw(item.Brief)
+                        </p>
+                        <div class="sell_hr"></div>
+                        <span style="margin: 0; font-size: 14px;" class="f0">
+                            @if (item.Material != null)
+                            {
+                                if (item.Material.Length > 13)
+                                {
+                                    item.Material = item.Material = item.Material.Substring(0, 13) + "...";
+                                }
+                                <b class="bold" style="margin:20px;">材料：</b>@item.Material
+                            }
+                        </span>
+                    </a>
+                    <div class="btn">
+                        <a id="@item.ProductId" class="addcart"></a>
+                    </div>
+                </div>
+                <a href="@Url.Action("Detail", new { id = item.ProductId })" class="f1" style="display:block;">
+                    @item.Name
+                </a>
+                @*英文名*@
+                <a href="@Url.Action("Detail", new { id = item.ProductId })" class="f1">
+                    @item.EnglishName
+                </a>
+
+                @if (item.isHasActivity == 1)
+                {
+                    <p class="price f0 highlight">
+                        @{
+                            <span style="text-decoration:line-through">@Html.Raw(string.Format("{0:C}", item.Price))</span> @:/
+                            @item.SizeTitle
+
+                        }
+                    </p>
+                    <p class ="price f0 highlight" style="line-height:15px;">
+                        活动价：@Html.Raw(string.Format("{0:C}", item.ActivityPrice))
+                    </p>
+                }
+                else
+                {
+                    <p class="price f0 highlight">
+                        @{
+                            @Html.Raw(string.Format("{0:C}", item.Price)) @:/
+                            @item.SizeTitle
+
+                        }
+                    </p>
+                }
+                <p class="warmTip" style="text-align:center">
+                    @item.WarmTips
+                </p>
+            </li>
+        }
+    }
+}

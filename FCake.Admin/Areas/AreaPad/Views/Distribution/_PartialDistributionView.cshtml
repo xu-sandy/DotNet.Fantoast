@@ -1,0 +1,46 @@
+﻿@using FCake.Domain.Enums
+@model List<FCake.Domain.WebModels.DistributionModel>
+
+@if (Model != null)
+{
+    foreach (var item in Model)
+    {
+        <tr>
+            <td class="orderNo">@item.OrderNo</td>
+            <td class="orderNo">@item.RequiredTimeBucket</td>
+            <td class="beginTime orderNo">@(item.BeginTime == null ? "" : item.BeginTime.Value.ToString("M月d日 HH:mm"))</td>
+            <td class="endTime orderNo">@(item.EndTime == null ? "" : item.EndTime.Value.ToString("M月d日 HH:mm"))</td>
+            <td class="address orderNo">@item.Address</td>
+            <td data-orderno="@item.OrderNo" data-status="@(item.Status.HasValue?(int)item.Status:-1)" data-price="@item.NeedPay" data-feetype="@((int)item.feeType)" data-giftcardpayed="@item.GiftCardPayed">
+                @if (item.Status.HasValue)
+                {
+                    var hidden = "";
+                    
+                    if (item.Status == StatusDistribution.DistributionPending || item.Status == StatusDistribution.Distributing)
+                    {//未开始或者配送中
+                        if (item.Status == StatusDistribution.DistributionPending)
+                        {
+                            hidden = "hidden";
+                            <button type="button" class="btn btn-default btn-info" onclick="statusItem('@item.OrderNo',this)">开始</button>
+                        }
+                        else if (item.Status == StatusDistribution.Distributing)
+                        {
+                            <button type="button" class="btn btn-default btn-success" onclick="statusItem('@item.OrderNo',this)">完成</button>
+                        }
+                        <button type="button" class="btn btn-default btn-danger @hidden" onclick="statusRevert('@item.OrderNo',this)">撤销</button>
+                        <button type="button" class="btn btn-default btn-warning @hidden" onclick="curIndex = this;" data-toggle="modal" data-target="#exceptionModal">异常</button>
+                    }
+                    else if (item.Status == StatusDistribution.Distributed || item.Status == StatusDistribution.DistributionFalse)
+                    {//完成或异常
+                        <button type="button" class="btn btn-default" disabled="disabled">@FCake.Core.Common.EnumHelper.GetDescription(item.Status)</button>
+                    }
+                }
+                else
+                {
+                    <span>暂无配送信息</span>
+                }
+            </td>
+        </tr>
+    }
+}
+

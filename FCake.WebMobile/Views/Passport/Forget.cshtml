@@ -1,0 +1,120 @@
+﻿@{
+    ViewBag.Title = "忘记密码";
+}
+<link href="~/Content/login.css" rel="stylesheet" />
+<style>
+    .inputwidth { width: 100%; color: rgb(153, 153, 153); margin: 0 auto; }
+</style>
+<div class="container clo-xs-12 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3 col-lg-4 col-lg-offset-4">
+    <div class="form-horizontal" style="margin-top:20px;text-align:center;">
+        <form id="form1" role="form">
+            <div class="form-group">
+                <span class="title">重置密码</span>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control inputwidth" id="mobile" name="mobile" placeholder="请输入手机号" maxlength="11" />
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control inputwidth" id="newPwd" name="newPwd" placeholder="请输入新密码" />
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control inputwidth" id="confirmPwd" name="confirmPwd" placeholder="请再次输入新密码" />
+            </div>
+            <div class="form-group">
+                <span>
+                    <input id="captchas" type="text" class="form-control textwidth" style="display:inline-block;float:left;margin-left:0px;width:60%;" name="captchas" placeholder="填写图片验证码">
+                    <img style="height: 30px;width:30%;display:inline-block;float:right;" id="captchasImg" onclick="change()" src="@Url.Action("GetCaptchas","Passport")">
+                </span>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-control inputwidth" id="code" name="code" placeholder="请输入手机验证码" maxlength="6">
+            </div>
+            <div class="form-group">
+                <button type="button" id="sendBtn" class="btn btn-default col-xs-12" onclick="sendCode()">发送验证码</button>
+            </div>
+            <div class="form-group">
+                <button type="button" id="changepwd" class=" regbtn" style="color:#fff" onclick="saveChange()">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+
+    //保存
+    function saveChange() {
+        var pwd1 = $("#newPwd").val();
+        //var regex = new RegExp("^[^\s]{6,16}$");
+        //if (!regex.test(pwd1))
+        //{
+        //    alert("密码不合法");
+        //    return false;
+        //}
+        var pwd2 = $("#confirmPwd").val();
+        if (pwd1 != pwd2) {
+            alert("两次输入的密码不一致！");
+            return false;
+        }
+        var mobile = $("#mobile").val();
+        var re = /^1\d{10}$/;
+        if (!re.test(mobile)) {
+            alert("手机号码不正确!");
+            return false;
+        }
+        $.post("@Url.Action("CheckUserName", "Passport")", "userName=" + mobile, function (data) {
+            if (data) {
+                alert("该手机号尚未注册！");
+            }
+            else {
+                $.post("@Url.Action("Forget","Passport")", $("#form1").serialize(), function (data) {
+                    change();
+                    if (data.success) {
+                        alert("密码已修改，请重新登录！")
+                        window.location.href = "@Url.Action("Login")";
+                    } else {
+                        alert(data.msg);
+                    }
+                });
+            }
+        }, "json");
+    }
+    //获取验证码
+    function sendCode() {
+        var mobileNo = $("#mobile").val();
+        var re = /^1\d{10}$/;
+        if (!re.test(mobileNo)) {
+            alert("手机号码不正确!");
+            return false;
+        }
+        $.post('@Url.Action("SendValidCodeFJXX", "Passport")', { mobile: mobileNo, type: "Register", isNewRegister: true, guess: $("#captchas").val() }, function (data) {
+            change();
+            if (data.success == true) {
+                time();
+            }
+            else {
+                alert(data.msg);
+            }
+        });
+    }
+
+    //发送验证码按钮倒计时
+    var wait = 60;
+    function time() {
+        if (wait == 0) {
+            $("#sendBtn").attr("disabled", false);
+            $("#sendBtn").html("发送验证码");
+            wait = 60;
+        } else {
+            $("#sendBtn").attr("disabled", true);
+            $("#sendBtn").html(wait + "秒后重发");
+            wait--;
+            setTimeout(function () {
+                time()
+            },
+             1000)
+        }
+    }
+
+    function change() {
+        $("#captchasImg").attr('src', "@Url.Action("GetCaptchas", "Passport")" + "?a=" + Math.random());
+    }
+</script>

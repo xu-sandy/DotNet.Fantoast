@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>
+  <country>
+    <province value="福建省">
+      <city value="厦门市">
+        <area value="思明区"></area>
+        <area value="湖里区"></area>
+      </city>
+    </province>
+  </country>
+</root>

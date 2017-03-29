@@ -1,0 +1,63 @@
+﻿@using FCake.Bll;
+@{
+    ViewBag.Title = "枫客Fancake官网_厦门地区免费配送_蛋糕24小时在线预定";
+    var slides = new FCake.Bll.Services.SlideService().GetSlides(2).ToList();
+    int count = slides.Count();
+}
+<link href="~/Content/home.css" rel="stylesheet" />
+<script src="~/Scripts/jquery1.8.3.js"></script>
+<script src="~/Scripts/fcake/home.js"></script>
+
+<!--幻灯片-->
+<div class="slides">
+    <a href="javascript:;" class="prev"></a>
+    <a href="javascript:;" class="next"></a>
+
+    <div class="slide-list" style="width:1600px;position:relative;left:50%;margin-left:-800px;">
+        @foreach (var x in slides)
+        {
+            <a target="_blank" href="@x.LinkUrl">
+                <img src="@(Html.GetSysManageUrl()+x.Url)" title="" />
+            </a>
+        }
+    </div>
+</div>
+<!--快速链接-->
+<div class="wallbox quicklinks clearfix">
+    <div class="l">
+        <span>我要查订单</span>
+        <div class="pic">
+            <a href="/Member/Index"><img src="~/Content/images/order.png" /></a>
+        </div>
+    </div>
+    <div class="c">
+        <span>我要订蛋糕</span>
+        <div class="pic">
+            <a href="/Product/Index"><img src="~/Content/images/cake.png" /></a>
+        </div>
+    </div>
+    <div class="r">
+        <span>我要找客服</span>
+        <div class="pic">
+            <a href="/Home/OrderHelp"><img src="~/Content/images/servicer.png" /></a>
+        </div>
+    </div>
+</div>
+@Html.Partial("_PartialHotCake")
+
+
+<script type="text/javascript">
+    $(function () {
+        $(".pic").mouseover(function () {
+            $(this).css({ 'box-shadow': '0 0 25px #A96915' });
+        })
+        $(".pic").mouseout(function () {
+            $(this).css({ 'box-shadow': '0 0 6px #ffffff' });
+        })
+    })
+</script>
+
+<script>
+
+
+</script>

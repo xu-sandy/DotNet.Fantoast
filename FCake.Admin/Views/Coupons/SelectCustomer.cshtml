@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "添加用户";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+
+<input type="hidden" name="customerIds" value="@Request["customerIds"]" />
+<table id="selectCustomer"></table>
+<div id="toolbar2">
+    姓名<input type="text" name="customername" />
+    手机或固定电话<input type="text" name="customertel" />
+    <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" onclick="findcustomer()">查找</a>
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        $customer = $("#selectCustomer");
+
+        $customer.datagrid({
+            url: '@Url.Action("LoadCustomersOutIds", "Coupons")' + "?ids=" + $("input[name=customerIds]").val(),
+            pagination: true,
+            idField: 'Id',
+            rownumbers: true,
+            fit: true,
+            toolbar: '#toolbar2',
+            onLoadSuccess: loadSuccess,
+            columns: [[
+                { field: 'Id', checkbox: true, width: 50, align: 'center' },
+                { field: 'FullName', title: '会员姓名', width: 100, align: 'center' },
+                { field: 'Tel', title: '固定电话', width: 120, align: 'center' },
+                { field: 'Mobile', title: '手机', width: 100, align: 'center' },
+                { field: 'Email', title: '邮箱', width: 120, align: 'center' },
+                { field: 'Integral', title: '积分', width: 60, align: 'center' },
+                { field: 'MemberLevelText', title: '会员等级', width: 80, align: 'center' }
+            ]],
+        });
+    })
+
+    function findcustomer() {
+        $("#selectCustomer").datagrid({
+            url: '@Url.Action("LoadCustomersOutIds", "Coupons")?name=' + escape($.trim($("input[name=customername]").val())) + "&tel=" + escape($.trim($("input[name=customertel]").val())) + "&ids=" + $("input[name=customerIds]").val()
+        });
+    }
+</script>
+
+<script type="text/javascript">
+    var $dg3 = $("#selectCustomer"), clickIndex = undefined;
+    function existsSelect(rows, cd) {
+        var result = { exists: false, index: -1 };
+        $.each(rows, function (idx, row) {
+            if (row.Id == cd) {
+                result.exists = true;
+                result.index = idx;
+                return;
+            }
+        });
+        return result;
+    }
+    function loadSuccess(data) {
+        var cds = $("[name='customerIds']").val().split(",");
+        $.each(cds, function (index, cd) {
+            var result = existsSelect(data.rows, cd);
+            if (result.exists) {
+                $dg3.datagrid("checkRow", result.index);
+            }
+        });
+        var pager = $dg3.datagrid("getPager");
+        var opt = $(pager).pagination("options");
+        opt.onRefresh = function (pageNumber, pageSize) {
+            $dg3.datagrid("clearChecked");
+        }
+    }
+</script>

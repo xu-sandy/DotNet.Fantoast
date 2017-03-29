@@ -1,0 +1,230 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Admin.Models;
+@model FCake.Domain.Entities.Customers
+@{
+    ViewBag.Title = "OrderDetails";
+}
+<style type="text/css">
+    /*table.gridCusInfo {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 11px;
+        color: #333;
+        border-width: 1px;
+        border-color: #f8f8f8;
+        border-collapse: collapse;
+        margin: 0 auto;
+    }
+
+        table.gridCusInfo td {
+            border-width: 1px;
+            padding: 8px;
+            border: 1px solid #f8f8f8;
+            background-color: #fff;
+            text-align: left;
+        }*/
+</style>
+<div>
+    <div style="float: left"><img src="" width="100" height="100" /></div>
+    <table class="gridCusInfo">
+        <tr>
+            <td>
+                姓名：
+            </td>
+            <td>
+                <input id="FullName" name="FullName" class="datacontrol" value="@Model.FullName" readonly="readonly" />
+            </td>
+            <td>
+                性别：
+            </td>
+            <td>
+                <input id="Sex" name="Sex" class="easyui-combobox datacontrol"
+                       data-options="valueField:'id',textField:'text',value:'@Model.Sex',height:24,url:'@Url.Action("GetEnum", "Common", new { code = typeof(FCake.Domain.Enums.Sex) })',panelHeight:'auto', editable: false" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                电话：
+            </td>
+            <td>
+                <input id="Mobile" name="Mobile" class="datacontrol" value="@Model.Mobile" readonly="readonly" />
+            </td>
+            <td>
+                邮箱：
+            </td>
+            <td>
+                <input id="Email" name="Email" class="datacontrol" value="@Model.Email" readonly="readonly" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                默认地址：
+            </td>
+            <td>
+                <input id="CustomerAddress" name="CustomerAddress" class="datacontrol" value="@Model.CustomerAddressId" readonly="readonly" />
+                <input id="CustomerAddress" name="CustomerAddress" class="datacontrol" value="@Model.CustomerAddressId" readonly="readonly" />
+            </td>
+            <td>
+                <input id="CustomerAddress" name="CustomerAddress" class="datacontrol" value="@Model.CustomerAddressId" readonly="readonly" />
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="btnGroup">
+    <a id="editInfo" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-edit'">编辑资料</a>
+    <a id="addOrder" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加订单</a>
+</div>
+<table id="dg"></table>
+
+<script type="text/javascript" src="datagrid-groupview.js"></script>
+<script type="text/javascript">
+    $("#dg").datagrid({
+        rownumbers: true,
+        singleSelect: true,
+        autoRowHeight: false,
+        pageSize: 30,
+        fitColumns: true, //自适应
+        url: "",
+        columns: [[
+			{ field: 'productid', title: '产品名称', width: 100 },
+			{ field: 'listprice', title: '类型', width: 80, align: 'right'},
+			{ field: 'unitcost', title: '磅数', width: 80, align: 'right'},
+			{ field: 'attr1', title: '数量', width: 150, sortable: true },
+			{ field: 'status', title: '价格', width: 60, align: 'center' }
+        ]],
+        groupField: 'productid',
+        view: groupview,
+        groupFormatter: function (value, rows) {
+            return value + ' - ' + rows.length + ' Item(s)';
+        }
+    })
+</script>
+
+@*<script type="text/javascript">
+    //网格生成
+    $(function () {
+        $("#dg").datagrid({
+            rownumbers: true,
+            singleSelect: true,
+            autoRowHeight: false,
+            pageSize: 30,
+            fitColumns: true, //自适应
+            striped: true, //True 奇偶行使用不同背景色
+            url: "@Url.Action("QueryOrderByCustomer", "Order")" + "?customerId=" + pharos.g.getUrlParam("customerId"),
+            onAfterEdit: function (rowIndex, rowData, changes) {
+                $.ajax({
+                    url: '/common/savedata?type=@(FCake.Core.Common.DataHelper.GetTypeName<Order>())',
+                    data: rowData,
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (data, status) {
+                        if (data.validate == false) {
+                            alert(data.msg);
+                            $('#dg').datagrid('reload');
+                        }
+                        else {
+                            $('#dg').datagrid('reload');
+                        }
+                    }
+                })
+            },
+            view: detailview,//datagrid扩展地址
+            detailFormatter: function (index, row) { return '<div class="datagrid-row-detail" style="padding:5px 0;height:250px;"></div>'; },
+            onExpandRow: function (index, row) {
+                
+                var ddv = $(this).datagrid('getRowDetail', index).find('div.datagrid-row-detail');
+                var url = "/Order/OrderInfo?orderid=" + row.Id;
+                ddv.panel({
+                    border: false,
+                    scroll: true,
+                    cache: false,
+                    content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:100% "></iframe>',
+                    onLoad: function () {
+                        alert(index);
+                        $("#dg").datagrid('fixDetailRowHeight', index);
+                    }
+                });
+                $("#dg").datagrid('fixDetailRowHeight', index);
+            },
+            columns: [[
+            { title: '主键', field: 'Id', width: 0, hidden: true },
+            { field: 'CustomerId', title: '客户', width: 60, },
+            { field: 'No', title: '订单号', width: 100, editor: { type: 'text' }, },
+            {
+                field: 'RequiredTime', title: '订单时间', width: 100, formatter: function (value, rows, index) {
+                    if (value != undefined) {
+                        return new Date(value).format("yyyy-MM-dd hh:mm:ss")
+
+                    }
+                }, editor: { type: 'text' }
+            },
+            { field: 'Status', title: '订单状态', width: 50, editor: { type: 'text' } },
+            { field: 'ProductId', title: '产品', width: 100, editor: { type: 'text' } },
+            { field: 'TradeSum', title: '支付金额', width: 50, editor: { type: 'text' } },
+            { field: 'TradeStatus', title: '支付状态', width: 50, editor: { type: 'text' } },
+            { field: 'OpState', title: '操作', formatter: opFormat, width: 50, },
+            ]]
+        })
+    })
+
+
+    //toolbar的点击事件
+    $(function () {
+        $("#newitem").click(function () {
+            //$("#dg").datagrid('insertRow', { index: 0, row: { CustomerId: pharos.g.getUrlParam("customerId") } })
+            //$("#dg").datagrid('beginEdit', 0);/Order/OrderInfo?orderid=123414
+            $("#openFrom").attr("src", "/Order/OrderInfo?orderid=&customerId=@Model.Id");
+            opendialog();
+        })
+    })
+    //网格操作导航
+    function opFormat(value, row, index) {
+        var html = "";
+        html += "<a href=\"javascript:void(0)\" class=\"edit\" onClick=\"edititem('" + row.Id + "','" + row.CustomerId + "')\">编辑</a>&nbsp;&nbsp;";
+        html += "<a href=\"javascript:void(0)\" class=\"del\"  onClick=\"delitem()\" >删除</a>&nbsp;&nbsp;";
+        return html;
+    }
+    //显示dialog窗体
+    function opendialog()
+    {
+        $("#dd").css("display", "block");
+        $("#dd").dialog({
+            //toolbar: '#digtoolbar',
+            title: '订单信息',
+            width: 900,
+            height: 600,
+            closed: false,
+            cache: false,
+            href: '',
+            modal: true
+        });
+
+        $("#dd").dialog('refresh', '');
+    }
+    //编辑
+    function edititem(orderid,userId) {
+        $("#openFrom").attr("src", "/Order/OrderInfo?orderid=" + orderid + "&customerId=" + userId);
+        opendialog();
+    }
+    //删除
+    function delitem() {
+        var row = $('#dg').datagrid('getSelected');
+        if (row != null) {
+            $.messager.confirm('系统提示!', '确定删除吗', function (r) {
+                if (r) {
+                    $.ajax({
+                        url: '/common/deletedata?type=@(FCake.Core.Common.DataHelper.GetTypeName<Order>())',
+                        dataType: 'json',
+                        type: 'post',
+                        data: row,
+                        success: function (data, status) {
+                            if (data.validate == false) {
+                                alert(data.msg);
+                            }
+                            $('#dg').datagrid('reload');
+                        }
+                    });
+                }
+            });
+        }
+    }
+</script>*@

@@ -1,0 +1,60 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@using FCake.Admin.Models;
+@using FCake.Bll;
+@{
+    ViewBag.Title = "Index";
+}
+
+<table id="td"></table>
+<script>
+    window.drpdata = window.drpdata || {};
+    window.drpdata['menutype'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.MenuType>(false))
+    {
+        @:window.drpdata['menutype'].push({ value: '@item.Value', text: '@item.Text' });
+        }
+
+    $(function () {
+        $("#td").easyui_treegrid({
+            type: '@(FCake.Core.Common.DataHelper.GetTypeName<Menu>())',
+            treeField: 'MenuName',
+            columns_title: ['名称', '地址', '父菜单', '菜单类型', '权限代码', '父权限代码', '排序'],
+            columns_notitle: ['CreatedBy', 'Id', 'CreatedOn', 'ModifiedBy', 'ModifiedOn', 'IsDeleted'],
+            PidField: 'ParentId',
+            baseField: ['MenuType'],
+            columns_width: [200, 200, 200, 100, 100, 100, 100],
+            columns_formatter: ['', '', function (value, row) { return ''; }],
+            permissionCode: ['add', 'delete', 'edit', 'add', ''],
+            columns_editor: ['', '', {
+                type: 'combotree',
+                options: {
+                    url: '/common/GetTreeData?type=@(DataHelper.GetTypeName<Menu>())&special=ToMenuTree&p=0',
+                    panelHeight: 'auto',
+                    editable: false
+                }
+            }, {
+                type: 'combobox',
+                options: {
+                    valueField: 'value',
+                    textField: 'text',
+                    data: window.drpdata['menutype'],
+                    panelHeight: 'auto',
+                    editable: false
+                }
+            }, '', '', {
+                type: 'numberbox'
+            }],
+            columns_formatter: ['-', '-', function () { return ""; },
+                function (value, row, index) {
+                    var drp = window.drpdata['menutype'];
+                    for (var i = 0; i < drp.length; i++) {
+                        if (drp[i].value == value) {
+                            return drp[i].text;
+                        }
+                    }
+                    return "";
+                }]
+        });
+    })
+</script>

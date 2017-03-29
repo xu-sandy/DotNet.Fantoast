@@ -1,0 +1,136 @@
+﻿@charset "utf-8";
+/* CSS Document */
+.title{
+	margin-top:30px;
+	margin-left:auto;
+	margin-right:auto;
+	width:700px;
+	color:#673100;
+	font-family:"微软雅黑";
+	font-size:20px;
+	line-height:50px;
+    _position:relative;
+    _left:50%;
+    _margin-left:-350px;
+    border-bottom:solid 1px #b9bcc1;
+    _padding:15px 0;
+	}
+.line_gray{
+	/*width:700px;
+	height:1px;
+    _font-size:1px;
+	margin-left:auto;
+	margin-right:auto;
+	background-color:#b9bcc1;
+    _position:relative;
+    _left:50%;
+    _margin-left:-350px;*/
+	}
+
+.coo{
+	width:740px;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:30px;
+    _position:relative;
+    _left:50%;
+    _margin-left:-370px;
+	}
+.item_stab{
+	width:738px;
+	height:52px;
+	}
+.item_text{
+	width:220px;
+	height:50px;
+	line-height:50px;
+	font-family:"微软雅黑";
+	font-size:14px;
+	color:#673100;
+	text-align:right;
+	float:left;
+	}
+.item_tab{
+	float:left;
+	height:50px;
+	line-height:50px;
+	}
+.item_tab1{
+	float:left;
+	border:1px solid #ccd1d9;
+	width: 240px;
+    padding: 10px;
+    margin: 10px;
+	height:15px;
+	border-radius:5px;
+    -webkit-border-radius: 5px;
+     -moz-border-radius:5px;
+	 -o-border-radius: 5px;
+     -ms-border-radius:5px;
+	margin-left:20px;
+    _height:35px;
+	}
+.item_tab2{
+	float:left;
+	margin-top:17px;
+	margin-left:25px;
+	}
+.item_tab3{
+	float:left;
+	border:1px solid #ccd1d9;
+	width: 100px;
+    padding: 10px;
+    margin: 10px;
+	height:38px;
+	margin-left:20px;
+    -webkit-border-radius: 5px;
+     -moz-border-radius:5px;
+	 -o-border-radius: 5px;
+     -ms-border-radius:5px;
+	 color:#8e8e8e;
+	}
+
+
+.item_tab4{
+	float:left;
+	border:1px solid #ccd1d9;
+	width: 100px;
+    padding: 10px;
+    margin: 10px;
+	height:38px;
+    -webkit-border-radius: 5px;
+     -moz-border-radius:5px;
+	 -o-border-radius: 5px;
+     -ms-border-radius:5px;
+	 transform-border-radius:5px;
+	 color:#8e8e8e;
+	}
+.confirm{
+	height:42px;
+	width:130px;
+	margin-left:auto;
+	margin-right:auto;
+	background-image:url(Images/form/confirm.png);
+	text-align:center;
+	color:#FFF;
+	font-size:20px;
+	font-family:"微软雅黑";
+	line-height:42px;
+	margin-top:20px;
+    _position:relative;
+    _left:50%;
+    _margin-left:-65px;
+	}
+.confirm a{
+	color:#FFF;
+	font-size:20px;
+	font-family:"微软雅黑";
+	line-height:42px;
+	display:block;
+	}
+
+.item_stab .item_tab span {
+    color:red;
+    font-size:14px;
+    vertical-align:middle;
+}

@@ -1,0 +1,221 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Core.Common;
+@{
+    ViewBag.Title = "OrderBatch";
+}
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['status'] = [];
+    window.drpdata['makestatus'] = [];
+    window.drpdata['viewstatus'] = [];
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.Status>(true))
+    {
+        @:window.drpdata['status'].push({ value: '@item.Value', text: '@item.Text' });
+                                                }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.OrderBatchMakeStatus>(true))
+    {
+        @:window.drpdata['makestatus'].push({ value: '@item.Value', text: '@item.Text' });
+                                                    }
+    @foreach (var item in EnumHelper.GetCacheList<FCake.Domain.Enums.BatchReviewStatus>(true))
+    {
+        @:window.drpdata['viewstatus'].push({ value: '@item.Value', text: '@item.Text' });
+                            }
+</script>
+<style type="text/css">
+    .datagrid-header-row, .datagrid-row {
+        height: 40px;
+    }
+</style>
+<div id="tb">
+    <a id="add" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-add">新增批次</a>
+    批次号：<input id="BatchNo" name="BatchNo" class="easyui-textbox datacontrol" style="width:140px;height:30px" />
+    订单号:<input id="OrderNo" name="OrderNo" class="easyui-textbox datacontrol" style="width:140px;height:30px;" data-options="prompt:'请输入完整订单号'" />
+    审核状态：<input id="Status" name="Status" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['viewstatus'], panelHeight: 'auto', editable: false,width:100" />
+    厨房状态：<input id="MakeStatus" name="MakeStatus" class="easyui-combobox datacontrol" data-options="valueField: 'value', textField: 'text', data:window.drpdata['makestatus'], panelHeight: 'auto', editable: false,width:100" />
+    <a id="search" href="javascript:void(0);" class="easyui-linkbutton" iconcls="icon-search">查询</a>
+</div>
+<table id="dg"></table>
+<script>
+    var lastIndex = "";
+    //datagrid绑定
+    $(function () {
+        $("#dg").datagrid({
+            toolbar: "#tb",
+            rownumbers: true,
+            singleSelect: true,
+            //autoRowHeight: false,
+            pageSize: 50,
+            fit: true,
+            fitColumns: true, //自适应
+            pagination: true,//开启分页
+            striped: true, //True 奇偶行使用不同背景色
+            onLoadSuccess: function () {
+                //$.parser.parse($('td .easyui-linkbutton').parent());
+                $.parser.parse($('.cus2').parent());
+                if (lastIndex != "") {
+                    var rowid = -1;
+                    var rows = $("#dg").datagrid("getRows");
+                    $.each(rows, function (index, row) {
+                        if (row.BatchNo == lastIndex) {
+                            rowid = index;
+                        }
+                    })
+                    if (rowid != -1)
+                        $("#dg").datagrid("expandRow", rowid);
+                }
+            },
+            url: "@Url.Action("GetOrderBatchByStatus", "OrderBatch")" + "?Status=&MakeStatus=",
+            view: detailview,//datagrid扩展地址
+            detailFormatter: function (index, row) { return '<div class="ddv" style="padding:5px 0;height:250px"></div>'; },
+            onExpandRow: function (index, row) {
+                lastIndex = row.BatchNo;
+                var ddv = $(this).datagrid('getRowDetail', index).find('div.ddv');
+
+                var url = "/OrderBatch/BatchDetail?batch=" + escape(row.BatchNo) + "&state=" + row.MakeStatus;
+                ddv.panel({
+                    border: false,
+                    cache: false,
+                    content: '<iframe scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:100%;"></iframe>',
+                    onLoad: function () {
+                        $("#dg").datagrid('fixDetailRowHeight', index);
+                    }
+                });
+                $("#dg").datagrid('fixDetailRowHeight', index);
+            },
+            //onCollapseRow: exp(),
+            columns: [[
+            { title: '主键', field: 'Id', width: 0, hidden: true, },
+            { field: 'BatchNo', title: '批次号', width: 80 },
+            { field: 'RequiredTime', title: '要求完成时间', width: 100 },
+            //{ field: 'MakeBeginTime', title: '实际开始时间', width: 100 },
+            //{ field: 'MakeEndTime', title: '实际完成时间', width: 100 },
+
+            {
+                field: 'MakeStatus', title: '制作状态', width: 100,
+                formatter: function (value, row, index) {
+                    return formatColumn(value, window.drpdata['makestatus']);
+                }
+            },
+             { field: 'OrderNum', title: '订单数量', width: 80, formatter: function (value, row, index) { return value < 0 ? 0 : value; } },
+            { field: 'CakeNum', title: '蛋糕数量', width: 80, formatter: function (value, row, index) { return value < 0 ? 0 : value; } },
+             {
+                 field: 'Status', title: '操作',
+                 formatter: function (value, row, index) {
+                     return formatColumnHtml(value, row, window.drpdata['viewstatus']);
+                 },
+                 width: 100
+             }
+            ]]
+        });
+
+        window.top.$("body").data("batchWin", window);
+    });
+
+    function reloadGrid() {
+        $("#dg").datagrid("reload");
+    }
+    function exp(index) {
+        $("#dg").datagrid("collapseRow", index);
+    }
+
+    //function formatColumnHtml(value, row, list) {
+    //    if (value != 0) {
+    //        return formatColumn(value, list);
+    //    }
+    //    else {
+    //        return "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:80px;' onclick=\"StatusItem('" + row.BatchNo + "')\">待审核</a>";
+    //    }
+    //}
+    var tmpReviewHtml = "<a href=\"javascript:void(0)\" class=\"easyui-linkbutton cus2\" style='width:50px;' onclick=\"StatusItem('{0}')\">{1}</a>";
+    var tmpDeleteHtml = "<a href=\"javascript:void 0\" class=\"easyui-linkbutton cus3\"  style='width:50px;' onclick=\"DeleteItem('{0}')\">{1}</a>";
+    function formatColumnHtml(value, row, listdata) {
+        var text = formatColumn(value, listdata);
+        if (value == "0") {
+            var html = String.format(tmpReviewHtml, [row.BatchNo, text]);
+            if (row.OrderNum == "0") {
+                html += "&nbsp&nbsp" + String.format(tmpDeleteHtml, [row.BatchNo, "删除"]);
+            }
+            return html;
+        }
+        return text;
+    }
+    //审批事件
+    function StatusItem(batchNo) {
+        $.messager.defaults = { ok: "审核通过", cancel: "取消" };
+        $.messager.confirm('系统提示!', '审核通过后厨房制作人员将进行生产工作安排，确认审核通过？', function (r) {
+            if (r) {
+                poststatus(1, batchNo);//通过
+            }
+        })
+
+    }
+    //删除批次
+    function DeleteItem(batchNo) {
+        $.messager.defaults = { ok: "确认删除", cancel: '取消' };
+        $.messager.confirm("系统提示!", "此操作将删除该批次，确认删除？", function (r) {
+            if (r) {
+                $.post("@Url.Action("DeleteItem")", { orderBatch: batchNo }, function (data) {
+                    alert(data.message);
+                    if (data.successed)
+                        reloadGrid();
+
+                }, "json");
+            }
+        })
+    }
+    function poststatus(status, batchNo) {
+        $.post("/OrderBatch/UpdateStatus?", "status=" + status + "&batchNo=" + batchNo, function (data) {
+            alert(data.message);
+            $("#dg").datagrid('reload');
+        }, "json");
+    }
+    //去枚举对应值
+    function formatColumn(value, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].value == value) {
+                if (list[i].value != "")
+                    return list[i].text;
+            }
+        }
+        return value;
+    }
+
+    //查询点击事件
+    $(function () {
+
+        $("#search").click(function () {
+            var batchNo = $("#BatchNo").val();
+            var orderNo = $("#OrderNo").val();
+            var status = $("#Status").combobox('getValue');
+            var makeStatus = $("#MakeStatus").combobox('getValue');
+            $("#dg").datagrid({
+
+                url: "@Url.Action("GetOrderBatchByStatus", "OrderBatch")" + "?Status=" + status + "&MakeStatus=" + makeStatus + "&BatchNo=" + batchNo + "&orderNo=" + orderNo,
+            })
+        })
+    })
+    //新增按钮点击事件
+    $(function () {
+        $("#add").click(function () {
+            AddItem();
+        })
+    })
+    //添加批次
+    function AddItem() {
+        openDialog("添加批次", "OrderBatch/AddBatch?a=" + Math.random());
+    }
+    //打开添加或者编辑页
+    function openDialog(title, url) {
+        window.top.$("body").data("window", window);
+        pharos.g.openDialog({
+            title: title,
+            width: 400,
+            height: 240,
+            id: "add",
+            url: url
+        });
+    }
+    function reloadWindow() {
+        $("#dg").datagrid('reload');
+    }
+</script>

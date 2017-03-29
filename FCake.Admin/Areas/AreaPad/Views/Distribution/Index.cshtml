@@ -1,0 +1,415 @@
+﻿@model List<FCake.Domain.WebModels.DistributionModel>
+@{
+    ViewBag.Title = "物流配送";
+}
+<style>
+    #gridBody > tr > td {
+        height: 45px;
+        vertical-align: middle;
+    }
+</style>
+
+<script type="text/javascript">
+    window.drpdata = window.drpdata || {};
+    window.drpdata['status'] = [];
+    @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.StatusDistribution>(true))
+    {
+        @:window.drpdata['status'].push({ value: '@item.Value', text: '@item.Text' });
+                                                                                                }
+</script>
+
+<div class="container-fluid">
+
+    <div class="row-fluid" style="margin:10px 0">
+        <ul class="nav nav-tabs nav-justified">
+            <li data-tabtarget="expires"><a class="tabActive" href="javascrpt:void(0)">过期未处理</a></li>
+            <li data-tabtarget="today" class="active"><a class="tabActive" href="javascrpt:void(0)">今日任务</a></li>
+            <li data-tabtarget="tomorrow"><a class="tabActive" href="javascrpt:void(0)">明日计划</a></li>
+        </ul>
+    </div>
+    <div class="row-fluid" id="queryBar">
+        <button class="btn btn-default" onclick="filterData()"><span class="glyphicon glyphicon-refresh"></span> 刷新</button>
+        <label>时段</label>
+        <select class="selectpicker" id="period" onchange="filterData()">
+            <option value="">全天</option>
+            <option value="1">上半天（13点前）</option>
+            <option value="2">下半天（13点后）</option>
+        </select>
+        <label>状态</label>
+        <select class="selectpicker" id="status" onchange="filterData()">
+            @foreach (var item in FCake.Core.Common.EnumHelper.GetCacheList<FCake.Domain.Enums.StatusDistribution>(true))
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+
+        <div class="btn-group" id="btnBar">
+            <div class="btn-group">
+                <button type="button" class="btn btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">开始 <span class="caret"></span></button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="javascrip:void(0)" onclick="begin('morning', this)">开始上午配送</a></li>
+                    <li><a href="javascrip:void(0)" onclick="begin('afternoon', this)">开始下午配送</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="checkbox" style="display:inline;margin-left:20px">
+            <label>
+                <input type="checkbox" name="sms" checked /> 配送开始短信通知
+            </label>
+        </div>
+
+    </div>
+
+    <div class="table-responsive control-databox">
+        @Html.Partial("_PartialDistribution", Model)
+    </div>
+</div>
+@Html.Partial("_PartialReportExceptionModal")
+
+<!-- 输入货到付款、POS刷卡等收款金额 Modal -->
+<div class="modal fade" id="CompleteOrderModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">请输入订单收款金额</h4>
+            </div>
+            <div class="modal-body" style="padding-left:100px;padding-right:100px">
+                <div>
+                    <label>
+                        &nbsp;&nbsp;&nbsp;请输入现金收款金额：<input type="text" id="actualPay" placeholder="收款金额" onkeyup="this.value = this.value.replace(/[^0-9.]+/, '')" />
+                    </label>
+                </div>
+                <div>
+                    <label>已使用代金卡抵扣金额：<span id="giftCardPayed"></span></label>
+                </div>
+                <div>
+                    <label>
+                        &nbsp;&nbsp;&nbsp;剩余代金卡抵扣金额：<input type="text" id="giftCardPay" placeholder="剩余代金卡抵扣金额" onkeyup="this.value = this.value.replace(/[^0-9.]+/, '')" />
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="modelCancel2">取消</button>
+                <button type="button" class="btn btn-primary" onclick="Submit()">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--确认框-->
+<div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">确认执行该操作?</h4>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="confirm_yes" onclick="javascript: confirmTrue()">确认</button>
+                <button type="button" class="btn btn-default" id="confirm_no" onclick="javascript: confirmFalse()">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        var curIndex = 'today';
+        var sendSMS = null;
+        var $completeModalEvtObj = null;
+        $(function () {
+            //初始化
+            //是否发送配送短信
+            sendSMS = $("input[name=sms]").is(":checked");
+            //初始化绑定更多数据按钮
+            triggerMoreButton();
+
+            //绑定Tab页签切换事件
+            $(".tabActive").click(function () {
+                var tab = $(this).parent();
+                tab.siblings().removeClass('active');
+                tab.addClass('active');
+                var tabTarget = tab.data("tabtarget");
+                curIndex = tabTarget;
+                if (tabTarget == "expires" || tabTarget == "tomorrow") {
+                    $('#queryBar').css('display', 'none');
+                    tomorrowOrExpiresTab(tabTarget);
+                } else {
+                    $('#queryBar').css('display', 'block');
+                    filterData();
+                }
+            });
+
+            //绑定短信勾选与取消事件
+            $("input[name=sms]").change(function () {
+                sendSMS = $("input[name=sms]").is(":checked");
+            });
+
+            //绑定物流配送详情
+            $(".orderNo").unbind('click').bind('click', function () {
+                $p = $(this).parent();
+                var data = $p.data("html");
+                var className = $p.children("td").eq(0).text();
+                if (data) {
+                    $("._" + className).toggle();
+                }
+                else {
+                    $.ajax({
+                        url: '/areapad/distribution/getOrderDetail?orderNo=' + className,
+                        type: 'post',
+                        success: function (data, status) {
+                            $p.data("html", data);
+                            $p.after(data);
+                        }
+                    });
+                }
+            });
+
+            //绑定弹出框之前赋值对应的收款金额
+            $('#CompleteOrderModal').on('show.bs.modal', function (showEvent) {
+                if ($completeModalEvtObj != null) {
+                    var price = $completeModalEvtObj.parent().data("price");
+                    $("#actualPay").val(Number(price).toFixed(2));
+                    var giftCardPayed = $completeModalEvtObj.parent().data("giftcardpayed");
+                    $("#giftCardPayed").html(Number(giftCardPayed).toFixed(2));
+                }
+            });
+        });
+
+        //今日任务
+        function filterData() {
+            $.get("@Url.Action("_PartialDistribution")", { page: 1, curDate: curIndex, period: $("#period").val(), status: $("#status").val() }, function (data) {
+                $(".control-databox").html(data).trigger("create");
+                triggerMoreButton();
+            });
+        }
+        //明日计划Or过期未处理
+        function tomorrowOrExpiresTab(tabtarget) {
+            $.get("@Url.Action("_PartialDistribution")", { page: 1, curDate: tabtarget }, function (data) {
+                $(".control-databox").html(data).trigger("create");
+                triggerMoreButton();
+            });
+        }
+        var orderNo = "";
+        var e = "";
+        var action = 0;
+        //状态改变方法
+        function statusItem(_orderNo, _e) {
+            orderNo = _orderNo;
+            e = _e;
+            action = 0;
+            //弹出确认框
+            $('#confirm').modal("show");
+            //var r = confirm("确定执行" + $eTarget.text() + "操作？");
+            //if (r == true) {
+            //    var status = $eParent.data("status");
+            //    if (status == '0' || status == '1') {//未配送状态或配送中状态，显示按钮
+            //        var sendStatusHandle = false;
+            //        var feeType = $eParent.data("feetype");
+            //        if (status == "1") {
+            //            if (feeType == "0" || feeType == "1") {
+            //                sendStatusHandle = false;
+            //                $completeModalEvtObj = $eTarget;
+            //                $('#CompleteOrderModal').modal("show");
+            //            }
+            //            else {
+            //                sendStatusHandle = true;
+            //            }
+            //        }
+            //        else {
+            //            sendStatusHandle = true;
+            //        }
+            //        if (sendStatusHandle) {
+            //            $.ajax({
+            //                url: '/Distribution/StatusHandle?orderNo=' + orderNo + '&status=' + status + '&isSMS=' + sendSMS,
+            //                type: 'post',
+            //                dataType: 'json',
+            //                success: function (result) {
+            //                    $eParent.data("status", result.data["status"]);
+            //                    if (eTargetText == '开始') {
+            //                        $eTarget.removeClass("btn-info").addClass("btn-success");
+            //                        $eTarget.text('完成');
+            //                        $eTarget.nextAll().removeClass("hidden");
+            //                        $eTarget.parent().prevAll().filter(".beginTime").text(result.data["beginTime"]);
+            //                    }
+            //                    else if (eTargetText == '完成') {
+            //                        $eTarget.removeClass("btn-success").attr("disabled", "disabled");
+            //                        $eTarget.text('完成');
+            //                        $eTarget.nextAll().addClass("hidden");
+            //                        $eTarget.parent().prevAll().filter(".endTime").text(result.data["endTime"]);
+            //                    }
+            //                }
+            //            });
+            //        }
+            //    }
+            //}
+        }
+        //取消操作
+        function confirmFalse() {
+            $("#confirm").modal("hide");
+        }
+
+        //确定操作
+        function confirmTrue() {
+            var $eTarget = $(e);
+            var $eParent = $eTarget.parent();
+            if (action == 0) {
+                var eTargetText = $eTarget.text();
+                var status = $eParent.data("status");
+                if (status == '0' || status == '1') {//未配送状态或配送中状态，显示按钮
+                    var sendStatusHandle = false;
+                    var feeType = $eParent.data("feetype");
+                    if (status == "1") {
+                        if (feeType == "0" || feeType == "1") {
+                            sendStatusHandle = false;
+                            $completeModalEvtObj = $eTarget;
+                            $('#CompleteOrderModal').modal("show");
+                        }
+                        else {
+                            sendStatusHandle = true;
+                        }
+                    }
+                    else {
+                        sendStatusHandle = true;
+                    }
+                    if (sendStatusHandle) {
+                        $.ajax({
+                            url: '/Distribution/StatusHandle?orderNo=' + orderNo + '&status=' + status + '&isSMS=' + sendSMS,
+                            type: 'post',
+                            dataType: 'json',
+                            success: function (result) {
+                                $eParent.data("status", result.data["status"]);
+                                if (eTargetText == '开始') {
+                                    $eTarget.removeClass("btn-info").addClass("btn-success");
+                                    $eTarget.text('完成');
+                                    $eTarget.nextAll().removeClass("hidden");
+                                    $eTarget.parent().prevAll().filter(".beginTime").text(result.data["beginTime"]);
+                                }
+                                else if (eTargetText == '完成') {
+                                    $eTarget.removeClass("btn-success").attr("disabled", "disabled");
+                                    $eTarget.text('完成');
+                                    $eTarget.nextAll().addClass("hidden");
+                                    $eTarget.parent().prevAll().filter(".endTime").text(result.data["endTime"]);
+                                }
+                            }
+                        });
+                    }
+                }
+            } else {
+                var $eTarget = $(e);
+                var $eParent = $eTarget.parent();
+                //var r = confirm("确定执行撤销操作？");
+                //if (r == true) {
+                var status = $eParent.data("status");
+                if (status == "1") {//只有当为 配送中 状态时，才可 撤销 回未开始状态
+                    $.ajax({
+                        url: "/Distribution/StatusRevert?orderNo=" + orderNo + '&status=' + status,
+                        type: "post",
+                        dataType: "json",
+                        success: function (result) {
+                            $eParent.data("status", result.data);
+                            var prev = $eTarget.prev();
+                            prev.removeClass("btn-success").addClass("btn-info");
+                            prev.text("开始");
+                            prev.nextAll().addClass("hidden");
+                            $eParent.prevAll().filter(".beginTime").text("");
+                        }
+                    });
+                }
+                //}
+            }
+        }
+
+
+        //撤销配送
+        function statusRevert(_orderNo, _e) {
+            orderNo = _orderNo;
+            e = _e;
+            action = 1;
+            $('#confirm').modal("show");
+        }
+
+        function Submit() {
+            var needPay = $completeModalEvtObj.parent().data("price");
+            var actualpay = $('#actualPay').val();
+            if (actualpay == null || actualpay == "") {
+                $.messager.alert("操作提示", "请输入收款金额", "error", function () { return false; });
+            } else {
+                var giftCardPay = $("#giftCardPay").val();
+                if (Number(giftCardPay) < 0 || isNaN(giftCardPay)) {
+                    alert("剩余代金卡抵扣金额有误!");
+                    return false;
+                }
+                if (Number(Number(giftCardPay) + Number(actualpay)) > Number(needPay)) {
+                    alert("现金收款金额+剩余代金卡抵扣金额不能超过需支付金额:" + Number(needPay).toFixed(2));
+                    return false;
+                }
+                if ($completeModalEvtObj != null) {
+                    var $eTarget = $completeModalEvtObj;
+                    var $eParent = $eTarget.parent();
+                    $.ajax({
+                        url: '/areapad/distribution/UpdateActualPayByCompateOrder?orderNo=' + $eParent.data("orderno") + '&actualPay=' + actualpay + '&giftCardPay=' + giftCardPay,
+                        dataType: 'json',
+                        type: 'post',
+                        success: function (data) {
+                            if (data.successed) {
+                                $("#modelCancel2").click();
+                                $eTarget.removeClass("btn-success").attr("disabled", "disabled");
+                                $eTarget.text('完成');
+                                $eTarget.nextAll().addClass("hidden");
+                                $eTarget.parent().prevAll().filter(".endTime").text(result.data["endTime"]);
+                                //$eParent.html("<button type=\"button\" class=\"btn btn-default\" disabled=\"disabled\">完成</button>");
+                            }
+                            else {
+                                //alert(data.message);
+                                $.messager.alert("操作提示", data.message, "error");
+                            }
+                        },
+                        error: function () {
+                            window.location.reload();
+                        }
+                    });
+                }
+
+            }
+        }
+
+        //开始上午、下午配送(section:morning|afternoon;e:this)
+        function begin(section, e) {
+            $p = $("#btnBar");
+
+            if (confirm("确定开始此时段配送")) {
+                $p.data("html", $p.html());
+                $p.html("处理中");
+                $.ajax({
+                    url: '@Url.Action("BeginSection")',
+                    data: { section: section, isSMS: sendSMS },
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.validate) {
+                            window.location.reload();
+                        }
+                        else {
+                            $.messager.alert("操作提示", "无配送数据，请刷新后重试", "error", function () { $p.html($p.data("html")); });
+
+                        }
+                    },
+                    error: function () {
+                        $.messager.alert("操作提示", "处理失败，请刷新后重试", "error", function () { $p.html($p.data("html")); });
+
+                    }
+                })
+            }
+        };
+        //初始化绑定更多数据按钮
+        function triggerMoreButton() {
+            $(".control-morebutton").each(function () {
+                $(this).mypage({
+                    url: "@Url.Action("_PartialDistributionView", "Distribution")",
+                    querystring: { curDate: curIndex, period: $("#period").val(), status: $("#status").val() }
+                });
+            });
+        }
+    </script>
+}

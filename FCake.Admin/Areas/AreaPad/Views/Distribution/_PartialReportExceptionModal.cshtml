@@ -1,0 +1,75 @@
+﻿<!-- Modal -->
+<div class="modal fade" id="exceptionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">选择异常类型</h4>
+            </div>
+            <div class="modal-body" style="padding-left:100px;padding-right:100px">
+                @foreach (var x in FCake.Admin.Helper.DropDownHelper.GetDictionaryByCode("OrderException", false))
+                {
+                <div><label><input name="Exception" type="radio" value="@x.Value" />&nbsp;&nbsp;&nbsp;&nbsp;@x.Text</label></div>
+                }
+                <div>
+                    <label>
+                    <input name="Exception" type="radio" value="" />&nbsp;&nbsp;&nbsp;&nbsp;其他：
+                    <input type="text" name="OtherException"/>
+                    </label>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="modelCancel">取消</button>
+                <button type="button" class="btn btn-primary" onclick="SubmitException()">提交</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    function SubmitException() {
+        if (curIndex!=null) {
+
+            if($("input[name=Exception]:checked").length==0){
+                //alert("请选择一个异常类型或输入自定义类型");
+                $.messager.alert("操作提示", "请选择一个异常类型或输入自定义类型！", "error", function () {
+                    return;
+                });
+                
+            }
+
+            var msg = $.trim($("input[name=Exception]:checked").val());
+            if (msg == "") {
+                msg = $.trim($("input[name=OtherException]").val());
+                if (msg == "") {
+                    //alert("请输入自定义异常");
+                    $.messager.alert("操作提示", "请输入自定义异常！", "error", function () { return; });
+                    
+                }
+            }
+
+            $this=$(curIndex);
+            $.ajax({
+                url: '/areapad/distribution/SaveOrderException?orderno=' + $this.parent().parent().children("td").eq(0).text(),
+                dataType: 'json',
+                data:{msg:msg},
+                type: 'post',
+                success: function (data,status) {
+                    if (data.validate) {
+                        $("#modelCancel").click();
+                        $this.parent().html("<button type=\"button\" class=\"btn btn-default\" disabled=\"disabled\">异常</button>");
+                    }
+                    else {
+                        //alert(data.msg);
+                        $.messager.alert("操作提示", data.msg, "error", function () { return; });
+                    }
+                },
+                error: function () {
+                    window.location.reload();
+                }
+            });
+        }
+    }
+</script>

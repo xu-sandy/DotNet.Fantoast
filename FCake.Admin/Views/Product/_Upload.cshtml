@@ -1,0 +1,164 @@
+﻿@model dynamic
+@{
+    ViewBag.Title = "Upload";
+    var baseFiles = Model.BaseFiles as List<FCake.Domain.Entities.BaseFile>;
+}
+<style type="text/css">
+    .uploadcontainer .img { width: 80px; height: 80px; border: 1px solid #bbb; }
+    .uploadcontainer .uploadbtn { height: 30px; line-height: 30px; padding-left: 20px; padding-right: 20px; }
+</style>
+@helper CreateItem(string id, string url, bool isMainId, int? sorting)
+{
+    <td>
+        <input type="button" class="selectbtn easyui-linkbutton cus1 linkbtn" value="选择图片" onclick="changeImg('@sorting')" />
+        <input type="file" name="file_@(sorting)" id="file_@(sorting)" class="inputfile" style="display:none;" />
+        <div><img id="img_@(sorting)" src="@(url)" class="img @(isMainId ? "active" : "")" data-id="@id" /></div>
+        <div style="margin-left:33px;height:17px;">
+            @if (sorting != 0)
+            {
+                <img style="cursor:pointer;" src="@Url.Content("~/Content/images/product-img-del.png")" onclick="delImg('@sorting')">
+            }
+        </div>
+    </td>
+}
+
+<table class="form-tb">
+    <tr>
+        <td></td>
+        <td colspan="3"></td>
+        <td>
+            <label for="" class="datalable">产品图片</label>
+        </td>
+        <td colspan="3">
+            @using (Ajax.BeginForm("UploadImgs", "Product", new AjaxOptions() { HttpMethod = "post" }, new { enctype = "multipart/form-data", id = "UploadImgs" }))
+            {
+                @Html.AntiForgeryToken();
+                <table class="uploadcontainer">
+                    <tr>
+                        @{
+                for (int i = 0; i < 5; i++)
+                {
+                    var fileItem = baseFiles.Where(bf => bf.Sorting == i).FirstOrDefault();
+                    if (fileItem != null)
+                    {
+                        @CreateItem(fileItem.Id, fileItem.Url + "_min.jpg", false, fileItem.Sorting)
+                    }
+                    else
+                    {
+                        @CreateItem(null, Url.Content("~/Content/themes/default/images/uploadimg_default.jpg"), false, i)
+                    }
+                }
+                        }
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <input type="submit" class="uploadbtn cus4 linkbtn l-btn" value="上传" /> <span>上传图片格式为：jpg jpeg gif png，每张图片大小不超过2M,第一张为主图</span>
+                        </td>
+                    </tr>
+                </table>
+                <input type="hidden" name="productId" value="@Model.ProductId" />
+            }
+            <div class="progress">
+                <div class="bar"></div>
+                <div class="percent"></div>
+            </div>
+            <div id="status"></div>
+        </td>
+    </tr>
+</table>
+@*<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+    <script src="http://malsup.github.com/jquery.form.js"></script>*@
+<script src="~/Scripts/jquery.form.js"></script>
+<script>
+    function delImg(sorting) {
+        var imgSrc = $("#img_" + sorting).attr("src");
+        var id = $("#img_" + sorting).attr("data-id");
+        if (imgSrc != "@Url.Content("~/Content/themes/default/images/uploadimg_default.jpg")") {
+            $.messager.confirm("操作提示", "您确定要删除该图片吗？", function (r) {
+                if (r) {
+                    $("#img_" + sorting).attr("src", "@Url.Content("~/Content/themes/default/images/uploadimg_default.jpg")");
+                    $("#file_" + sorting).val("");
+                    if (id != undefined && id != null && id != "") {
+                        $.ajax({
+                            url: '@Url.Action("DelProductImg","Product")?baseFileId=' + id,
+                            async: false,
+                            type: 'POST',
+                            success: function (data) {
+                                $.messager.alert("操作提示", data.message);
+                                $("#img_" + sorting).attr("data-id", "");
+                            }
+                        })
+                    } else {
+                        $.messager.alert("操作提示", "删除图片成功");
+                    }
+                }
+            });
+        }
+    }
+</script>
+<script>
+    (function () {
+
+        var bar = $(".bar");
+        var percent = $(".percent");
+        var status = $("#status");
+
+        $('#UploadImgs').ajaxForm({
+            beforeSend: function () {
+                status.empty();
+                var percentVal = '0%';
+                bar.width(percentVal);
+                percent.html(percentVal);
+            },
+            uploadProgress: function (event, position, total, percentComplete) {
+                console.log(percentComplete);
+                var percentVal = percentComplete + '%';
+                bar.width(percentVal);
+                percent.html(percentVal);
+            },
+            success: function () {
+                var percentVal = '100%';
+                bar.width(percentVal);
+                percent.html(percentVal);
+            },
+            complete: function (xhr) {
+                //status.html(xhr.responseText);
+                $(".uploadbtn").attr("disabled", "disabled");
+                var result = eval('(' + xhr.responseText + ')');
+                $(result.data).each(function (i, node) {
+                    $("#img_" + node.Sorting).attr("data-id", node.Id);
+                });
+            }
+        });
+
+    })();
+
+    $(function () {
+        $(".uploadbtn").attr("disabled", "disabled");
+
+        $(".inputfile").change(function () {
+            var objUrl = getObjectURL(this.files[0]);
+            if (objUrl) {
+                var index = $(this).attr("id").split('_')[1];
+                $("#img_" + index).attr("src", objUrl);
+            }
+            $(".uploadbtn").attr("disabled", false);
+        });
+    });
+    //更改图片文件事件
+    function changeImg(imgIndex) {
+        $("#file_" + imgIndex).click();
+    }
+    //建立一個可存取到該file的url
+    function getObjectURL(file) {
+        var url = null;
+        if (window.createObjectURL != undefined) { // basic
+            url = window.createObjectURL(file);
+        } else if (window.URL != undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file);
+        } else if (window.webkitURL != undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file);
+        }
+        return url;
+    }
+</script>

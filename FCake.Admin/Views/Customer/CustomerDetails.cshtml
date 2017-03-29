@@ -1,0 +1,65 @@
+﻿@using FCake.Domain.Entities;
+@using FCake.Admin.Models;
+@model FCake.Domain.Entities.Customers
+@{
+    ViewBag.Title = "CustomerDetails";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<style type="text/css">
+
+</style>
+<link href="~/Content/themes/default/addOrder.css" rel="stylesheet" />
+<div id="wrap">
+    @Html.Partial("_PartialUserDetail")
+    <div id="btnGroup">
+        <a id="editInfo" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-edit'" onclick="editCuotomerInfo()">编辑用户信息</a>
+        <a id="addOrder" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-add'" onclick="addOrder()">添加订单</a>
+        <a id="otherInfo" href="#" class="easyui-linkbutton cus1 linkbtn" data-options="iconCls:'icon-redo'" onclick="otherInfo()">其他信息</a>
+    </div>
+
+
+    <div id="orderDetail"></div>
+
+    @if (ViewBag.orderid != null)
+    {
+        @Html.Partial("../order/_PartialOrderDetail")
+
+    }
+    @Html.Partial("_PartialShoppingHistory")
+
+</div>
+
+<script type="text/javascript">
+    $(function () {
+        window.top.$("body").data("win_customerDetails", window);
+    });
+    function reloadWindow() {
+        var orderNo = window.top.$('body').data("backOrderNo");
+        if (String.isNE(orderNo)) {
+            window.location.reload();
+        } else {
+            window.location.href = "@Url.Action("CustomerDetails", "Customer")" + "?customerId=" + pharos.g.getUrlParam("customerId") + "&orderNo=" + orderNo + "&a=" + Math.random();
+        }
+    }
+    function editCuotomerInfo() {
+        openForm("编辑用户信息", "@Url.Action("CustomerEdit", "Customer")" + "?customerId=@Model.Id", "addorder", 450, 500);
+    }
+    function addOrder() {
+        openForm("添加订单", "@Url.Action("AddOrder","Order")" + "?customerId=@Model.Id", "addorder", 900, 600);
+    }
+    function otherInfo() {
+        openForm("会员其他信息", "@Url.Action("FavorableInfo", "Customer")" + "?Id=@Model.Id", "otherinfo", 900, 600);
+    }
+    function openForm(title, url, winId, width, height) {
+        pharos.g.openDialog({
+            title: title,
+            width: width,
+            height: height,
+            id: winId,
+            url: url,
+            onClose: function () {
+                reloadWindow();
+            }
+        });
+    }
+</script>

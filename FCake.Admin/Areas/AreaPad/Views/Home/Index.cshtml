@@ -1,0 +1,25 @@
+﻿@{
+    Layout = "../Shared/_LayoutBootstrap.cshtml";
+    ViewBag.Title = "Index";
+}
+
+<link href="~/Content/areapad/home.css" rel="stylesheet" />
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 col-md-offset-2">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">菜单</h3>
+            </div>
+            <div class="panel-body">
+                <div class="col-xs-4 col-sm-3 ">
+                    <a class="btn btn-info menubtn" href="@Url.Action("Index", "OrderBatch", new { area="AreaPad"})">生产批次查看</a>
+                </div>
+                <div class="col-xs-4 col-sm-3 ">
+                    <a class="btn btn-info menubtn" href="@Url.Action("Index", "Distribution", new { area="AreaPad"})">物流配送管理</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

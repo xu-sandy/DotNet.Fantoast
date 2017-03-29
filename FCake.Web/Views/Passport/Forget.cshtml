@@ -1,0 +1,181 @@
+﻿@{
+    ViewBag.Title = "忘记密码";
+}
+
+@Scripts.Render(
+    "~/Scripts/formValidator/formValidator-4.1.3.js",
+    "~/Scripts/formValidator/formValidatorRegex.js"
+)
+<link href="~/Content/form.css" rel="stylesheet" />
+<link href="~/Content/login.css" rel="stylesheet" />
+
+<form class="" id="form1" name="form1" method="post">
+    <table class="loginbox" border="0" cellspacing="0" cellpadding="0" style="font-size:12px">
+        <tr>
+            <td>
+                <span class="title">重置密码</span>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><input class="control" type="text" id="mobile" name="mobile" value="" placeholder="手机号" /></td>
+            <td><div id="mobileTip" style="width:250px"></div></td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" class="control" id="captchas" name="Captchas" placeholder="填写图片验证" maxlength="4" />
+            </td>
+            <td>
+                <div style="margin-top:22px">
+                    <img style="height: 30px" id="captchasImg" src="@Url.Action("GetCaptchas","Passport")"> <a href="javascript:change()" style="color:#629bcb">换一张</a>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="now_reg" style="text-align:center">
+                <a href="javascript:void(0)" id="sendBtn" onclick="sendCode()">
+                    <font class="log_text log_color" style="margin-left:0">发送验证码</font>
+                </a>
+            </td>
+        </tr>
+        @*<tr><td class="yellow_line"></td></tr>*@
+        <tr>
+            <td><input class="control" type="text" id="code" name="code" placeholder="验证码" /></td>
+            <td><div id="codeTip" style="width:250px"></div></td>
+        </tr>
+        <tr>
+            <td><input class="control" type="password" id="newPwd" name="newPwd" placeholder="新密码" /></td>
+            <td><div id="newPwdTip" style="width:250px"></div></td>
+        </tr>
+        <tr>
+            <td><input class="control" type="password" id="confirmPwd" name="confirmPwd" placeholder="重输密码" /></td>
+            <td><div id="confirmPwdTip" style="width:250px"></div></td>
+        </tr>
+        <tr>
+            <td class="now_login">
+                <a id="submit" style="text-align:center">
+                    <font class="log_text t_style" style="margin-left:0">重置</font>
+                </a>
+                <input type="hidden" id="hidden1" name="hidden1" value="false" />
+            </td>
+        </tr>
+
+    </table>
+</form>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+
+            //bind submit
+            $("#submit").click(function () {
+                if (!$("#submit").attr("disabled")) {
+                    $("#submit").attr("disabled", true);
+                    //$("#form1").submit();
+                    $.post("@Url.Action("Forget")", $("#form1").serialize(), function (data) {
+                        change();
+                        alert(data.msg);
+                        if (data.success) {
+                            window.location.href = "@Url.Action("Login")";
+                        }
+                    });
+                }
+            });
+
+            $.formValidator.initConfig({
+                formID: "form1", theme: "ArrowSolidBox", submitOnce: false,
+                onError: function (msg, obj, errorlist) {
+                    $("#errorlist").empty();
+                    $.map(errorlist, function (msg) {
+                        $("#errorlist").append("<li>" + msg + "</li>")
+                    });
+                    alert(msg);
+                },
+                ajaxPrompt: '有数据正在异步验证，请稍等...'
+            });
+
+            $("#mobile").formValidator({ empty: false, onShow: "请输入您的手机号", onFocus: "请输入您的手机号", onCorrect: "该手机号错误" }).regexValidator({ regExp: ["mobile"], dataType: "enum" })
+            .ajaxValidator({
+                dataType: "json",
+                type: "post",
+                async: true,
+                url: "@Url.Action("CheckUserName", "Passport")",
+                data: { userName: $("#mobile").val() },
+                success: function (data) {
+                    if (data) return "该手机号尚未注册";
+                    return true;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("服务器没有返回数据，可能服务器忙，请重试" + errorThrown);
+                },
+                onError: "该手机号尚未注册",
+                onWait: "正在对用户名进行合法性校验，请稍候..."
+            });
+
+            $("#code").formValidator({ onShow: "请输入验证码", onCorrect: "验证码合法" }).inputValidator({ min: 1, empty: { leftEmpty: false, rightEmpty: false, emptyError: "验证码两边不能有空符号" }, onError: "验证码不能为空,请确认" })
+            .ajaxValidator({
+                dataType: "json",
+                type: "post",
+                async: true,
+                url: "@Url.Action("CheckCode", "Passport")",
+                data: { mobile: $("#mobile").val(), code: $("#code").val() },
+                success: function (data) {
+                    if (data) return true;
+                    return false;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("服务器没有返回数据，可能服务器忙，请重试" + errorThrown);
+                },
+                onError: "验证码错误",
+                onWait: "正在校对验证码，请稍候..."
+            });
+
+            $("#newPwd").formValidator({ onShow: "请输入密码", onFocus: "至少1个长度", onCorrect: "密码合法" }).inputValidator({ min: 1, empty: { leftEmpty: false, rightEmpty: false, emptyError: "密码两边不能有空符号" }, onError: "密码不能为空,请确认" });
+
+            $("#confirmPwd").formValidator({ onShow: "请再次输入密码", onFocus: "至少1个长度", onCorrect: "密码一致" }).inputValidator({ min: 1, empty: { leftEmpty: false, rightEmpty: false, emptyError: "密码两边不能有空符号" }, onError: "重复密码不能为空,请确认" }).compareValidator({ desID: "newPwd", operateor: "=", onError: "两次密码不一致,请确认" });
+
+        });
+
+        //获取验证码
+        function sendCode() {
+            var mobileNo = $("#mobile").val();
+            var re = /^1\d{10}$/;
+            if (!re.test(mobileNo)) {
+                alert("手机号码不正确!");
+                return false;
+            }
+            $.post('@Url.Action("SendValidCodeFJXX", "Passport")', { mobile: mobileNo, type: "Register", isNewRegister: true, guess: $("#captchas").val() }, function (data) {
+                change();
+                if (data.success == true) {
+                    time();
+                }
+                else {
+                    alert(data.msg);
+                }
+            });
+        }
+
+        //发送验证码按钮倒计时
+        var wait = 60;
+        function time() {
+            if (wait == 0) {
+                $("#sendBtn").attr("onclick", "sendCode();");
+                $("#sendBtn").css("cursor", "pointer");
+                $("#sendBtn").html("发送验证码");
+                wait = 60;
+            } else {
+                $("#sendBtn").attr("onclick", "return false;");
+                $("#sendBtn").css("cursor", "default");
+                $("#sendBtn").html(wait + "秒后重发");
+                wait--;
+                setTimeout(function () {
+                    time()
+                },
+                 1000)
+            }
+        }
+        function change() {
+            $("#captchasImg").attr('src', "@Url.Action("GetCaptchas", "Passport")" + "?a=" + Math.random());
+        }
+    </script>
+}

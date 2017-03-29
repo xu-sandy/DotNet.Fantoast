@@ -1,0 +1,141 @@
+﻿@using FCake.Domain.Entities;
+@model LogisticsSite
+@{
+    ViewBag.Title = "LogisticsSiteFrom";
+    Layout = "~/Views/Shared/_LayoutEdit.cshtml";
+}
+<form id="LogisticsSiteEdit" class="form" method="post" style="overflow:auto;">
+    <table class="form-tb">
+        <tr style="display:none">
+            <td colspan="4">
+                <input type="text" id="Id" name="Id" value="@Model.Id" />
+            </td>
+        </tr>
+        <tr>
+            <td class="txtalign-r" style="width:80px;">
+                站点编号：
+            </td>
+            <td>
+                <input class="datacontrol" type="text" id="SiteCode" name="SiteCode" value="@Model.SiteCode" />
+            </td>
+            <td class="txtalign-r">
+                站点名称：
+            </td>
+            <td>
+                <input class="datacontrol" type="text" id="SiteName" name="SiteName" value="@Model.SiteName" />
+            </td>
+        </tr>
+        <tr>
+            <td class="txtalign-r">所在省份：</td>
+            <td><input class="easyui-combobox" name="SiteProvince" id="SiteProvince" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" /></td>
+            <td class="txtalign-r">所在市区：</td>
+            <td><input class="easyui-combobox" name="SiteCity" id="SiteCity" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" /></td>
+        </tr>
+        <tr>
+            <td class="txtalign-r">所在地区：</td>
+            <td><input class="easyui-combobox" name="SiteArea" id="SiteArea" data-options="editable:false,required:true,valueField:'t',textField:'t',panelHeight:'auto',width:80" /></td>
+            <td class="txtalign-r">是否市区默认自提地址：</td>
+            <td><input class="easyui-combobox datacontrol" name="IsDef" id="IsDef" data-options="editable:false,required:true,valueField:'value',textField:'text',data:[{value:'0',text:'否'},{value:'1',text:'是'}],panelHeight:'auto',width:80" /></td>
+        </tr>
+        <tr>
+            <td class="txtalign-r">状态：</td>
+            <td><input class="easyui-combobox datacontrol" name="Status" id="Status" data-options="editable:false,required:true,valueField:'value',textField:'text',data:[{value:'0',text:'正常'},{value:'1',text:'关闭'}],panelHeight:'auto',width:80" /></td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td class="txtalign-r">详细地址：</td>
+            <td colspan="3"><input class="datacontrol" type="text" name="SiteAddress" value="@Model.SiteAddress" style="width:470px;" /> </td>
+        </tr>
+
+    </table>
+    <input type="button" name="save" class="easyui-linkbutton cus4 linkbtn" style="margin-left:40%;margin-top:20px;" data-check="add" value="保存" />
+</form>
+<script>
+    $(function () {
+        //数据初始化
+        //是否默认
+        var isdef = "@Model.IsDef";
+        $("#IsDef").combobox({
+            onLoadSuccess: function () {
+                if (isdef != 1) {
+                    isdef = 0;
+                }
+                $("#IsDef").combobox("select", isdef);
+            }
+        });
+        //状态
+        var status = "@Model.Status";
+        $("#Status").combobox({
+            onLoadSuccess: function () {
+                if (status != 1) {
+                    status = 0;
+                }
+                $("#Status").combobox("select", status);
+            }
+        });
+
+        //省
+        $("#SiteProvince").combobox({
+            url: '/common/getposition?position=country&value=',
+            onSelect: function (record) {
+                $("#SiteCity").combobox({
+                    url: '/common/getposition?position=province&value=' + record.t,
+                });
+                $("#SiteArea").combobox({
+                    url: '',
+                });
+            },
+            onLoadSuccess: function () {
+                $("#SiteProvince").combobox("select", '福建省');
+            }
+
+        });
+
+        //市
+        $("#SiteCity").combobox({
+            onSelect: function (record) {
+                $("#SiteArea").combobox({
+                    url: '/common/getposition?position=city&value=' + record.t,
+                });
+            },
+            onLoadSuccess: function () {
+                $("#SiteCity").combobox("select", '厦门市');
+            }
+        });
+
+        //区
+        $("#SiteArea").combobox({
+            onSelect: function (record) {
+            },
+            onLoadSuccess: function () {
+                @if(Model.SiteArea!=null)
+                {
+                    @:$("#SiteArea").combobox("select", '@Model.SiteArea');
+                }
+            }
+        });
+    })
+    
+
+    //提交数据
+    $("input[name=save]").click(function () {
+       var url = "@Url.Action("SaveLogistics")" + "?a=" + Math.random();
+        $.ajax({
+            type: "post",
+            url: url,
+            data: $("#LogisticsSiteEdit").serialize(),
+            dataType: "Json",
+            success: function (data) {
+                if (data.successed) {
+                    $.messager.alert("提示", "操作成功", "info", function () {
+                        window.top.$("body").data("jq_win_add")("#dg").datagrid("reload");
+                        window.top.$("body").data("win_add").window("close");
+                    });
+                }
+                else {
+                    $.messager.alert("提示", data.message, "error");
+                }
+            }
+        })
+    });
+</script>

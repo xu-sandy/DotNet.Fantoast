@@ -1,0 +1,16 @@
+﻿@model List<FCake.Domain.Entities.OrderBatch>
+
+<table id="grid" class="table table-hover table-striped control-datagrid">
+    <thead>
+        <tr>
+            <th id="BatchNo">批次号</th>
+            <th id="RequiredTime">要求完成时间</th>
+            <th id="MakeStatus">制作状态</th>
+            <th id="CakeNum">蛋糕数量</th>
+        </tr>
+    </thead>
+    <tbody id="gridBody">
+        @Html.Partial("_PartialOrderBatchView", Model)
+    </tbody>
+</table>
+@Html.Partial("../Shared/_PartialMoreButton", ViewBag.Pager as FCake.Domain.Common.Pad.Pagination)
